@@ -1,5 +1,6 @@
 #import <AppKit/AppKit.h>
 #import <dlfcn.h>
+#import <signal.h>
 
 static NSString * const VMOpenGLKey = @"OpenGLAcceleration";
 static NSString * const VMOpenGLAllowedKey = @"OpenGLAllowed";
@@ -10,6 +11,8 @@ static NSString * const VMHostConfiguration =
     @"/Library/VirtualMac/HostConfiguration.plist";
 static NSString * const VMReadyTokenKey = @"LastHostReadyToken";
 static NSString * const VMReadyPath = @"/tmp/VirtualMacGuestTools.ready";
+static NSString * const VMDockIconCacheRebuiltKey = @"DockIconCacheRebuilt";
+static const NSInteger VMDockIconCacheRepairVersion = 2;
 
 static NSString *VML(NSString *key)
 {
@@ -21,6 +24,7 @@ static NSString *VML(NSString *key)
 @property(nonatomic, retain) NSMenuItem *statusMenuItem;
 @property(nonatomic, retain) NSMenuItem *openGLMenuItem;
 @property(nonatomic, copy) NSString *readyToken;
+@property(nonatomic) NSUInteger dockIconCacheRepairAttempts;
 @end
 
 @implementation VMGuestToolsDelegate
@@ -96,6 +100,82 @@ static NSString *VML(NSString *key)
 {
     [self outputForExecutable:@"/bin/launchctl"
         arguments:value ? @[@"setenv", name, value] : @[@"unsetenv", name]];
+}
+
+- (BOOL)rebuildDockIconCaches
+{
+    NSString *directory = [[self outputForExecutable:@"/usr/bin/getconf"
+        arguments:@[@"DARWIN_USER_CACHE_DIR"]] stringByTrimmingCharactersInSet:
+            NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (!directory.isAbsolutePath) return NO;
+    NSArray *applications = [NSRunningApplication
+        runningApplicationsWithBundleIdentifier:@"com.apple.dock"];
+    if (!applications.count) return NO;
+    for (NSRunningApplication *application in applications) {
+        if (!application.finishedLaunching || application.terminated)
+            return NO;
+    }
+
+    // First-login IconServices failures can leave a stale user index. Dock
+    // recreates blank icons from it even after its own image cache is removed.
+    // Invalidate both disposable files, preserving Dock preferences and the
+    // shared system icon store. Missing files already need to be regenerated.
+    NSFileManager *manager = NSFileManager.defaultManager;
+    for (NSString *name in @[@"com.apple.iconservices/store.index",
+                             @"com.apple.dock.iconcache"]) {
+        NSString *path = [directory stringByAppendingPathComponent:name];
+        BOOL isDirectory = NO;
+        if (![manager fileExistsAtPath:path isDirectory:&isDirectory]) continue;
+        NSError *error = nil;
+        if (isDirectory || ![manager removeItemAtPath:path error:&error]) {
+            NSLog(@"Could not rebuild icon cache at %@: %@", path, error);
+            return NO;
+        }
+    }
+
+    // The agent holds the old index in memory. Reload only this user's job
+    // before asking Dock to render its icons again; no root access is needed.
+    NSTask *task = [[[NSTask alloc] init] autorelease];
+    task.launchPath = @"/bin/launchctl";
+    task.arguments = @[@"kickstart", @"-k", [NSString stringWithFormat:
+        @"gui/%u/com.apple.iconservices.iconservicesagent", getuid()]];
+    @try {
+        [task launch];
+        [task waitUntilExit];
+        if (task.terminationStatus != 0) {
+            NSLog(@"Could not restart the user's icon services agent");
+            return NO;
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"Could not restart the user's icon services agent: %@", exception);
+        return NO;
+    }
+    for (NSRunningApplication *application in applications) {
+        pid_t pid = application.processIdentifier;
+        if (pid <= 0 || kill(pid, SIGTERM) != 0) {
+            NSLog(@"Could not restart Dock to rebuild its icon cache");
+            return NO;
+        }
+    }
+    [self.preferences setInteger:VMDockIconCacheRepairVersion
+                          forKey:VMDockIconCacheRebuiltKey];
+    [self.preferences synchronize];
+    return YES;
+}
+
+- (void)rebuildDockIconCacheIfNeeded
+{
+    if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26 ||
+        [self.preferences integerForKey:VMDockIconCacheRebuiltKey] >=
+            VMDockIconCacheRepairVersion) return;
+
+    // Guest Tools can start before Dock on a fresh desktop. Retry for up to
+    // five minutes instead of silently skipping the repair for this login.
+    // Keep a failed repair eligible on the next launch, including upgrades
+    // from the old Boolean marker that covered only Dock's image cache.
+    if ([self rebuildDockIconCaches]) return;
+    if (++self.dockIconCacheRepairAttempts < 60)
+        [self performSelector:_cmd withObject:nil afterDelay:5.0];
 }
 
 - (void)setSavedApplicationRelaunchSuppressed:(BOOL)suppressed
@@ -268,6 +348,7 @@ static NSString *VML(NSString *key)
     (void)notification;
     [self applyHostConfiguration];
     [self applyOpenGL];
+    [self rebuildDockIconCacheIfNeeded];
     self.statusItem = [NSStatusBar.systemStatusBar
         statusItemWithLength:NSSquareStatusItemLength];
     NSMenu *menu = [[[NSMenu alloc] initWithTitle:VML(@"Virtual Mac Guest Tools")]
