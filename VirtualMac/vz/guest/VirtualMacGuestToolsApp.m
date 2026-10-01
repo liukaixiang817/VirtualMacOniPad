@@ -1,5 +1,6 @@
 #import <AppKit/AppKit.h>
 #import <dlfcn.h>
+#import <signal.h>
 
 static NSString * const VMOpenGLKey = @"OpenGLAcceleration";
 static NSString * const VMOpenGLAllowedKey = @"OpenGLAllowed";
@@ -10,6 +11,7 @@ static NSString * const VMHostConfiguration =
     @"/Library/VirtualMac/HostConfiguration.plist";
 static NSString * const VMReadyTokenKey = @"LastHostReadyToken";
 static NSString * const VMReadyPath = @"/tmp/VirtualMacGuestTools.ready";
+static NSString * const VMDockIconCacheRebuiltKey = @"DockIconCacheRebuilt";
 
 static NSString *VML(NSString *key)
 {
@@ -96,6 +98,44 @@ static NSString *VML(NSString *key)
 {
     [self outputForExecutable:@"/bin/launchctl"
         arguments:value ? @[@"setenv", name, value] : @[@"unsetenv", name]];
+}
+
+- (void)rebuildDockIconCacheIfNeeded
+{
+    if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26 ||
+        [self.preferences boolForKey:VMDockIconCacheRebuiltKey]) return;
+
+    // Fresh Tahoe installs can retain blank icons in Dock's image cache even
+    // when Finder renders the same applications correctly. Rebuild only this
+    // user's disposable cache once, after Setup Assistant, preserving layout.
+    NSString *directory = [[self outputForExecutable:@"/usr/bin/getconf"
+        arguments:@[@"DARWIN_USER_CACHE_DIR"]] stringByTrimmingCharactersInSet:
+            NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (!directory.isAbsolutePath) return;
+    NSString *path = [directory
+        stringByAppendingPathComponent:@"com.apple.dock.iconcache"];
+    BOOL isDirectory = NO;
+    NSFileManager *manager = NSFileManager.defaultManager;
+    if (![manager fileExistsAtPath:path isDirectory:&isDirectory] || isDirectory)
+        return;
+    NSArray *applications = [NSRunningApplication
+        runningApplicationsWithBundleIdentifier:@"com.apple.dock"];
+    if (!applications.count) return;
+
+    NSError *error = nil;
+    if (![manager removeItemAtPath:path error:&error]) {
+        NSLog(@"Could not rebuild Dock icon cache: %@", error);
+        return;
+    }
+    for (NSRunningApplication *application in applications) {
+        pid_t pid = application.processIdentifier;
+        if (pid <= 0 || kill(pid, SIGTERM) != 0) {
+            NSLog(@"Could not restart Dock to rebuild its icon cache");
+            return;
+        }
+    }
+    [self.preferences setBool:YES forKey:VMDockIconCacheRebuiltKey];
+    [self.preferences synchronize];
 }
 
 - (void)setSavedApplicationRelaunchSuppressed:(BOOL)suppressed
@@ -268,6 +308,7 @@ static NSString *VML(NSString *key)
     (void)notification;
     [self applyHostConfiguration];
     [self applyOpenGL];
+    [self rebuildDockIconCacheIfNeeded];
     self.statusItem = [NSStatusBar.systemStatusBar
         statusItemWithLength:NSSquareStatusItemLength];
     NSMenu *menu = [[[NSMenu alloc] initWithTitle:VML(@"Virtual Mac Guest Tools")]
