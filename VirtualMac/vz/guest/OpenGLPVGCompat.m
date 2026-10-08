@@ -39,8 +39,8 @@ static BOOL ProcessUsesUnsupportedOpenGLPath(void) {
         // rather than relying on where users install the apps. Firefox does
         // its relevant compositing in its GPU helper and plugin-container,
         // not the main executable. Keep global environment injection, but
-        // leave only these exact helper/Sublime executables on macOS's stock
-        // renderer.
+        // leave these exact helper/Sublime executables and system icon services
+        // on macOS's stock renderer without the Apple7 OpenGL opt-in.
         NSString *executable = NSProcessInfo.processInfo.processName;
         excluded = [executable isEqualToString:@"firefox"] ||
             [executable isEqualToString:@"Firefox GPU Helper"] ||
@@ -48,7 +48,9 @@ static BOOL ProcessUsesUnsupportedOpenGLPath(void) {
                 @"Firefox Developer Edition GPU Helper"] ||
             [executable isEqualToString:@"plugin-container"] ||
             [executable isEqualToString:@"sublime_merge"] ||
-            [executable isEqualToString:@"sublime_text"];
+            [executable isEqualToString:@"sublime_text"] ||
+            [executable isEqualToString:@"iconservicesagent"] ||
+            [executable isEqualToString:@"iconservicesd"];
     });
     return excluded;
 }

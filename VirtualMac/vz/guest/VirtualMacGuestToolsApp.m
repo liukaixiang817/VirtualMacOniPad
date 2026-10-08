@@ -12,7 +12,9 @@ static NSString * const VMHostConfiguration =
 static NSString * const VMReadyTokenKey = @"LastHostReadyToken";
 static NSString * const VMReadyPath = @"/tmp/VirtualMacGuestTools.ready";
 static NSString * const VMDockIconCacheRebuiltKey = @"DockIconCacheRebuilt";
-static const NSInteger VMDockIconCacheRepairVersion = 2;
+static const NSInteger VMDockIconCacheRepairVersion = 3;
+static const NSTimeInterval VMDockIconCacheQuietInterval = 30.0;
+static const NSTimeInterval VMDockIconCacheVerificationInterval = 90.0;
 
 static NSString *VML(NSString *key)
 {
@@ -25,6 +27,7 @@ static NSString *VML(NSString *key)
 @property(nonatomic, retain) NSMenuItem *openGLMenuItem;
 @property(nonatomic, copy) NSString *readyToken;
 @property(nonatomic) NSUInteger dockIconCacheRepairAttempts;
+@property(nonatomic) NSTimeInterval dockIconCacheRepairTime;
 @end
 
 @implementation VMGuestToolsDelegate
@@ -102,19 +105,66 @@ static NSString *VML(NSString *key)
         arguments:value ? @[@"setenv", name, value] : @[@"unsetenv", name]];
 }
 
-- (BOOL)rebuildDockIconCaches
+- (NSString *)dockIconCacheDirectory
 {
     NSString *directory = [[self outputForExecutable:@"/usr/bin/getconf"
         arguments:@[@"DARWIN_USER_CACHE_DIR"]] stringByTrimmingCharactersInSet:
             NSCharacterSet.whitespaceAndNewlineCharacterSet];
-    if (!directory.isAbsolutePath) return NO;
+    return directory.isAbsolutePath ? directory : nil;
+}
+
+- (NSArray *)runningDockApplications
+{
     NSArray *applications = [NSRunningApplication
         runningApplicationsWithBundleIdentifier:@"com.apple.dock"];
-    if (!applications.count) return NO;
+    if (!applications.count) return nil;
     for (NSRunningApplication *application in applications) {
         if (!application.finishedLaunching || application.terminated)
-            return NO;
+            return nil;
     }
+    return applications;
+}
+
+- (NSTimeInterval)latestIconServicesCrashTime
+{
+    NSTimeInterval latest = 0;
+    NSFileManager *manager = NSFileManager.defaultManager;
+    for (NSString *directory in @[@"/Library/Logs/DiagnosticReports",
+            [NSHomeDirectory() stringByAppendingPathComponent:
+                @"Library/Logs/DiagnosticReports"]]) {
+        for (NSString *name in [manager contentsOfDirectoryAtPath:directory
+                                                          error:nil]) {
+            if (![name hasPrefix:@"iconservices"] ||
+                ![name.pathExtension isEqualToString:@"ips"]) continue;
+            NSDictionary *attributes = [manager attributesOfItemAtPath:
+                [directory stringByAppendingPathComponent:name] error:nil];
+            NSDate *date = attributes[NSFileModificationDate];
+            latest = MAX(latest, date.timeIntervalSince1970);
+        }
+    }
+    return latest;
+}
+
+- (BOOL)dockIconCachesAreReady
+{
+    NSString *directory = [self dockIconCacheDirectory];
+    if (!directory || ![self runningDockApplications]) return NO;
+    for (NSString *name in @[@"com.apple.iconservices/store.index",
+                             @"com.apple.dock.iconcache"]) {
+        NSDictionary *attributes = [NSFileManager.defaultManager
+            attributesOfItemAtPath:[directory stringByAppendingPathComponent:name]
+                             error:nil];
+        if (![attributes[NSFileType] isEqualToString:NSFileTypeRegular] ||
+            [attributes[NSFileSize] unsignedLongLongValue] == 0) return NO;
+    }
+    return YES;
+}
+
+- (BOOL)rebuildDockIconCaches
+{
+    NSString *directory = [self dockIconCacheDirectory];
+    NSArray *applications = [self runningDockApplications];
+    if (!directory || !applications) return NO;
 
     // First-login IconServices failures can leave a stale user index. Dock
     // recreates blank icons from it even after its own image cache is removed.
@@ -157,9 +207,6 @@ static NSString *VML(NSString *key)
             return NO;
         }
     }
-    [self.preferences setInteger:VMDockIconCacheRepairVersion
-                          forKey:VMDockIconCacheRebuiltKey];
-    [self.preferences synchronize];
     return YES;
 }
 
@@ -169,13 +216,38 @@ static NSString *VML(NSString *key)
         [self.preferences integerForKey:VMDockIconCacheRebuiltKey] >=
             VMDockIconCacheRepairVersion) return;
 
-    // Guest Tools can start before Dock on a fresh desktop. Retry for up to
-    // five minutes instead of silently skipping the repair for this login.
-    // Keep a failed repair eligible on the next launch, including upgrades
-    // from the old Boolean marker that covered only Dock's image cache.
-    if ([self rebuildDockIconCaches]) return;
+    // A fresh login can keep crashing IconServices after a successful
+    // restart. Do not mark the repair complete merely because the commands
+    // succeeded: wait for regenerated caches and a stable rendering period.
+    // A later crash invalidates the pending repair, even in another session
+    // such as Setup Assistant, which can affect the shared icon store.
+    NSTimeInterval now = NSDate.date.timeIntervalSince1970;
+    NSTimeInterval crash = [self latestIconServicesCrashTime];
+    if (self.dockIconCacheRepairTime && crash > self.dockIconCacheRepairTime) {
+        NSLog(@"IconServices failed after the Dock cache rebuild; retrying");
+        self.dockIconCacheRepairTime = 0;
+    }
+    if (!self.dockIconCacheRepairTime) {
+        if (now - crash >= VMDockIconCacheQuietInterval &&
+            [self rebuildDockIconCaches]) {
+            self.dockIconCacheRepairTime = now;
+            NSLog(@"Dock icon caches rebuilt; waiting for regeneration");
+        }
+    } else if (now - self.dockIconCacheRepairTime >=
+                    VMDockIconCacheVerificationInterval &&
+                [self dockIconCachesAreReady]) {
+        [self.preferences setInteger:VMDockIconCacheRepairVersion
+                              forKey:VMDockIconCacheRebuiltKey];
+        [self.preferences synchronize];
+        NSLog(@"Dock icon cache rebuild verified");
+        return;
+    }
+    // Poll for up to five minutes. A timed-out or failed repair remains
+    // eligible on the next launch, including upgrades from versions 1 and 2.
     if (++self.dockIconCacheRepairAttempts < 60)
         [self performSelector:_cmd withObject:nil afterDelay:5.0];
+    else
+        NSLog(@"Dock icon cache repair did not stabilize; retrying next launch");
 }
 
 - (void)setSavedApplicationRelaunchSuppressed:(BOOL)suppressed

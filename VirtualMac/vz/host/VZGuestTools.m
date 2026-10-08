@@ -387,6 +387,22 @@ static void VZGuestToolsRun(NSString *path, NSArray *arguments,
     });
 }
 
+void VZGuestToolsEnableRemoteLogin(void (^completion)(BOOL, NSData *))
+{
+    const char *version = getenv("VZ_PVG_BACKEND_VERSION");
+    if (!version || strcmp(version, "27") || gGuestWriteDescriptor < 0) {
+        completion(NO, [NSData data]);
+        return;
+    }
+    NSString *script = @"set -eu; "
+        "/bin/launchctl enable system/com.openssh.sshd; "
+        "if ! /bin/launchctl print system/com.openssh.sshd >/dev/null 2>&1; then "
+        "/bin/launchctl bootstrap system /System/Library/LaunchDaemons/ssh.plist; fi; "
+        "/usr/sbin/systemsetup -getremotelogin || true; "
+        "/usr/bin/id lkx; /bin/launchctl print system/com.openssh.sshd";
+    VZGuestToolsRun(@"/bin/sh", @[@"-c", script], completion);
+}
+
 static void VZGuestToolsWriteChunks(NSNumber *handle, NSData *data,
                                     NSUInteger offset,
                                     void (^completion)(BOOL success))
@@ -454,6 +470,11 @@ static void VZGuestToolsActivate(BOOL payloadChanged, uint64_t generation,
                                  void (^completion)(BOOL success))
 {
     BOOL forceRestart = payloadChanged || !gGuestMenuRestartedForToken;
+    // A running menu publishes readiness once, after constructing its UI.
+    // Keep that genuine acknowledgement during non-restarting retries;
+    // removing it here can race a slow launch and prevent all later ACKs.
+    NSString *readyResetCommand = forceRestart
+        ? @"/bin/rm -f /tmp/VirtualMacGuestTools.ready; " : @"";
     NSString *registeredJobCommand = forceRestart
         ? @"/bin/launchctl kickstart -k \"$job\" 2>/dev/null || true"
         : @"/bin/launchctl kickstart \"$job\" 2>/dev/null || true";
@@ -463,7 +484,7 @@ static void VZGuestToolsActivate(BOOL payloadChanged, uint64_t generation,
              "echo VIRTUAL_MAC_WAITING_FOR_DESKTOP; exit 75;; esac; "
          "test -f /var/db/.AppleSetupDone || { "
              "echo VIRTUAL_MAC_WAITING_FOR_DESKTOP; exit 75; }; "
-         "/bin/rm -f /tmp/VirtualMacGuestTools.ready; "
+         "%@"
          "/usr/bin/xattr -cr /Library/VirtualMac "
              "/Library/LaunchAgents/com.mac.virtual.guest-tools.plist; "
          "job=\"gui/$uid/com.mac.virtual.guest-tools\"; "
@@ -481,7 +502,7 @@ static void VZGuestToolsActivate(BOOL payloadChanged, uint64_t generation,
          "/bin/launchctl print \"$job\" "
              "2>&1 | /usr/bin/tail -n 24; "
          "echo VIRTUAL_MAC_ACTIVATED",
-         registeredJobCommand];
+         readyResetCommand, registeredJobCommand];
     VZGuestToolsRun(@"/bin/sh", @[@"-c", script],
         ^(BOOL success, NSData *output) {
             if (generation != __atomic_load_n(&gGuestProvisioningGeneration,

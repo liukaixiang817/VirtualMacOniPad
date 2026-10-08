@@ -1244,6 +1244,20 @@ static void pollInputCommand(void) {
             printf("[VirtualMac] input command smart magnify\n");
             sendSmartMagnification();
         } else if (tokens.count == 1 &&
+                   [tokens[0] isEqualToString:@"enable-guest-ssh"]) {
+            // Fixed development action for the modern test app. This does not
+            // accept an arbitrary shell command, path, or guest credential.
+            VZGuestToolsEnableRemoteLogin(^(BOOL success, NSData *output) {
+                NSString *text = [[[NSString alloc] initWithData:output
+                    encoding:NSUTF8StringEncoding] autorelease] ?: @"";
+                NSData *report = [NSJSONSerialization dataWithJSONObject:
+                    @{@"success": @(success), @"output": text}
+                    options:NSJSONWritingPrettyPrinted error:nil];
+                [report writeToFile:@"/tmp/virtualmac2-guest-ssh-status.json"
+                    atomically:YES];
+                printf("[VirtualMac] modern guest SSH enable success=%d\n", success);
+            });
+        } else if (tokens.count == 1 &&
                    [tokens[0] isEqualToString:@"screenshot"]) {
             // Development-only host-side capture. This captures the iPad
             // app's own view hierarchy rather than using macOS screencapture,
@@ -1267,6 +1281,15 @@ static void pollInputCommand(void) {
     }
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC),
                    dispatch_get_main_queue(), ^{ pollInputCommand(); });
+}
+
+static void startInputCommandPolling(void) {
+    // VM restarts share one main-thread polling chain in this frontend.
+    static BOOL started = NO;
+    if (started)
+        return;
+    started = YES;
+    pollInputCommand();
 }
 
 static BOOL gForceStopPending;
@@ -4516,6 +4539,25 @@ static void dumpRPCHandlers(id virtualMachine, const char *phase) {
     }
 }
 
+// Experimental builds can use a separate, rollback-ready runtime. Normal
+// packages retain the established path when the Info.plist key is absent.
+static NSString *VZRuntimeRoot(void) {
+    id configured = [NSBundle.mainBundle objectForInfoDictionaryKey:@"VirtualMacRuntimeRoot"];
+    if ([configured isKindOfClass:NSString.class] &&
+        [configured hasPrefix:@"/"] && [configured length] > 1)
+        return [configured stringByStandardizingPath];
+    return @"/var/root/VirtualMac";
+}
+
+static NSString *VZRuntimePath(NSString *relativePath) {
+    return [VZRuntimeRoot() stringByAppendingPathComponent:relativePath];
+}
+
+static BOOL VZUsesModernPVG(void) {
+    return [[NSBundle.mainBundle objectForInfoDictionaryKey:@"VirtualMacPVGBackendVersion"]
+        integerValue] >= 27;
+}
+
 static BOOL loadExtractedFrameworks(void) {
     NSString *hookPath =
         [NSBundle.mainBundle pathForResource:@"VZHostCompat"
@@ -4530,15 +4572,21 @@ static BOOL loadExtractedFrameworks(void) {
     printf("[VirtualMac] loaded host hook: %s\n",
            [hookPath fileSystemRepresentation]);
 
-    const char *images[] = {
-        "/var/root/VirtualMac/payload/Frameworks/vmnet.framework/vmnet",
-        "/var/root/VirtualMac/payload/Frameworks/Hypervisor.framework/Hypervisor",
-        "/var/root/VirtualMac/payload/Frameworks/ParavirtualizedGraphics.framework/ParavirtualizedGraphics",
-        "/var/root/VirtualMac/payload/Frameworks/Virtualization.framework/Virtualization",
-    };
-    for (NSUInteger i = 0; i < sizeof(images) / sizeof(images[0]); i++) {
-        if (!dlopen(images[i], RTLD_NOW | RTLD_GLOBAL)) {
-            printf("[VirtualMac] dlopen %s FAILED: %s\n", images[i], dlerror());
+    NSMutableArray<NSString *> *images = [NSMutableArray array];
+    if (VZUsesModernPVG()) {
+        [images addObject:@"payload/Frameworks/ModernRuntimeCompat.dylib"];
+        [images addObject:@"payload/Frameworks/MetalSerializer.framework/MetalSerializer"];
+    }
+    [images addObjectsFromArray:@[
+        @"payload/Frameworks/vmnet.framework/vmnet",
+        @"payload/Frameworks/Hypervisor.framework/Hypervisor",
+        @"payload/Frameworks/ParavirtualizedGraphics.framework/ParavirtualizedGraphics",
+        @"payload/Frameworks/Virtualization.framework/Virtualization",
+    ]];
+    for (NSString *relativeImage in images) {
+        const char *path = VZRuntimePath(relativeImage).fileSystemRepresentation;
+        if (!dlopen(path, RTLD_NOW | RTLD_GLOBAL)) {
+            printf("[VirtualMac] dlopen %s FAILED: %s\n", path, dlerror());
             return NO;
         }
     }
@@ -4653,15 +4701,9 @@ static void configureVideoToolbox(id configuration, NSDictionary *options) {
     [device release];
 }
 
-// The iOS 18 SDK removed AVAudioSessionCategoryOptionAllowBluetoothHFP from
-// the public headers, but the option bit (0x80) remains valid on the iPadOS
-// 14-16 targets this app runs on, where the audio session still accepts it.
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000
-#define VZAVSessionOptionAllowBluetoothHFP 0x80
-#else
-#define VZAVSessionOptionAllowBluetoothHFP \
-    AVAudioSessionCategoryOptionAllowBluetoothHFP
-#endif
+// HFP uses the stable 0x4 option bit. Its SDK spelling changed from
+// AllowBluetooth to AllowBluetoothHFP; use the bit across both SDK versions.
+#define VZAVSessionOptionAllowBluetoothHFP ((AVAudioSessionCategoryOptions)0x4)
 
 static void requestMicrophoneAccess(dispatch_block_t continuation) {
     AVAudioSession *session = AVAudioSession.sharedInstance;
@@ -5120,7 +5162,7 @@ static void activateFramebuffer(void) {
     printf("[VirtualMac] input focus after-start requested=%d active=%d window=%p\n",
            inputFocused, [gInputView isFirstResponder], gInputView.window);
     scheduleInputSelfTest();
-    pollInputCommand();
+    startInputCommandPolling();
     logFramebufferState(view, framebuffer, "activated");
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC),
                    dispatch_get_main_queue(), ^{
@@ -5169,11 +5211,12 @@ static void startVirtualMachineWorker(UIView *container, id delegate,
     unlink("/tmp/vmmhook.log");
     unlink("/tmp/vmm.stderr.log");
     setenv("VZ_VMM_BIN",
-           "/var/root/VirtualMac/payload/VirtualMachine.xpc/Contents/MacOS/com.apple.Virtualization.VirtualMachine",
+           VZRuntimePath(@"payload/VirtualMachine.xpc/Contents/MacOS/com.apple.Virtualization.VirtualMachine").fileSystemRepresentation,
            1);
     setenv("VZ_AVP_BOOTER",
-           "/var/root/VirtualMac/payload/Frameworks/Virtualization.framework/Resources/AVPBooter.vmapple2.bin",
+           VZRuntimePath(@"payload/Frameworks/Virtualization.framework/Resources/AVPBooter.vmapple2.bin").fileSystemRepresentation,
            1);
+    setenv("VZ_PVG_BACKEND_VERSION", VZUsesModernPVG() ? "27" : "13", 1);
     // Consume the one-shot mode at the actual boot boundary. The current boot
     // keeps the captured value while Settings immediately returns to Off.
     gDebugLogging = VZConsumeDebugLoggingForBoot();

@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 #include "usb_restore_bridge.h"
+#include "modern_pvg_memory.h"
 
 typedef void *xo_t; // xpc_object_t / xpc_connection_t (opaque pointers)
 extern void  xpc_main(void (*handler)(xo_t));
@@ -3158,6 +3159,8 @@ _ip_hv_vm_create __attribute__((section("__DATA,__interpose"))) =
 extern int hv_vm_map(void *addr, uint64_t ipa, size_t size, uint64_t flags);
 static int vmm_hv_vm_map(void *addr, uint64_t ipa, size_t size, uint64_t flags) {
     int rc = hv_vm_map(addr, ipa, size, flags);
+    if (rc == 0)
+        VZModernRecordGuestMapping(addr, ipa, size, flags);
     if (rc == 0 && guest_runtime_policy_enabled) {
         pthread_mutex_lock(&guest_policy_mapping_lock);
         if (guest_policy_mapping_count <
