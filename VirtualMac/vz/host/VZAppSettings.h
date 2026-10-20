@@ -45,6 +45,7 @@ FOUNDATION_EXPORT BOOL VZIsRootHideEnvironment(void);
 - (nullable NSString *)stringForKey:(NSString *)key;
 - (void)setBool:(BOOL)value forKey:(NSString *)key;
 - (void)setString:(nullable NSString *)value forKey:(NSString *)key;
+- (BOOL)setString:(nullable NSString *)value forKey:(NSString *)key error:(NSError **)error;
 - (void)resetToDefaults;
 - (NSDictionary *)dictionaryRepresentation;
 @end

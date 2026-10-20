@@ -128,7 +128,7 @@ BOOL VZIsRootHideEnvironment(void)
     return [value isKindOfClass:NSString.class] ? value : nil;
 }
 
-- (void)save
+- (BOOL)saveWithError:(NSError **)saveError
 {
     NSString *directory = VZSettingsPath.stringByDeletingLastPathComponent;
     NSError *error = nil;
@@ -140,11 +140,22 @@ BOOL VZIsRootHideEnvironment(void)
     printf("[VirtualMac] settings save success=%d keys=%lu error=%s\n",
            written, (unsigned long)self.values.count,
            error ? error.description.UTF8String : "(none)");
+    if (!written) {
+        if (saveError) *saveError = error ?: [NSError errorWithDomain:NSCocoaErrorDomain
+            code:NSFileWriteUnknownError userInfo:nil];
+        return NO;
+    }
     CFNotificationCenterPostNotification(
         CFNotificationCenterGetDarwinNotifyCenter(),
         VZSettingsDarwinNotification, NULL, NULL, YES);
     [NSNotificationCenter.defaultCenter postNotificationName:
         VZSettingsDidChangeNotification object:self];
+    return YES;
+}
+
+- (void)save
+{
+    [self saveWithError:NULL];
 }
 
 - (void)setBool:(BOOL)value forKey:(NSString *)key
@@ -155,11 +166,20 @@ BOOL VZIsRootHideEnvironment(void)
 
 - (void)setString:(NSString *)value forKey:(NSString *)key
 {
+    [self setString:value forKey:key error:NULL];
+}
+
+- (BOOL)setString:(NSString *)value forKey:(NSString *)key error:(NSError **)error
+{
+    id original = [[self.values[key] retain] autorelease];
     if ([value isKindOfClass:NSString.class] && value.length)
         self.values[key] = value;
     else
         [self.values removeObjectForKey:key];
-    [self save];
+    if ([self saveWithError:error]) return YES;
+    if (original) self.values[key] = original;
+    else [self.values removeObjectForKey:key];
+    return NO;
 }
 
 - (void)resetToDefaults

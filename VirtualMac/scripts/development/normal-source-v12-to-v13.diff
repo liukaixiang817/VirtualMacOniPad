@@ -1,0 +1,30 @@
+--- prepare-independent27-normal-guest-lifecycle-v12.py
++++ prepare-independent27-normal-guest-lifecycle-v13.py
+@@ -333,6 +333,9 @@
+     preflight = controller.prefix(0) + '/var/jb/usr/bin/timeout --signal=TERM --kill-after=3 20 /var/jb/bin/sh -c ' + shlex.quote(close) + '\n'
+     preflight += controller.prefix(0) + controller.off_check() + controller.HEALTH.read_text() + batch.batch_check(scope)
+     preflight += batch.cd_check(scope, scope['actualNativeCDSubset'])
++    # Repeat the same exact UI-only close after the expensive product checks.
++    # Guest/log snapshots and the existing backup transaction then follow it.
++    preflight += controller.prefix(0) + '/var/jb/usr/bin/timeout --signal=TERM --kill-after=3 20 /var/jb/bin/sh -c ' + shlex.quote(close) + '\n'
+     preflight += common.guest_shell(facts)
+     log_identity = actual_generation['identity']
+     common.need(':'.join(facts['priorLogMetadata'].split(':')[:6]) == log_identity,
+@@ -391,7 +394,7 @@
+                      args.initializer_launch.resolve(), args.initializer_post.resolve(), args.guest_readonly.resolve(),
+                      args.guest_configuration.resolve(), failed_path, common.exact(failed['request']),
+                      common.exact(failed['stdout']), common.exact(failed['stderr']), *extra_screen_inputs]
+-    plan = dict(schema='Inactive owned normal guest actual same-boot post-derived log handoff packet v12', builder=common.pin(__file__),
++    plan = dict(schema='Inactive owned normal guest actual same-boot post-derived log handoff packet v13', builder=common.pin(__file__),
+         common=common.pin(common.__file__), controller=common.pin(output / 'control.py'),
+         inheritedController=common.pin(controller_path), inheritedProcessFunctionsSHA256=__import__('hashlib').sha256(controller.PROCESS_FUNCTIONS.encode()).hexdigest(),
+         initializerCandidate=common.pin(initializer), initializerLaunch=common.pin(args.initializer_launch.resolve()),
+@@ -406,7 +409,7 @@
+         guestDisplayAcceptanceRequiresActualNativeUSBScreen=True,
+         guestInputAcceptanceRequiresActualNativeUSBScreenAndCalibration=True,
+         priorNormalPreflightFailure=common.pin(failed_path), priorNormalPreflightFailureExit=8,
+-        boundedExactSelfAppCloseBeforePreflight=True, closeSelfAppSeconds=20, rejectsAnyChildBeforeClose=True,
++        boundedExactSelfAppCloseBeforePreflight=True, boundedExactSelfAppCloseAfterProductChecksBeforeGuestAndLogSnapshot=True, closeSelfAppSeconds=20, rejectsAnyChildBeforeClose=True,
+         fixedOwnedLogIdentity=log_identity, originalReadonlyLogFactsHistoricalOnly=True,
+         actualInitializerLogGeneration=actual_generation,
+         logIdentityDerivedOnlyFromActualSameInitializerPost=True,

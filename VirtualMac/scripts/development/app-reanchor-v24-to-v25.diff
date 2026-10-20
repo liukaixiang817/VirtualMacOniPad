@@ -1,0 +1,50 @@
+--- build-independent27-reanchored-main21-app-v24.py
++++ build-independent27-reanchored-main21-app-v25.py
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python3
+-"""Relink actual App73 Main21 and other33 whole objects with a new runtime anchor.
++"""Relink actual App74 Main21 and other33 whole objects with a new runtime anchor.
+ 
+-Only Root executes this HOST builder. All34 Main21 App73 code objects and resources are
++Only Root executes this HOST builder. All34 Main21 App74 code objects and resources are
+ reused by exact content pins; no guest or device code is executed here.
+ """
+ import argparse
+@@ -16,8 +16,8 @@
+ sys.dont_write_bytecode = True
+ R = pathlib.Path(__file__).resolve().parents[3]
+ N = R / 'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm'
+-OLD = N / 'independent27-actual-app-additive-ram-anchor-v73-attempt1/candidate.json'
+-OLD_SHA = '04236dc4e2ecde19d551f17c7ca6931b331689b7c6b3d0b0b2af7e0fa9b2d9e5'
++OLD = N / 'independent27-actual-app-owned-mandatory-failure-anchor-v74-attempt1/candidate.json'
++OLD_SHA = '626fdcae13a27c22ca2e48675ab6023dd83ac9319e7576cba3be470a8a59f2ec'
+ 
+ 
+ def pin(path):
+@@ -42,7 +42,7 @@
+     args = ap.parse_args()
+     output = args.output.resolve()
+     need(output.parent == N and not output.exists(), 'fresh HOST output')
+-    need(pin(OLD)['sha256'] == OLD_SHA, 'original actual App73 Main21 object provenance')
++    need(pin(OLD)['sha256'] == OLD_SHA, 'original actual App74 Main21 object provenance')
+     old = json.loads(OLD.read_bytes())
+     runtime = json.loads(args.runtime_candidate.read_bytes())
+     need(old['sourceCandidate']['sha256']=='30e4b48aefa97c98eceb9bd3c4a5d8981e88bbedcebafa5d6af7ae0a4e95b3fb' and old['objects'][0]['sha256']=='4eee5fff26ce0cb171bb10891e149bb3cb61506870431d03d28a1da65d194d68','actual Main21 source/object whole; no Main20 or Main19 fallback')
+@@ -50,7 +50,7 @@
+     need(runtime['localCodeSigned'] and runtime['actualProductPreflightPassed'], 'actual runtime product')
+     need(runtime['canonicalDeviceRoot'] == old['runtimeRoot'], 'same configured device runtime')
+     for row in [*old['sourceFiles'], *old['actualIncludeClosure'], *old['objects'], *old.get('externalPrecompiledObjects', []), *old['appFiles']]:
+-        need(pin(row['path']) == row, 'exact inherited App73 Main21 input')
++        need(pin(row['path']) == row, 'exact inherited App74 Main21 input')
+     need(len(old['objects']) == 35 and len(old['sourceFiles']) == 35, 'original 35 compile units')
+     need(pathlib.Path(old['sourceFiles'][34]['path']).name == 'vm27_independent_runtime_product_anchor_v1.c',
+          'only actual last anchor unit replaced')
+@@ -97,7 +97,7 @@
+             need((row['bytes'], row['sha256']) == (pin(original_root / rel)['bytes'], pin(original_root / rel)['sha256']),
+                  'every existing App resource whole unchanged')
+     record = copy.deepcopy(old)
+-    record.update(schema='Actual App74 pure runtime anchor relink with34 whole App73 Main21 objects',
++    record.update(schema='Actual App75 pure runtime anchor relink with34 whole App74 Main21 objects',
+                   builder=pin(__file__), sourceFiles=source_files, objects=objects,
+                   commands=commands, binary=pin(binary), appFiles=app_files,
+                   inheritedCompiledAppCandidate=pin(OLD),

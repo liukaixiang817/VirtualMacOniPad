@@ -1,0 +1,4 @@
+#ifndef VM27_MODERN_CPU_KERNEL_LIFECYCLE_V16_H
+#define VM27_MODERN_CPU_KERNEL_LIFECYCLE_V16_H
+#include "modern_cpu_kernel_actlr_v16.h"
+#endif

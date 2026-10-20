@@ -1,0 +1,28 @@
+/* Exact owned-system runtime pins. iOS code derives from actual PID33273
+ * xpc-code-native-v1; Mac getter reads from local PID62099. No fallback. */
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#define VM27_ORIGINAL_XPC_UUID "7a0ca8d2728537ddae972efaa1de763e"
+#define VM27_ORIGINAL_AUDIT_SHA64 "60a2d4d02aeb3b9c2e99a7be2f812d0844b28d7d3c2d495921bbd0acd90c8290"
+#define VM27_ORIGINAL_ENTITLEMENT_SHA64 "a212cc76d2c4f614f5369f51f1b2d740e3b79d1360a8c0addf8a0d36f3880ff4"
+#define VM27_ORIGINAL_SECURITY_PATH "/System/Library/Frameworks/Security.framework/Security"
+#define VM27_ORIGINAL_SECURITY_UUID "d0585f533f5c349fa16ba9710274e733"
+#else
+#define VM27_ORIGINAL_XPC_UUID "0791121fb5fc3f84bf04115e86d2d882"
+#define VM27_ORIGINAL_AUDIT_SHA64 "266c41d9d0c3133908149fe25d396f6d00ddec256d4757c4faff4c9e41a39f6c"
+#define VM27_ORIGINAL_ENTITLEMENT_SHA64 "1d96698ab5fb0ac3db1ee2d93f7ba3a932e7f0816091ccde4a8611393cdeb307"
+#define VM27_ORIGINAL_SECURITY_PATH "/System/Library/Frameworks/Security.framework/Versions/A/Security"
+#define VM27_ORIGINAL_SECURITY_UUID "7b094bb2dd4d3a818c295879451255f5"
+#endif
+
+/* Actual iPad collector PID38686; bounded local Mac code oracle PID67314.
+ * Preserve PAC entry values; only hash the stripped address for identity. */
+#if TARGET_OS_IPHONE
+#define VM27_INSTANCE_ONESHOT_SHA "92991876174d9733126aab80312172d978b5f321a682eb7e8048e624723547c1"
+#define VM27_INSTANCE_SET_SHA "5487c85aacd54fbe6593e408bb0743c5517e1d9e37b94897a7607c74b111f38b"
+#define VM27_INSTANCE_GET_SHA "6a6e139c4ff8fd9a0c3aced557f418b50b687219c3487c6f1bfe8b9d3a745122"
+#else
+#define VM27_INSTANCE_ONESHOT_SHA "b371a2002309d449e33b0bd180686743f1c4336cda98d6120914cc4d45b1d736"
+#define VM27_INSTANCE_SET_SHA "978d413161c6a13fc479090ab92748ae5a717f140d677a935c838b610fe393b4"
+#define VM27_INSTANCE_GET_SHA "c53291629079d157ec270d7551a6853bc743d60bb6789f9dea26563a35496cac"
+#endif

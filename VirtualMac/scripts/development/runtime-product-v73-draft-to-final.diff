@@ -1,0 +1,14 @@
+--- Root-reviewed-B73-draft
++++ build-independent27-signed-runtime-product-v73.py
+@@ -11,9 +11,9 @@
+ sp=importlib.util.spec_from_file_location('runtime70_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
+ BASE_SHA='1f153b6b4498a4dcacd22fd7bb02f09fe65bcc79649a4842c994fb417ea9248d'
+ BASELINE_SHA='b9f9376cb1f9d7fb4facee0c481eb516a2c4ed555dd42c6749da2b708f3e39eb'
+-PORT_SHA='PENDING_ROOT_ACTUAL_SOURCE58_SHA'
++PORT_SHA='4cf8e36b6edb53ea1d55e6ee5647ff4ef18ead4c9ed19d8516083f57c1c84c74'
+ CONTRACT_KEY='cpuResetPanicPrefixV1Contract'
+-PLAN_SHA='PENDING_ACTUAL_SOURCE58_PLAN_SHA'
++PLAN_SHA='90c1b7417d5773f52c3b31c7820dfb4b239fdf304ac01d36c35245bac051cc6d'
+ KEY='VM27HVVMProduction.dylib';CHILD='com.apple.Virtualization.VirtualMachine';IDS=('parent:'+KEY,'child:'+KEY)
+ pin,save=base.pin,base.save
+ def need(value,why):

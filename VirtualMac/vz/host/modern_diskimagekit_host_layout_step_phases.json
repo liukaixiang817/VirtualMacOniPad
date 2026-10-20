@@ -1,0 +1,224 @@
+{
+  "operations": [
+    {
+      "operation": 1,
+      "label": "Foundation.URL first init"
+    },
+    {
+      "operation": 2,
+      "label": "Foundation.URL second init"
+    },
+    {
+      "operation": 3,
+      "label": "original ASIF factory first"
+    },
+    {
+      "operation": 4,
+      "label": "ASIF value copy"
+    },
+    {
+      "operation": 5,
+      "label": "ASIF first URL Mirror"
+    },
+    {
+      "operation": 6,
+      "label": "ASIF first URL cast and equality"
+    },
+    {
+      "operation": 7,
+      "label": "ASIF first count Mirror"
+    },
+    {
+      "operation": 8,
+      "label": "ASIF first count cast and equality"
+    },
+    {
+      "operation": 9,
+      "label": "ASIF first block size Mirror"
+    },
+    {
+      "operation": 10,
+      "label": "ASIF first block size cast and rawValue"
+    },
+    {
+      "operation": 11,
+      "label": "original ASIF factory replacing copy"
+    },
+    {
+      "operation": 12,
+      "label": "original ASIF copied first URL Mirror"
+    },
+    {
+      "operation": 13,
+      "label": "original ASIF copied first count Mirror"
+    },
+    {
+      "operation": 14,
+      "label": "original ASIF copy retains fields"
+    },
+    {
+      "operation": 15,
+      "label": "changed ASIF URL Mirror"
+    },
+    {
+      "operation": 16,
+      "label": "changed ASIF count Mirror"
+    },
+    {
+      "operation": 17,
+      "label": "changed ASIF fields cast and equality"
+    },
+    {
+      "operation": 18,
+      "label": "original RAW factory first"
+    },
+    {
+      "operation": 19,
+      "label": "RAW first URL Mirror"
+    },
+    {
+      "operation": 20,
+      "label": "RAW first URL cast and equality"
+    },
+    {
+      "operation": 21,
+      "label": "RAW count Mirror"
+    },
+    {
+      "operation": 22,
+      "label": "RAW count cast and equality"
+    },
+    {
+      "operation": 23,
+      "label": "RAW value copy"
+    },
+    {
+      "operation": 24,
+      "label": "original RAW factory replacing copy"
+    },
+    {
+      "operation": 25,
+      "label": "RAW original URL Mirror after copy"
+    },
+    {
+      "operation": 26,
+      "label": "RAW replaced URL Mirror after copy"
+    },
+    {
+      "operation": 27,
+      "label": "RAW copy fields cast and equality"
+    },
+    {
+      "operation": 28,
+      "label": "original ASIFLayer factory"
+    },
+    {
+      "operation": 29,
+      "label": "Layer URL Mirror"
+    },
+    {
+      "operation": 30,
+      "label": "Layer URL cast and equality"
+    },
+    {
+      "operation": 31,
+      "label": "original Open factory first"
+    },
+    {
+      "operation": 32,
+      "label": "original Open factory second"
+    },
+    {
+      "operation": 33,
+      "label": "original Open public URL getter"
+    },
+    {
+      "operation": 34,
+      "label": "original Open public mode getter"
+    },
+    {
+      "operation": 35,
+      "label": "original Open getters equality"
+    },
+    {
+      "operation": 36,
+      "label": "original Open Array initialization"
+    },
+    {
+      "operation": 37,
+      "label": "Open Array COW copy"
+    },
+    {
+      "operation": 38,
+      "label": "Open Array COW subscript replacement"
+    },
+    {
+      "operation": 39,
+      "label": "Open Array original and copy getters equality"
+    },
+    {
+      "operation": 40,
+      "label": "Open Array removeAll keeping capacity"
+    },
+    {
+      "operation": 41,
+      "label": "Open original Array remains valid"
+    },
+    {
+      "operation": 101,
+      "label": "weak NSURL reference init"
+    },
+    {
+      "operation": 102,
+      "label": "autoreleasepool enter/exit"
+    },
+    {
+      "operation": 103,
+      "label": "NSURL init"
+    },
+    {
+      "operation": 104,
+      "label": "weak assignment"
+    },
+    {
+      "operation": 105,
+      "label": "original ASIF factory from bridged NSURL"
+    },
+    {
+      "operation": 106,
+      "label": "NSURL survives pool"
+    },
+    {
+      "operation": 107,
+      "label": "ASIF optional copy"
+    },
+    {
+      "operation": 108,
+      "label": "destroy original optional"
+    },
+    {
+      "operation": 109,
+      "label": "copied ASIF URL Mirror/cast/path"
+    },
+    {
+      "operation": 110,
+      "label": "copied configuration retains NSURL"
+    },
+    {
+      "operation": 111,
+      "label": "destroy last configuration copy"
+    },
+    {
+      "operation": 112,
+      "label": "weak NSURL deallocated"
+    }
+  ],
+  "mirrorSuboperations": {
+    "0": "Mirror initialization",
+    "1": "children projection",
+    "2": "iterator initialization",
+    "3": "iterator next",
+    "4": "child label equality",
+    "5": "child value extraction"
+  }
+}

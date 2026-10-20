@@ -1,0 +1,260 @@
+--- VirtualMac/scripts/development/prepare-independent27-app-only-device-v65.py
++++ VirtualMac/scripts/development/prepare-independent27-uart-app-only-device-v68.py
+@@ -1,8 +1,8 @@
+ #!/usr/bin/env python3
+-"""HOST prepare App79 Main-only update; inherit the executed Dev63 controller.
++"""HOST prepare App82 Main-only update; inherit the executed Dev67 controller.
+ 
+ No signing, device dispatch, review, ready or authorization record is generated.
+-Only the exact new signed Main is archived. Runtime66 is an installed baseline,
++Only the exact new signed Main is archived. Runtime68 is an installed baseline,
+ so its old Runtime65-to66 source-delta admission is not replayed for this update.
+ """
+ import argparse
+@@ -22,9 +22,9 @@
+ R = pathlib.Path(__file__).resolve().parents[3]
+ N = R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm'
+ B = pathlib.Path(__file__).resolve().parent
+-OLD = N/'independent27-range-transaction-device-v63-attempt1'
+-POST = N/'independent27-app78-normal-guest-lifecycle-v74-attempt1/device-receipts/post/receipt.json'
+-STAGE = '/private/var/mobile/Library/.VM27-independent27-app-only-stage-v65'
++OLD = N/'independent27-reset-origin-device-v67-attempt1'
++POST = N/'independent27-app81-normal-guest-lifecycle-v78-attempt1/device-receipts/post/receipt.json'
++STAGE = '/private/var/mobile/Library/.VM27-independent27-uart-app-only-stage-v68'
+ MAIN = 'VirtualMacIndependent27.app/VirtualMacIndependent27'
+ BOOT = 1792161311
+ UUID = 'C7D63D1F-86E9-4224-A1C7-108F02E91942'
+@@ -39,7 +39,7 @@
+ 
+ 
+ base = load(OLD/'control.py', 'executed_dev63_app_only_base')
+-fast = load(B/'independent27_device_product_verify_fast_v1.py', 'dev65_fast')
++fast = load(B/'independent27_device_product_verify_fast_v1.py', 'dev68_fast')
+ pin, need, dump = base.pin, base.need, base.dump
+ 
+ 
+@@ -54,12 +54,12 @@
+ def rewrap(script, body):
+     start = script.index('/var/jb/usr/bin/timeout')
+     at = script.index('/var/jb/bin/sh -c ', start)+len('/var/jb/bin/sh -c ')
+-    need(script[at:] == shlex.quote(unwrap(script))+'\n', 'exact Dev63 single quoted body/tail')
++    need(script[at:] == shlex.quote(unwrap(script))+'\n', 'exact Dev67 single quoted body/tail')
+     return script[:at]+shlex.quote(body)+'\n'
+ 
+ 
+ def trust_check(hashes):
+-    # Same exact membership parser as the executed Dev63 trust action.
++    # Same exact membership parser as the executed Dev67 trust action.
+     values = ';'.join('expected["'+value+'"]=1' for value in hashes)
+     awk = ('BEGIN {'+values+'} {v=tolower($NF);if(length(v)==40 && '
+            'v~/^[[:xdigit:]]+$/ && (v in expected))found[v]=1} '
+@@ -80,16 +80,16 @@
+     old, new, mode = row['old'], row['new'], row['mode']
+     path = shlex.quote(row['devicePath'])
+     pending = shlex.quote(str(pathlib.PurePosixPath(row['devicePath']).parent/
+-                             '.VM27-app-only-v65-0.pending'))
++                             '.VM27-uart-app-only-v68-0.pending'))
+     baseline = json.loads(base.exact(scope['oldScope']).read_bytes())
+     prior_main = next(item['old'] for item in baseline['deltaFiles'] if item['archivePath'] == MAIN)
+     original_stage = unwrap((OLD/'stage.sh').read_text())
+     lead = original_stage[:original_stage.index('check_own_file() {')]
+     need(lead.count(prior_main['sha256']) == 1 and
+          lead.count(f'501:501:{mode:o}:1:{prior_main["bytes"]}') == 1,
+-         'one original Dev63 UI-only close Main byte/metadata guard')
++         'one original Dev67 UI-only close Main byte/metadata guard')
+     # Keep the executed20s UI-only close and UUID/off protocol byte-whole;
+-    # advance its previous-Main guard to the actually installed Dev63 Main.
++    # advance its previous-Main guard to the actually installed Dev67 Main.
+     lead = lead.replace(baseline['deviceStage'], STAGE).replace(prior_main['sha256'], old['sha256'])
+     lead = lead.replace(f'501:501:{mode:o}:1:{prior_main["bytes"]}', f'501:501:{mode:o}:1:{old["bytes"]}')
+     # Exact owned-path backup, verified same-directory pending file, recheck
+@@ -152,10 +152,10 @@
+     ap.add_argument('--app-candidate', type=pathlib.Path, required=True)
+     args = ap.parse_args()
+     out, app_path = args.output.resolve(), args.app_candidate.resolve()
+-    need(out.parent == N and not out.exists(), 'fresh concrete Dev65 packet')
++    need(out.parent == N and not out.exists(), 'fresh concrete Dev68 packet')
+     prior = json.loads((OLD/'candidate.json').read_bytes())
+     need(prior['scope'] == pin(OLD/'scope.json') and
+-         prior['controller'] == pin(OLD/'control.py'), 'exact executed Dev63 scope/controller')
++         prior['controller'] == pin(OLD/'control.py'), 'exact executed Dev67 scope/controller')
+     for row in prior['scripts'].values():
+         base.exact(row)
+     old = json.loads((OLD/'scope.json').read_bytes())
+@@ -164,24 +164,25 @@
+     post = json.loads(POST.read_bytes())
+     text = base.exact(post['stdout']).read_text()
+     base.exact(post['stderr']); base.exact(post['request'])
+-    need(post['transportExit'] == 0 and post['finishedUTC'] == '2026-10-18T01:41:43.530360+00:00' and
++    need(post['transportExit'] == 0 and post['finishedUTC'] == '2026-10-18T02:25:32.790537+00:00' and
+          all(marker in text for marker in ('INDEPENDENT27_OWN_APP_AND_CHILD_OFF',
+              'INDEPENDENT27_ALL_ACTUAL_PRODUCTS_EXACT', 'PRODUCTION_6_CODE_HASHES_PRESERVED',
+-             'OWN_NORMAL_POST_HEALTH_PRODUCTS_AND_OWN_OFF')), 'actual Normal74 post0 baseline')
++             'OWN_NORMAL_POST_HEALTH_PRODUCTS_AND_OWN_OFF')), 'actual Normal78 post0 baseline')
+     runtime_path = base.exact(old['runtimeCandidate'])
+     app = json.loads(app_path.read_bytes())
+     previous_app = json.loads(base.exact(old['appCandidate']).read_bytes())
+     need(app['actualCodeSigned'] is True and app['actualPrimaryPagesAndExternalSlotsVerified'] is True and
+          app['runtimeCandidate'] == old['runtimeCandidate'] and app['runtimeRoot'] == previous_app['runtimeRoot'] and
+          app['actualBundleID'] == previous_app['actualBundleID'] and
+-         app['actualURLScheme'] == previous_app['actualURLScheme'], 'actual signed App79 with exact installed Runtime66')
++         app['actualURLScheme'] == previous_app['actualURLScheme'], 'actual signed App82 with exact installed Runtime68')
+     source = json.loads(base.exact(app['sourceCandidate']).read_bytes())
+-    need(source['actualChangedAppObjectIndices'] == [15, 16] and
+-         source['actualUnchangedCompiledObjects'] == 33 and source['actualNewAppCompilations'] == 2 and
+-         source['actualMain21AndOther32CompiledObjectsWholeUnchanged'] is True and
+-         source['actualRuntime66AndAnchorWholeUnchanged'] is True,
+-         'only App display diagnostic objects15/16; Main21 and other32 plus Runtime66 anchor whole')
+-    base.exact(source['displayStageDiagnosticsSourceCandidate'])
++    need(source['actualChangedAppObjectIndices'] == [0] and
++         source['actualUnchangedCompiledObjects'] == 34 and source['actualNewAppCompilations'] == 1 and
++         source['actualOnlyMainObjectChanged'] is True and
++         source['actualOther34ObjectsWholeApp81'] is True and
++         source['actualRuntime68AndAnchorWholeUnchanged'] is True,
++         'only Main UART diagnostics object0; other34 including actual Runtime68 anchor whole')
++    base.exact(source['mainSourcePlan'])
+     sig = app['actualSignature']; old_sig = previous_app['actualSignature']
+     need(re.fullmatch('[0-9a-f]{40}', sig['cdhash']) is not None and
+          sig['embeddedEntitlements'] == old_sig['embeddedEntitlements'] and
+@@ -222,17 +223,18 @@
+              'directories', 'continuingHumanAuthorization', 'sandboxProfileApplied', 'nativeSandboxApplyUnavailable',
+              'nativeSandboxInitSuccessFabricated', 'fixedOwnedLogIdentity', 'bootSeconds', 'bootMicroseconds', 'bootSessionUUID')
+              if key in old}
+-    scope.update(schema='Actual Runtime66 App79 one-Main-only device delta scope v65',
++    scope.update(schema='Actual Runtime68 App82 one-Main-only device delta scope v68',
+         oldScope=pin(OLD/'scope.json'), currentInstalledProductsPost=pin(POST), oldActualPost=pin(POST),
+         deviceStage=STAGE, files=files, runtimeCandidate=old['runtimeCandidate'], appCandidate=pin(app_path),
+-        historicalInstalledRuntime66Verification=dict(deviceCandidate=pin(OLD/'candidate.json'),
++        historicalInstalledRuntime68Verification=dict(deviceCandidate=pin(OLD/'candidate.json'),
+             scope=pin(OLD/'scope.json'), freeze=pin(OLD/'freeze.json'), runtimeCandidate=old['runtimeCandidate'],
+-            sourceSignatureAndCPUContractsApplyToCompletedRuntime66DeploymentOnly=True),
+-        historicalInstalledApp78Candidate=old['appCandidate'],
+-        displayStageDiagnosticsSourceCandidate=source['displayStageDiagnosticsSourceCandidate'],
+-        displayStageDiagnosticsContract=source['displayStageDiagnosticsContract'],
+-        actualMain21AndOther32CompiledObjectsWholeUnchanged=True, actualChangedAppObjectIndices=[15, 16],
+-        actualUnchangedCompiledObjects=33, actualNewAppCompilations=2, actualRuntime66AndAnchorWholeUnchanged=True,
++            sourceSignatureAndCPUContractsApplyToCompletedRuntime68DeploymentOnly=True),
++        historicalInstalledApp81Candidate=old['appCandidate'],
++        mainDiagnosticSourcePlan=source['mainSourcePlan'],
++        mainDiagnosticContract=json.loads(base.exact(source['mainSourcePlan']).read_bytes())['contract'],
++        actualChangedCPUObjects=0, actualUnchangedCPUObjects=29,
++        actualOnlyMainObjectChanged=True, actualOther34ObjectsWholeApp81=True, actualChangedAppObjectIndices=[0],
++        actualUnchangedCompiledObjects=34, actualNewAppCompilations=1, actualRuntime68AndAnchorWholeUnchanged=True,
+         trustCacheCDHashes=full, newTrustCacheCDHashes=new_cd, trustCacheRegistrationCount=1,
+         trustCacheFixedBatchCounts=[1], actualFullCodeDirectoryHashes=144,
+         actualRuntimeManifestFiles=old['actualRuntimeManifestFiles'],
+@@ -271,11 +273,11 @@
+ 
+     def inherited(action):
+         raw = (OLD/(action+'.sh')).read_text()
+-        need(old['deviceStage'] in raw, 'actual Dev63 action stage identity')
++        need(old['deviceStage'] in raw, 'actual Dev67 action stage identity')
+         return raw.replace(old['deviceStage'], STAGE)
+ 
+     def replace_once(body, before_value, after_value, reason):
+-        need(body.count(before_value) == 1, 'one exact Dev63 block: '+reason)
++        need(body.count(before_value) == 1, 'one exact Dev67 block: '+reason)
+         operations.setdefault(action, []).append(dict(reason=reason, beforeBytes=len(before_value.encode()),
+             beforeSHA256=base.digest(before_value.encode()), afterBytes=len(after_value.encode()),
+             afterSHA256=base.digest(after_value.encode())))
+@@ -287,7 +289,7 @@
+             scripts[action] = raw; operations[action] = [dict(reason='stage-name substitution only')]; continue
+         body = unwrap(raw)
+         need(rewrap(raw, body) == raw,
+-             'actual Dev63 outer wrapper byte-whole after stage substitution: '+action)
++             'actual Dev67 outer wrapper byte-whole after stage substitution: '+action)
+         # Only the nested UI-close guard changes here, never batch SHA rows.
+         guard_lines = [line for line in body.splitlines()
+                        if 'sha256sum "$OWN_APP_MAIN"' in line]
+@@ -309,17 +311,17 @@
+         body = replace_once(body, old_before if action == 'preflight' else before,
+                             before if action == 'preflight' else after, 'actual full-product batch')
+         if action == 'verify':
+-            body = replace_once(body, fast.cd_check(old, old['actualNativeCDSubset']), main_cd,
++            body = replace_once(body, fast.cd_check(old, old['actualNativeCDsQueriedThisDelta']), main_cd,
+                                 'only new Main native CD query')
+-            body = body.replace('ALL_SHA_AND3_NATIVE_CD_EXACT', 'ALL_SHA_AND1_NATIVE_CD_EXACT')
++            body = body.replace('ALL_SHA_AND'+str(len(old['actualNativeCDsQueriedThisDelta']))+'_NATIVE_CD_EXACT', 'ALL_SHA_AND1_NATIVE_CD_EXACT')
+         elif action in ('launch', 'post'):
+-            body = replace_once(body, after, after+main_cd, 'query new Main CD after full-product batch')
++            body = replace_once(body, fast.cd_check(old, [old_rows[MAIN]['cdhash']]), main_cd, 'new Main native CD query')
+         elif action == 'trust':
+             at = body.index('(umask 077; set -C; : > "$OWN_STAGE/trust-dispatched")')
+             old_tail = body[at:]
+             need(old_tail.count(trust_check(old['trustCacheCDHashes'])) == 1 and
+                  re.findall(r'^jbctl trustcache add ([0-9a-f]{40})$', old_tail, re.M) == old['newTrustCacheCDHashes'],
+-                 'exact executed Dev63 trust adds and whole membership parser')
++                 'exact executed Dev67 trust adds and whole membership parser')
+             tail = ('(umask 077; set -C; : > "$OWN_STAGE/trust-dispatched")\n'+
+                     'jbctl trustcache add '+sig['cdhash']+"\nprintf 'OWN_NEW_PRODUCT_TC_ADDED 1 "+sig['cdhash']+"\\n'\n"+
+                     trust_check(full)+"printf 'INDEPENDENT27_ONLY_ACTUAL_NEW_PRODUCT_TC_ENTRIES_COMPLETE\\n'\n")
+@@ -329,7 +331,7 @@
+     actions = list(base.ACTIONS); scripts = {action: scripts[action] for action in actions}
+     controller = (OLD/'control.py').read_text().replace(old['deviceStage'], STAGE)
+     need(controller.replace(STAGE, old['deviceStage']) == (OLD/'control.py').read_text(),
+-         'Dev63 controller protocol/ready/auth/once/cleanup byte-whole except stage name')
++         'Dev67 controller protocol/ready/auth/once/cleanup byte-whole except stage name')
+     compile(controller, str(out/'control.py'), 'exec')
+     out.mkdir(mode=0o700); (out/'control.py').write_text(controller); (out/'products.tar').write_bytes(archive)
+     (out/'health-root.sh').write_bytes((OLD/'health-root.sh').read_bytes()); dump(out/'scope.json', scope)
+@@ -342,29 +344,29 @@
+         command = ('sudo -k -S -p "" ' if action != 'launch' else '')+'/var/jb/bin/sh -c '+shlex.quote(script)
+         sizes[action] = len(command.encode()); need(sizes[action]+10000 < 262144, 'ARG_MAX reserve '+action)
+         diff.extend(difflib.unified_diff((OLD/(action+'.sh')).read_text().splitlines(True), script.splitlines(True),
+-                    fromfile='Dev63/'+action+'.sh', tofile='Dev65/'+action+'.sh'))
++                    fromfile='Dev67/'+action+'.sh', tofile='Dev68/'+action+'.sh'))
+         unwrapped_diff.extend(difflib.unified_diff(unwrap((OLD/(action+'.sh')).read_text()).splitlines(True),
+-                    unwrap(script).splitlines(True), fromfile='Dev63/'+action+'.body', tofile='Dev65/'+action+'.body'))
++                    unwrap(script).splitlines(True), fromfile='Dev67/'+action+'.body', tofile='Dev68/'+action+'.body'))
+     diff.extend(difflib.unified_diff((OLD/'control.py').read_text().splitlines(True), controller.splitlines(True),
+-                fromfile='Dev63/control.py', tofile='Dev65/control.py'))
+-    (out/'scripts-from-device63.diff').write_text(''.join(diff))
+-    (out/'scripts-unwrapped-from-device63.diff').write_text(''.join(unwrapped_diff))
+-    dump(out/'script-delta.json', dict(schema='Exact generated Dev63 to App-only Dev65 finite script delta v1',
++                fromfile='Dev67/control.py', tofile='Dev68/control.py'))
++    (out/'scripts-from-device67.diff').write_text(''.join(diff))
++    (out/'scripts-unwrapped-from-device67.diff').write_text(''.join(unwrapped_diff))
++    dump(out/'script-delta.json', dict(schema='Exact generated Dev67 to App-only Dev68 finite script delta v1',
+          baseline=pin(OLD/'candidate.json'), baselineScope=pin(OLD/'scope.json'),
+          controllerBefore=pin(OLD/'control.py'), controllerAfter=pin(out/'control.py'),
+          controllerOnlyStageNameChanged=True, closeOnlyStageNameChanged=True,
+-         sameActualDev63TimeoutsAndProcessProtocol=True, transformations=operations,
+-         stageGeneratedFrom='Executed Dev63 bounded stage and bitmap App-only exact backup/pending/rename/log protocol',
++         sameActualDev67TimeoutsAndProcessProtocol=True, transformations=operations,
++         stageGeneratedFrom='Executed Dev67 bounded stage and bitmap App-only exact backup/pending/rename/log protocol',
+          stageOnlyOwnedMainAndExistingLogWritten=True,
+-         fullActualScriptsDiff=pin(out/'scripts-from-device63.diff'),
+-         fullUnwrappedBodiesDiff=pin(out/'scripts-unwrapped-from-device63.diff'),
++         fullActualScriptsDiff=pin(out/'scripts-from-device67.diff'),
++         fullUnwrappedBodiesDiff=pin(out/'scripts-unwrapped-from-device67.diff'),
+          scriptPairs={action:dict(before=pin(OLD/(action+'.sh')), after=rows[action]) for action in actions}))
+-    candidate = dict(schema='Actual Runtime66 App79 one-Main-only device packet v65', preparer=pin(__file__),
++    candidate = dict(schema='Actual Runtime68 App82 one-Main-only device packet v68', preparer=pin(__file__),
+         scope=pin(out/'scope.json'), archive=pin(out/'products.tar'), controller=pin(out/'control.py'), scripts=rows,
+         actions=actions, runtimeCandidate=old['runtimeCandidate'], appCandidate=pin(app_path),
+         currentInstalledProductsPost=pin(POST), oldDeviceCandidate=pin(OLD/'candidate.json'),
+-        scriptDelta=pin(out/'script-delta.json'), fullActualScriptsDiff=pin(out/'scripts-from-device63.diff'),
+-        fullUnwrappedBodiesDiff=pin(out/'scripts-unwrapped-from-device63.diff'),
++        scriptDelta=pin(out/'script-delta.json'), fullActualScriptsDiff=pin(out/'scripts-from-device67.diff'),
++        fullUnwrappedBodiesDiff=pin(out/'scripts-unwrapped-from-device67.diff'),
+         actualFullFiles=259, actualFullCodeDirectoryHashes=144, actualChangedFiles=1, actualExistingFilesUpdated=1,
+         actualNewFilesAdded=0, actualNewDirectoriesAdded=0, actualNewTrustEntries=1,
+         allRuntimeFilesAndCodeImagesWholeUnchanged=True, actualRuntimeProductFiles=len(runtime_files),
+@@ -374,7 +376,7 @@
+         deploymentStageExternalWallSeconds=90, deploymentStageTransportTimeoutSeconds=100,
+         allOtherRemoteActionsExternalWallSeconds=45, transportTimeoutSeconds=55,
+         maximumQuotedCommandBytes=max(sizes.values()), quotedCommandBytes=sizes,
+-        exactDev63ControllerOnlyStageNameChanged=True, repeatedRuntime65To66SourceAdmissionNotApplied=True,
++        exactDev67ControllerOnlyStageNameChanged=True, repeatedRuntime65To66SourceAdmissionNotApplied=True,
+         allChangedOldFilesAndLogBackedUpBeforeFirstReplacement=True, sameDirectoryTemporaryReplacements=True,
+         originalStable2sReadinessAndProcessCleanupRetained=True, noNewPermissions=True,
+         rootReadyAndDerivedAuthorizationNotGenerated=True, guestBootRequested=False,
+@@ -384,7 +386,7 @@
+     pins += [pin(__file__), pin(B/'independent27_device_product_verify_fast_v1.py'),
+              pin(OLD/'candidate.json'), pin(OLD/'scope.json'), pin(OLD/'freeze.json'), pin(OLD/'control.py'),
+              pin(OLD/'health-root.sh'), old['runtimeCandidate'], old['appCandidate'],
+-             pin(app_path), app['sourceCandidate'], source['displayStageDiagnosticsSourceCandidate'],
++             pin(app_path), app['sourceCandidate'], source['mainSourcePlan'],
+              scope['continuingHumanAuthorization'], pin(POST), post['request'], post['stdout'], post['stderr']]
+     pins += list(prior['scripts'].values())+[row['local'] for row in files]+[change['old']]
+     dump(out/'freeze.json', dict(files=list({row['path']:row for row in pins}.values()),

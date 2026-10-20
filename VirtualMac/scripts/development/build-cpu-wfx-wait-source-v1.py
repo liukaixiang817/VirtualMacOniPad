@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+"""Real WFx handling, PC advancement, pending wake and owned condition waiting."""
+import argparse,hashlib,importlib.util,json,pathlib,subprocess,sys
+sys.dont_write_bytecode=True
+R=pathlib.Path(__file__).resolve().parents[3];N=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm';S=R/'VirtualMac/vz/host'
+BASE=pathlib.Path(__file__).with_name('build-independent27-signed-runtime-product-v10.py');sp=importlib.util.spec_from_file_location('run_sparse_clock_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
+def pin(p):
+ p=pathlib.Path(p).resolve();b=p.read_bytes();return dict(path=str(p),bytes=len(b),sha256=hashlib.sha256(b).hexdigest())
+def save(p,v):p.write_text(json.dumps(v,indent=2)+'\n')
+def need(v,w):
+ if not v:raise ValueError(w)
+def main():
+ ap=argparse.ArgumentParser();ap.add_argument('--output',required=True,type=pathlib.Path);a=ap.parse_args();o=a.output.resolve();need(o.parent==N and not o.exists(),'fresh output');o.mkdir(mode=0o700)
+ oldpath=N/'cpu-public-run-sparse-clock-source-local-v1-attempt1/candidate.json';old=json.loads(oldpath.read_bytes());need(pin(oldpath)['sha256']=='1a757bdce47644c93dc83ba8f19dfde51fb3e98fdb2dc402b36b945ed4d9dbe1','actual R43 source');need(pin(old['provider']['path'])==old['provider'],'actual prior provider')
+ commands=[]
+ def run(label,argv):
+  p=subprocess.run(argv,capture_output=True);so=o/(label+'.stdout');se=o/(label+'.stderr');so.write_bytes(p.stdout);se.write_bytes(p.stderr);commands.append(dict(label=label,argv=argv,exit=p.returncode,stdout=pin(so),stderr=pin(se)));save(o/'commands.json',commands);need(p.returncode==0,label+' '+p.stderr.decode(errors='replace')[-3000:]);return p
+ priorCommands=json.loads((N/'cpu-run-result-diagnostics-source-local-v1-attempt1/commands.json').read_bytes());compileargv=list(next(x['argv'] for x in priorCommands if x['label']=='ios-Life29'))
+ newobjects=[];deps=[]
+ for tag,name in [('Life30','modern_cpu_kernel_lifecycle_v30'),('GICEngine3','modern_gic_v3_engine_v3')]:
+  obj=o/(name+'.o');dep=o/(name+'.d');argv=list(compileargv);argv[argv.index('-c')+1]=str(S/(name+'.c'));argv[argv.index('-o')+1]=str(obj);argv[argv.index('-MF')+1]=str(dep);run('ios-'+tag,argv);newobjects.append(pin(obj));deps += [pin(x) for x in dep.read_text().replace('\\\n',' ').split(':',1)[1].split() if pathlib.Path(x).is_file()]
+ test=o/'wfx-focused';run('host-compile-wfx-focused',['xcrun','clang','-std=c11','-Wall','-Wextra','-Werror','-I',str(S),str(S/'test-modern-cpu-wfx-wait-v30.c'),str(S/'modern_gic_v3_engine_v3.c'),'-pthread','-o',str(test)]);run('host-wfx-focused',[str(test)])
+ link=list(next(x['argv'] for x in json.loads((oldpath.parent/'commands.json').read_bytes()) if x['label']=='link-whole-public-run-sparse-clock'));oldobjects=[pin(x) for x in link if x.endswith('.o')];need(len(oldobjects)==29,'29 real input objects');replacements={}
+ for row,new in zip(['modern_cpu_kernel_lifecycle_v29.o','modern_gic_v3_engine_v2.o'],newobjects):
+  found=[x for x in oldobjects if pathlib.Path(x['path']).name==row];need(len(found)==1,'one actual '+row);replacements[found[0]['path']]=new['path']
+ inherited=[x for x in oldobjects if x['path'] not in replacements];need(len(inherited)==27,'27 whole objects');provider=o/'VM27HVVMProductionWFxWaitV1.unsigned.dylib';link=[replacements.get(x,x) for x in link];link[link.index('-o')+1]=str(provider);link=[x.replace('@rpath/VM27HVVMProductionPublicRunSparseClockV1.unsigned.dylib','@rpath/VM27HVVMProductionWFxWaitV1.unsigned.dylib') for x in link];run('link-whole-wfx-wait',link);run('validate-whole-wfx-wait',['xcrun','dyld_info','-validate_only',str(provider)])
+ im=base.image_profile(provider.read_bytes(),'VM27HVVMProduction.dylib');prior=base.image_profile(pathlib.Path(old['provider']['path']).read_bytes(),'VM27HVVMProduction.dylib')
+ def imports(rows):return sorted([{k:v for k,v in x.items() if k not in ('at','index')} for x in rows],key=lambda x:json.dumps(x,sort_keys=True))
+ need(imports(im.imports)==imports(prior.imports) and len(im.imports)==93,'same93 actual imports');need([{k:v for k,v in x.items() if k!='at'} for x in im.loads]==[{k:v for k,v in x.items() if k!='at'} for x in prior.loads] and len(im.loads)==4,'same4 actual loads');need(set(im.exports)==set(prior.exports) and len(im.exports)==155 and all(im.exports[k]['flags']==prior.exports[k]['flags'] for k in prior.exports),'same155 names/kinds');need(all(pin(x['path'])==x for x in inherited),'27 whole previous objects')
+ sourcepaths=[S/x for x in ['modern_cpu_kernel_lifecycle_v30.c','wfx_wait_v30/modern_cpu_kernel_lifecycle_v27.c','modern_cpu_kernel_wake_owner_v30.inc','modern_cpu_kernel_gic_owner_v30.inc','modern_cpu_kernel_gic_run_v30.inc','modern_cpu_wfx_wait_v30.h','modern_gic_v3_engine_v3.c','modern_gic_v3_engine_v3.h','test-modern-cpu-wfx-wait-v30.c']];sources=[pin(x) for x in sourcepaths]
+ basis=N/'original27-HV-WFx-handled-wait-host-readonly-v1-attempt1/basis.json';need(pin(basis)['sha256']=='a186b827f525296b66947ca2108d345fe0af49248caaeef7a30e32878b0a0d0f','actual original WFx basis')
+ contract=dict(originalModernWFxBasis=pin(basis),handlesEC1OnlyWithRealCreatedAttachedOwner=True,WFIAndWFEFollowSameOriginalModernPath=True,realPostLeasePCReadAdvance4AndWrite=True,PCOverflowAndMutationFailuresHonest=True,noPublicReasonZeroFabricated=True,noReducerOrChildChanges=True,independentWaitStateNotGICRWAKER=True,enabledPendingWakeIgnoresPMRAndPriority=True,IRQAndFIQInjectionStillOriginalLines=True,conditionGenerationClosesEarlyWakeRace=True,IRQDeadlineAndExitSignalRealOwnedCondition=True,fullIdentityVersionAndRetainedBorrowPreserved=True,physicalDeadlineUsesExistingRealDispatchScheduler=True,oneSecondMaintenanceTimeoutRevalidatesWithoutNativeEntry=True,noBusySpinOrAdditionalNativeRunCalls=True,existing16NativeEntryBoundUnchanged=True,noNativeReturnOrCompletionFabricated=True,actualChangedObjects=2,allOther27ObjectsWhole=True,Factory5AndConsumerV6AndChildWhole=True,existing93ImportsReused=True)
+ result=dict(schema='Genuine modern WFx PC advancement and owned condition wait V1',provider=pin(provider),cpuPublicRunSparseClockCandidate=pin(oldpath),cpuWFxWaitContract=contract,sourceFiles=sources,actualChangedObjects=newobjects,inheritedWholeObjects=inherited,allOther27ObjectsWholeUnchanged=True,actualIOSCompileStrictLinkAndDyldValidatePassed=True,targetedHostTest=pin(S/'test-modern-cpu-wfx-wait-v30.c'),targetedHostResults=pin(o/'host-wfx-focused.stdout'),all155ExistingExportNamesAndKindsSame=True,all93NativeImportSemanticsSame=True,all4LoadSemanticsSame=True,actualExports=155,actualNativeImports=93,actualLoads=4,actualUUID=im.uuid,hvVMConfigCreateActualRVA=im.exports['_hv_vm_config_create']['address'],dupActualRVA=im.exports['_dup']['address'],deviceOperations=0,codeSigned=False)
+ save(o/'candidate.json',result);files=[pin(x) for x in o.iterdir() if x.is_file()]+sources+deps+inherited+[pin(__file__),pin(BASE),pin(oldpath),pin(oldpath.parent/'freeze.json'),old['provider'],pin(basis)];rows={x['path']:x for x in files}
+ for x in rows.values():need(pin(x['path'])==x,'all current direct freeze pins')
+ save(o/'freeze.json',dict(files=list(rows.values()),deviceOperations=0));print(json.dumps(dict(candidate=pin(o/'candidate.json'),freeze=pin(o/'freeze.json'),provider=result['provider'],uuid=im.uuid)))
+if __name__=='__main__':main()

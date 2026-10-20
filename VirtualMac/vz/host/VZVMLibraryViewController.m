@@ -1761,6 +1761,17 @@ static const CGFloat VZLibraryHorizontalInset = 24.0;
     [self showSettings:nil];
 }
 
+- (void)presentFrameworkBackendSettings
+{
+    VZSettingsViewController *settings = [[[VZSettingsViewController alloc]
+        initWithMachines:self.machines focusFrameworkBackend:YES] autorelease];
+    UINavigationController *navigation = [[[UINavigationController alloc]
+        initWithRootViewController:settings] autorelease];
+    navigation.modalPresentationStyle = UIModalPresentationFormSheet;
+    navigation.preferredContentSize = CGSizeMake(620, 720);
+    [self presentViewController:navigation animated:YES completion:nil];
+}
+
 - (void)presentConfiguration:(VZVMConfigurationViewController *)configuration
 {
     UINavigationController *navigation = [[[UINavigationController alloc]

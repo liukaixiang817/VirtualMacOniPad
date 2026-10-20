@@ -1,0 +1,310 @@
+--- /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-signed-runtime-product-v79.py
++++ /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-signed-runtime-product-v80.py
+@@ -1,3 +1,3 @@
+ #!/usr/bin/env python3
+-"""Runtime73: finite PG cmd58 capabilities and real GIC failure diagnostics; Root alone signs.
++"""Runtime74 draft: published-GIC action serialization; all MD/PG/VT code retained; Root alone signs.
+ 
+@@ -5,3 +5,3 @@
+ baseline, run an iOS image, or invoke any device API. All unchanged leaves and
+-the dependency proof inherit the exact Runtime72 bytes and signature evidence.
++the dependency proof inherit the exact Runtime73 bytes and signature evidence.
+ """
+@@ -11,3 +11,3 @@
+ BASE=pathlib.Path(__file__).with_name('build-independent27-signed-runtime-product-v10.py')
+-sp=importlib.util.spec_from_file_location('runtime73_factory11_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
++sp=importlib.util.spec_from_file_location('runtime74_factory12_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
+ BASE_SHA='1f153b6b4498a4dcacd22fd7bb02f09fe65bcc79649a4842c994fb417ea9248d'
+@@ -15,6 +15,3 @@
+ KEY='com.apple.security.exception.iokit-user-client-class'
+-# Only the final Root-reviewed compiled capability port can admit signing.
+-BASELINE_SHA='c518b42610b2711149a82fcd327451362104db0423c4e2e778ed072d33373f19'
+-PORT_SHA='5bab94c35129adb16b161037c3b6e682990ea8e0c3db2bcd38ffa35e219e1d10'
+-CONTRACT_KEY='ownedPGFramebufferCapabilityV1Contract'
++BASELINE_SHA='6538c5d275196ce5b13bb685159b09bb7278be61cf7a90f84e47856fe9f8b7ed'
+ pin,save=base.pin,base.save
+@@ -29,22 +26,10 @@
+ def multiset(rows):return sorted([semantic(r)for r in rows],key=lambda r:json.dumps(r,sort_keys=True))
+-def exact_new_slots(original,patched,expected):
+- need(patched.uuid==original.uuid and patched.exports==original.exports and
+-      [semantic(r)for r in patched.loads]==[semantic(r)for r in original.loads],'actual unchanged PG UUID/export/load semantics')
+- need([semantic(r)for r in patched.imports[:len(original.imports)]]==[semantic(r)for r in original.imports],'all original PG native semantics retained')
+- slots={x[0]for x in expected}
+- for slot,oldindex,index,symbol,ordinal in expected:
+-  before=next(r for r in original.binds if r['fileoff']==slot);after=next(r for r in patched.binds if r['fileoff']==slot);imp=patched.imports[index]
+-  need(before['index']==oldindex and before['name']=='_objc_msgSend' and after['index']==index and imp['name']==symbol and imp['ordinal']==ordinal and
+-       not imp['weak']and imp['addend']==0 and after['word']==(before['word']&~65535)|index,'one approved PG auth slot changes only its import index')
+- need([(r['fileoff'],r['word'])for r in original.binds if r['fileoff']not in slots]==
+-      [(r['fileoff'],r['word'])for r in patched.binds if r['fileoff']not in slots],'all other PG auth bindings whole')
+-
+-def read_inputs(baseline_path,port_path):
+- need(pin(BASE)['sha256']==BASE_SHA and pin(baseline_path)['sha256']==BASELINE_SHA,'actual successful signed Runtime72 baseline')
+- need(len(PORT_SHA)==64 and pin(port_path)['sha256']==PORT_SHA,'final Root-reviewed actual capability port required before admission')
++
++def read_inputs(baseline_path,cpu_path):
++ need(pin(BASE)['sha256']==BASE_SHA and pin(baseline_path)['sha256']==BASELINE_SHA,'actual signed Runtime73 baseline and reviewed signature primitives')
+  old=json.loads(base.regular_bytes(baseline_path));bf=frozen(baseline_path)
+- for key in ('manifest','signatureVerification'):base.actual_frozen(old[key],bf,'actual Runtime72 '+key)
+- need(old['localCodeSigned']is True and old['actualProductPreflightPassed']is True,'actual signed Runtime72 baseline')
++ for key in ('manifest','signatureVerification'):base.actual_frozen(old[key],bf,'actual Runtime73 '+key)
++ need(old['localCodeSigned']is True and old['actualProductPreflightPassed']is True,'actual signed Runtime73 product')
+  manifest=plistlib.loads(base.regular_bytes(old['manifest']['path']));rows={r['id']:r for r in manifest['files']}
+- need(len(rows)==len(manifest['files'])==154,'actual154 Runtime72 files')
++ need(len(rows)==len(manifest['files'])==154,'actual154 Runtime73 files')
+  evidence=json.loads(base.regular_bytes(old['signatureVerification']['path']));proof={r['relativePath']:r for r in evidence['actualSignedFiles']}
+@@ -58,5 +43,4 @@
+    need(sig['actualSignedFile']==p and sig['uuid']==row['uuid']and sig['cdhash']==row['cdhash']and sig['allPrimaryPagesAndSpecialSlotsVerified']is True,'inherited actual signature join')
+- childid=manifest['childEntryContract']['childID'];mdid='child:MD';pgid='child:ParavirtualizedGraphics27.dylib'
+- child=base.image_profile(base.regular_bytes(root/rows[childid]['path']),CHILD)
+- need(child.uuid==CHILD_UUID and len(child.imports)==1207,'actual Runtime72 Child with existing VT two-entry route retained')
++ childid=manifest['childEntryContract']['childID'];child=base.image_profile(base.regular_bytes(root/rows[childid]['path']),CHILD)
++ need(child.uuid==CHILD_UUID and len(child.imports)==1207,'actual Runtime73 Child with VT two-entry route retained')
+  prior=proof[rows[childid]['path']]['embeddedEntitlements']
+@@ -64,68 +48,13 @@
+       prior.get('com.apple.private.virtualization.plugin')is True and prior.get('com.apple.developer.kernel.extended-virtual-addressing')is True,'same exact14 Child entitlements')
+- port=json.loads(base.regular_bytes(port_path));pf=frozen(port_path)
+- need(port['baselineRuntimeCandidate']==pin(baseline_path)and port['providerKey']=='MD'and port['roles']==['child'],'actual current MD/PG-only capability port ancestry')
+- for key in ('newProvider','patchedChildPG','recipe','sourcePlan','actualIOSCompile','actualIOSLink','actualMDValidate','actualPGValidate'):
+-  base.actual_frozen(port[key],pf,'actual frozen capability '+key);exact(port[key])
+- need(port['originalProvider']==pin(root/rows[mdid]['path'])and port['originalChildPG']==pin(root/rows[pgid]['path']),'capability inputs match actual Runtime72 MD/PG')
+- need('patchedChild'not in port and 'patchedChildMain'not in port,'this port does not replace the Runtime72 Child body or bindings')
+- md=base.image_profile(base.regular_bytes(exact(port['newProvider'])),'MD');oldmd=base.image_profile(base.regular_bytes(root/rows[mdid]['path']),'old MD')
+- pg=base.image_profile(base.regular_bytes(exact(port['patchedChildPG'])),'PG');originalpg=base.image_profile(base.regular_bytes(root/rows[pgid]['path']),'original PG')
+- sourceplan=json.loads(base.regular_bytes(exact(port['sourcePlan'])));contracts=port['capabilityContracts']
+- need(contracts==sourceplan['capabilityContracts']and 1<=len(contracts)<=3,'exact Root-reviewed finite cmd58 capability list')
+- need(port[CONTRACT_KEY]==sourceplan[CONTRACT_KEY],'compiled port retains actual source contract')
+- symbols={r['symbol']for r in contracts};slots={r['authSlotRVA']for r in contracts}
+- need(len(symbols)==len(slots)==len(contracts)and set(port['addedExports'])==symbols,'unique finite capability exports and slots')
+- need(all(r['originalSelector']in ('isFramebufferReadSupported','isRGB10A2GammaSupported','supportsNativeHardwareFP16')for r in contracts),'only reviewed cmd58 getter selectors')
+- need(len(oldmd.exports)==11 and set(md.exports)==set(oldmd.exports)|symbols and
+-      all(md.exports[s]['flags']==oldmd.exports[s]['flags']for s in oldmd.exports)and
+-      all(md.exports[s]['flags']==0 for s in symbols),'all11 existing MD exports including VT and depth24 retained; only reviewed getters added')
+- need(len(oldmd.imports)==len(md.imports)==50 and multiset(md.imports)==multiset(oldmd.imports)and
+-      [semantic(r)for r in md.loads]==[semantic(r)for r in oldmd.loads],'all50 current native MD imports and required loads retained; no new native import')
+- oldvt=json.loads(base.regular_bytes(exact(old['ownedVTUnavailableCandidate'])));oldobjects=oldvt['actualIOSObjects'];newobjects=port['actualIOSObjects']
+- need(len(oldobjects)==len(newobjects)==3 and newobjects[1:]==oldobjects[1:],'actual exception bridge and VT objects whole; only MD root recompiled')
+- for row in newobjects:exact(row)
+- need(len(originalpg.imports)==267 and len(pg.imports)==267+len(contracts),'only actual reviewed capability PG imports appended')
+- expected=[]
+- for i,row in enumerate(contracts):
+-  need(row['newImportIndex']==267+i and row['originalImportIndex']==144 and row['requiredOrdinal']==10,'exact sequential PG imports on existing MD10')
+-  expected.append((row['authSlotRVA'],144,267+i,row['symbol'],10))
+- exact_new_slots(originalpg,pg,expected)
+- a=base.regular_bytes(root/rows[pgid]['path']);b=base.regular_bytes(exact(port['patchedChildPG']))
+- need(len(pg.sections)==len(originalpg.sections),'same PG section geometry')
+- for before,after in zip(originalpg.sections,pg.sections,strict=True):
+-  need(before==after,'same original PG section metadata');at,z=before['fileoff'],before['size']
+-  if not at or not z or before['flags']&255 in(1,12,18):continue
+-  expected=bytearray(a[at:at+z])
+-  for slot in slots:
+-   if at<=slot<at+z:expected[slot-at:slot-at+8]=b[slot:slot+8]
+-  need(bytes(expected)==b[at:at+z],'all PG code/data whole except reviewed auth slots')
+  cpupin=old['cpu29SourceProof'];base.actual_frozen(cpupin,bf,'inherited exact29 CPU source proof');exact(cpupin)
+- cpuobjects=old['cpu29Objects'];need(len(cpuobjects)==29 and old['all29CPUObjectsWholeRuntime71']is True,'actual inherited CPU29 proof retained')
+- for row in cpuobjects:exact(row)
++ cpuobjects=old['cpu29Objects'];need(len(cpuobjects)==29,'actual Runtime73 CPU29 proof')
+  graphid=manifest['dependencyProofID'];graphpath=root/rows[graphid]['path'];oldgraph=json.loads(base.regular_bytes(graphpath))
+- need(oldgraph['finalStrongDefinitionGraphClosed']is True and oldgraph['unresolvedStrongImportRows']==[],'actual Runtime72 native closure inherited by reference')
+- childdefs=[];pgdefs=[];metal=[]
+- for image,ordinal,target in [(child,3,childdefs),(pg,10,pgdefs)]:
+-  for imp in image.imports:
+-   if imp['ordinal']!=ordinal:continue
+-   symbol=imp['name']
+-   if symbol not in md.exports or md.exports[symbol]['flags']!=0:
+-    need(image is child and symbol in ('_MTLSetShaderCachePath','_OBJC_CLASS_$_MTLTextureDescriptor')and
+-         md.loads[1]['cmd']==0x8000001f and md.loads[1]['path']=='/System/Library/Frameworks/Metal.framework/Metal',
+-         'only exact existing Child native Metal reexports inherited unchanged')
+-    metal.append(dict(actualImport=imp,requiredLoad='@loader_path/MD',currentMDMetalReexport=md.loads[1],inheritedBaselineDefinitionGraphReference=pin(graphpath)));continue
+-   target.append(dict(actualImport=imp,requiredLoad='@loader_path/MD',target=port['newProvider'],targetUUID=md.uuid,definition=md.exports[symbol]))
+- need(len(metal)==2,'exact two inherited native Metal reexports')
+- graph=dict(schema='Actual Runtime73 finite PG cmd58 capability incremental definition proof',finalStrongDefinitionGraphClosed=True,
++ need(oldgraph['finalStrongDefinitionGraphClosed']is True and oldgraph['unresolvedStrongImportRows']==[],'actual Runtime73 definition graph closure inherited by reference')
++ graph=dict(schema='Actual Runtime74 CPU-only serialization incremental definition proof',finalStrongDefinitionGraphClosed=True,
+   unresolvedStrongImportRows=[],baselineRuntimeCandidate=pin(baseline_path),baselineDependencyProof=pin(graphpath),
+-  inheritedBaselineDefinitionGraphReference=pin(graphpath),capabilityCandidate=pin(port_path),
+-  actualCurrentMDExports=md.exports,actualCurrentMDImports=md.imports,actualCurrentMDRequiredLoads=md.loads,
+-  all50PriorMDNativeSemanticsInherited=True,actualNewNativeImportRows=[],actualCurrentChildMDDefinitions=childdefs,
+-  actualCurrentPGMDDefinitions=pgdefs,actualInheritedNativeMetalReexportRows=metal,
+-  originalRuntime72ChildCodeAndImportsAndVTAuthSlotsWhole=True,all29CPUObjectsWholeRuntime72=True,cpu29SourceProof=cpupin,
+-  onlyChangedProviderIDs=[mdid,pgid],oldGraphRerun=False,oldGraphNotInlined=True,deviceOperations=0)
+- return dict(old=old,manifest=manifest,rows=rows,proof=proof,child=child,childID=childid,md=md,pg=pg,mdID=mdid,pgID=pgid,
+-  entitlements=copy.deepcopy(prior),baselinePin=pin(baseline_path),portPin=pin(port_path),port=port,
+-  graphRaw=(json.dumps(graph,indent=2)+'\n').encode(),cpu29SourceProof=cpupin,cpu29Objects=cpuobjects,
+-  capabilityContract=port[CONTRACT_KEY],capabilityContracts=contracts)
++  inheritedBaselineDefinitionGraphReference=pin(graphpath),allMDPGVTAndOtherProviderFilesWholeRuntime73=True,
++  originalRuntime73ChildCodeImportsAndVTAuthSlotsWhole=True,oldGraphRerun=False,oldGraphNotInlined=True,deviceOperations=0)
++ inputs=dict(old=old,manifest=manifest,rows=rows,proof=proof,child=child,childID=childid,entitlements=copy.deepcopy(prior),
++  baselinePin=pin(baseline_path),graphRaw=(json.dumps(graph,indent=2)+'\n').encode(),cpu29SourceProof=cpupin,cpu29Objects=cpuobjects)
++ return admit_cpu_delta(inputs,cpu_path)
+ 
+@@ -133,17 +62,17 @@
+ CPU_IDS=('parent:'+CPU_KEY,'child:'+CPU_KEY)
+-CPU_PORT_SHA='648a03da30e21df8ea28f8375f73e6cf6c5a0f02bac5c2a4cfa3c078cf665f06'
+-CPU_CONTRACT_KEY='cpuGICVMFailureResultV1Contract'
++CPU_PORT_SHA='PENDING_ROOT_REVIEWED_ACTUAL_FACTORY12_PORT'
++CPU_CONTRACT_KEY='cpuGICVMSerializedActionsV1Contract'
+ def admit_cpu_delta(inputs,cpu_path):
+- need(pin(cpu_path)['sha256']==CPU_PORT_SHA,'actual Root-compiled Factory11 diagnostic source candidate')
++ need(len(CPU_PORT_SHA)==64 and pin(cpu_path)['sha256']==CPU_PORT_SHA,'actual Root-compiled Factory12 diagnostic source candidate')
+  cpu=json.loads(base.regular_bytes(cpu_path));cf=frozen(cpu_path)
+- for key in ('provider','sourcePlan'):base.actual_frozen(cpu[key],cf,'actual Factory11 '+key);exact(cpu[key])
++ for key in ('provider','sourcePlan'):base.actual_frozen(cpu[key],cf,'actual Factory12 '+key);exact(cpu[key])
+  need(cpu['actualIOSCompileStrictLinkAndDyldValidatePassed']is True and cpu['actualExports']==155 and
+       cpu['actualNativeImports']==94 and cpu['actualLoads']==4 and cpu['all94NativeImportSemanticsSame']is True and
+-      cpu['all155ExistingExportNamesAndKindsSame']is True and cpu['all4LoadSemanticsSame']is True,'actual strict Factory11 compile/link/validation with same155/94/4')
++      cpu['all155ExistingExportNamesAndKindsSame']is True and cpu['all4LoadSemanticsSame']is True,'actual strict Factory12 compile/link/validation with same155/94/4')
+  need(cpu['baselineCPU']==inputs['old']['cpu29SourceProof']and cpu['allOther28ObjectsWholeUnchanged']is True and
+-      len(cpu['actualChangedObjects'])==1 and len(cpu['inheritedWholeObjects'])==28,'actual one Factory11 object from Runtime72 CPU29 proof')
++      len(cpu['actualChangedObjects'])==1 and len(cpu['inheritedWholeObjects'])==28,'actual one Factory12 object from Runtime73 CPU29 proof')
+  changed=cpu['actualChangedObjects'][0]
+- need(pathlib.Path(changed['path']).name=='modern_cpu_native_public_factory_startup_failure_v11.o','only actual Factory11 object changed')
+- expected={r['path']:r for r in inputs['old']['cpu29Objects']if pathlib.Path(r['path']).name!='modern_cpu_native_public_factory_startup_failure_v10.o'}
+- need(len(expected)==28 and {r['path']:r for r in cpu['inheritedWholeObjects']}==expected,'exact other28 CPU objects whole Runtime72')
++ need(pathlib.Path(changed['path']).name=='modern_cpu_native_public_factory_startup_failure_v12.o','only actual Factory12 object changed')
++ expected={r['path']:r for r in inputs['old']['cpu29Objects']if pathlib.Path(r['path']).name!='modern_cpu_native_public_factory_startup_failure_v11.o'}
++ need(len(expected)==28 and {r['path']:r for r in cpu['inheritedWholeObjects']}==expected,'exact other28 CPU objects whole Runtime73')
+  objects=cpu['actualChangedObjects']+cpu['inheritedWholeObjects']
+@@ -151,3 +80,3 @@
+  plan=json.loads(base.regular_bytes(exact(cpu['sourcePlan'])))
+- need(plan['contractKey']==CPU_CONTRACT_KEY and plan['contract']==cpu[CPU_CONTRACT_KEY]and plan['baselineCPU']==cpu['baselineCPU'],'actual reviewed Factory11 source contract')
++ need(plan['contractKey']==CPU_CONTRACT_KEY and plan['contract']==cpu[CPU_CONTRACT_KEY]and plan['baselineCPU']==cpu['baselineCPU'],'actual reviewed Factory12 source contract')
+  provider=base.image_profile(base.regular_bytes(exact(cpu['provider'])),CPU_KEY);root=pathlib.Path(inputs['old']['runtimeRoot'])
+@@ -168,9 +97,20 @@
+  need(provider.exports['_hv_vm_config_create']['flags']==0 and provider.exports['_hv_vm_config_create']['address']==cpu['hvVMConfigCreateActualRVA'],'actual bootstrap entry RVA')
+- graph=json.loads(inputs['graphRaw']);graph.pop('all29CPUObjectsWholeRuntime72',None)
+- graph.update(schema='Actual Runtime73 PG cmd58 and Factory11 failure-result diagnostic incremental definitions',
+-  cpuGICVMFailureResultV1Candidate=pin(cpu_path),cpuGICVMFailureResultV1Contract=cpu[CPU_CONTRACT_KEY],
+-  cpu28OtherObjectsWholeRuntime72=True,cpu29SourceProof=pin(cpu_path),actualChangedCPUObjects=cpu['actualChangedObjects'],
++ entryDefinitions=[]
++ for entry in inputs['manifest']['entries']:
++  if entry['fileID']not in CPU_IDS:continue
++  definition=provider.exports['_'+entry['symbol']]
++  need(definition['flags']==0,'each CPU manifest symbol has its actual new direct export')
++  entryDefinitions.append(dict(fileID=entry['fileID'],symbol=entry['symbol'],oldRVA=entry['rva'],actualDefinition=definition))
++ childContract=inputs['manifest']['childEntryContract'];childEntryDefinition=None
++ if childContract['providerID']in CPU_IDS:
++  childEntryDefinition=provider.exports['_'+childContract['symbol']]
++  need(childEntryDefinition['flags']==0,'actual CPU Child contract export')
++ graph=json.loads(inputs['graphRaw']);graph.pop('all29CPUObjectsWholeRuntime73',None)
++ graph.update(schema='Actual Runtime74 CPU-only published-GIC serialization incremental definitions',
++  cpuGICVMSerializedActionsV1Candidate=pin(cpu_path),cpuGICVMSerializedActionsV1Contract=cpu[CPU_CONTRACT_KEY],
++  cpu28OtherObjectsWholeRuntime73=True,cpu29SourceProof=pin(cpu_path),actualChangedCPUObjects=cpu['actualChangedObjects'],
+   actualWholeCPUObjects=cpu['inheritedWholeObjects'],actualCurrentCPUExports=provider.exports,actualCurrentCPUImports=provider.imports,
+   actualCurrentCPURequiredLoads=provider.loads,actualSameImageVCPUsExitBinding=binding,
+-  onlyChangedProviderIDs=[inputs['mdID'],inputs['pgID'],*CPU_IDS])
++  onlyChangedProviderIDs=list(CPU_IDS),actualCPUManifestEntryDefinitions=entryDefinitions,
++  actualCPUChildContractDefinition=childEntryDefinition)
+  inputs.update(cpu=cpu,cpuProvider=provider,cpuPortPin=pin(cpu_path),cpuSourcePlan=cpu['sourcePlan'],
+@@ -180,2 +120,3 @@
+  return inputs
++
+ 
+@@ -200,4 +141,4 @@
+  parentsigned=dict(role='parent',key=CPU_KEY,relativePath=rows[parentidentity]['path'],actualSignedFile=pp,**ps)
+- replacements={inputs['mdID']:inputs['port']['newProvider'],inputs['pgID']:inputs['port']['patchedChildPG'],CPU_IDS[1]:inputs['cpu']['provider']}
+- leafraw={};leafimages={inputs['mdID']:inputs['md'],inputs['pgID']:inputs['pg'],CPU_IDS[1]:inputs['cpuProvider']}
++ replacements={CPU_IDS[1]:inputs['cpu']['provider']}
++ leafraw={};leafimages={CPU_IDS[1]:inputs['cpuProvider']}
+  for identity,source in replacements.items():
+@@ -210,3 +151,3 @@
+  import tempfile
+- with tempfile.TemporaryDirectory(prefix='vm27-pg-capabilities73-sign-',dir='/private/tmp') as temporary:
++ with tempfile.TemporaryDirectory(prefix='vm27-gic-serialization74-sign-',dir='/private/tmp') as temporary:
+   txpc=pathlib.Path(temporary)/xpc.name;txpc.mkdir(mode=0o700)
+@@ -215,3 +156,3 @@
+   for identity in replacements:
+-   path=txpc/(runtime/rows[identity]['path']).relative_to(xpc);label='MD'if identity==inputs['mdID']else'PG'if identity==inputs['pgID']else'CPU'
++   path=txpc/(runtime/rows[identity]['path']).relative_to(xpc);label='CPU'
+    run('sign-child-'+label,['codesign','--force','--sign','-','--timestamp=none','--digest-algorithm=sha256','--identifier','org.lkx.VirtualMacIndependent27.child.'+path.name,path]);run('verify-child-'+label,['codesign','--verify','--strict',path])
+@@ -237,9 +178,9 @@
+    if table in original:original[table].pop(key,None)
+- need(inherited==original,'all other resources, native shader, rules and nested seals preserved; only reviewed Child MD/PG seals replaced')
++ need(inherited==original,'all other resources, native shader, rules and nested seals preserved; only actual Child CPU-provider seal replaced; MD/PG/VT seals whole')
+  cr=pin(runtime/rows['child-coderesources']['path']);rows['child-coderesources'].update(bytes=cr['bytes'],sha256=cr['sha256'])
+  after=base.regular_bytes(childpath);actual=base.image_profile(after,CHILD)
+- need(actual.sections==image.sections and actual.imports==image.imports and actual.binds==image.binds and actual.exports==image.exports and actual.loads==image.loads and actual.uuid==image.uuid,'actual Runtime72 Child namespace/PAC/code geometry retained')
++ need(actual.sections==image.sections and actual.imports==image.imports and actual.binds==image.binds and actual.exports==image.exports and actual.loads==image.loads and actual.uuid==image.uuid,'actual Runtime73 Child namespace/PAC/code geometry retained')
+  for sec in image.sections:
+   at,z=sec['fileoff'],sec['size']
+-  if at and z and sec['flags']&255 not in(1,12,18):need(before[at:at+z]==after[at:at+z],'every backed Runtime72 Child section retained')
++  if at and z and sec['flags']&255 not in(1,12,18):need(before[at:at+z]==after[at:at+z],'every backed Runtime73 Child section retained')
+  sig=base.signature(after,CHILD_UUID,{1:base.regular_bytes(runtime/rows['child-info']['path']),3:resources});prior=inputs['proof'][rows[childid]['path']]
+@@ -261,8 +202,16 @@
+   p=pin(runtime/row['path']);need((p['bytes'],p['sha256'])==(row['bytes'],row['sha256']) and rows[identity]==row,'all other product files whole unchanged');unchanged.append(dict(id=identity,file=p,signed=row['kind']=='mach-o'))
+- need(sum(r['signed']for r in unchanged)==138,'138 untouched signed images')
++ need(sum(r['signed']for r in unchanged)==140,'140 untouched signed images')
+  manifest=copy.deepcopy(inputs['manifest']);manifest['files']=[rows[r['id']]for r in manifest['files']]
+- entryRVA=inputs['cpuProvider'].exports['_hv_vm_config_create']['address']
++ cpuEntryUpdates=[]
+  for entry in manifest['entries']:
+-  if entry['fileID']==CPU_IDS[0]and entry['symbol']=='hv_vm_config_create':entry['rva']=entryRVA
+- manifest['childEntryContract']['providerEntryRVA']=entryRVA
++  if entry['fileID']not in CPU_IDS:continue
++  name='_'+entry['symbol'];definition=inputs['cpuProvider'].exports[name]
++  need(definition['flags']==0,'every actual CPU manifest entry resolves to its real direct export')
++  cpuEntryUpdates.append(dict(fileID=entry['fileID'],symbol=entry['symbol'],beforeRVA=entry['rva'],afterRVA=definition['address']))
++  entry['rva']=definition['address']
++ contract=manifest['childEntryContract']
++ if contract['providerID']in CPU_IDS:
++  definition=inputs['cpuProvider'].exports['_'+contract['symbol']]
++  need(definition['flags']==0,'actual Child provider contract direct CPU export')
++  contract['providerEntryRVA']=definition['address']
+  raw=plistlib.dumps(manifest,fmt=plistlib.FMT_BINARY,sort_keys=True);manifestpath=runtime/pathlib.Path(old['manifest']['path']).name;manifestpath.write_bytes(raw);save(output/'manifest.json',manifest)
+@@ -270,17 +219,18 @@
+  probe=output/'actual-product-preflight.m';probe.write_text('#import "vm27_independent_app_runtime_v1.h"\n#include <stdio.h>\nint main(int n,const char**v){@autoreleasepool{if(n!=2)return 2;NSError*e=nil;BOOL ok=VM27IndependentAppRuntimePreflightV1([NSString stringWithUTF8String:v[1]],&e);if(!ok)fprintf(stderr,"%s\\n",e.localizedDescription.UTF8String);return ok?0:1;}}\n');exe=output/'actual-product-preflight';run('compile-actual-product-preflight',['xcrun','--sdk','macosx','clang','-fobjc-arc','-O2','-Wall','-Wextra','-Werror','-DVM27_INDEPENDENT_RUNTIME_TESTING=1','-I',S,probe,S/'vm27_independent_app_runtime_v4.m',S/'vm27_actual_executable_image_v1.c',anchor,'-framework','Foundation','-o',exe]);run('run-actual-product-preflight',[exe,runtime])
+- inherited=[dict(r,actualSignedFile=pin(runtime/r['relativePath']))for r in inputs['proof'].values()if r['relativePath']not in{rows[i]['path']for i in (childid,*replacements,CPU_IDS[0])}];signaturepath=output/'signature-verification.json';save(signaturepath,dict(actualSignedFiles=inherited+leafsigned+[signed],actualSignedImages=143,allCodeDirectoriesPrimarySHA256=True,allCodePagesAndSpecialSlotsActuallyVerified=True,old138SignedWholeFilesAndCDProofInherited=True,inheritedSignatureProof=old['signatureVerification'],actualIOSImagesExecuted=False,deviceOperations=0))
++ inherited=[dict(r,actualSignedFile=pin(runtime/r['relativePath']))for r in inputs['proof'].values()if r['relativePath']not in{rows[i]['path']for i in (childid,*replacements,CPU_IDS[0])}];signaturepath=output/'signature-verification.json';save(signaturepath,dict(actualSignedFiles=inherited+leafsigned+[signed],actualSignedImages=143,allCodeDirectoriesPrimarySHA256=True,allCodePagesAndSpecialSlotsActuallyVerified=True,old140SignedWholeFilesAndCDProofInherited=True,inheritedSignatureProof=old['signatureVerification'],actualIOSImagesExecuted=False,deviceOperations=0))
+  changedids=[i for i in inputs['rows'] if rows[i]!=inputs['rows'][i]];need(set(changedids)=={childid,'child-coderesources',proofid,*replacements,CPU_IDS[0]},'only two CPU providers and Child MD/PG/main/seal and incremental proof rows change')
+- delta=output/'runtime72-to-runtime73-delta.json';save(delta,dict(baselineCandidate=inputs['baselinePin'],actualOldRows=154,actualNewRows=len(rows),actualOldSignedImages=143,actualNewSignedImages=143,changedExistingRuntimeIDs=changedids,addedRuntimeIDs=[],wholeByteUnchangedSignedImages=138,unchangedFiles=unchanged,dependencyProofOnlyActualCPUProvidersAndChildMDPGCapabilitiesUpdated=True,childCodeResourcesWholeUnchanged=False,oldOtherNestedAndResourceSealsPreserved=True,nativeIOS16ShaderWholeUnchanged=True,allParentFilesExceptCPUProviderWholeUnchanged=True,originalRuntime72ChildCodeImportsAndVTAuthSlotsWhole=True,actualChildEntitlements=inputs['entitlements'],allChildEntitlementsWholeUnchanged=True,childApprovalSHA256=rows[childid]['sha256'],childApprovalCDHash=rows[childid]['cdhash'],childApprovalDerivedFromActualManifest=True,deviceOperations=0))
+- result=copy.deepcopy(old);result.update(schema='Actual Runtime73 finite PG cmd58 capabilities and true Factory11 GIC failure diagnostics',runtimeRoot=str(runtime),manifest=pin(manifestpath),anchorSource=pin(anchor),anchorIOSObject=pin(obj),signatureVerification=pin(signaturepath),files=len(rows),builder=pin(__file__),baselineRuntimeCandidate=inputs['baselinePin'],ownedPGFramebufferCapabilityCandidate=inputs['portPin'],ownedPGFramebufferCapabilityV1Contract=inputs['capabilityContract'],ownedPGCapabilityContracts=inputs['capabilityContracts'],runtime72PGCapabilityDeltaVerification=pin(delta),wholeByteUnchangedSignedImages=138,codeSigningCommandsActuallyPerformed=5,existingSignedImagesResigned=5,unchangedSignedImagesResigned=0,actualProductPreflightPassed=True,actualChildSpawnExecuted=False,guestBoot=False,independent27Complete=False,deviceOperations=0,trustCacheOperations=0,cpu28OtherObjectsWholeRuntime72=True,originalRuntime72ChildCodeImportsAndVTAuthSlotsWhole=True,cpu29SourceProof=inputs['cpu29SourceProof'],cpu29Objects=inputs['cpu29Objects'])
+- result['historicalRuntime72CPU29WholeVerification']=dict(cpu29SourceProof=inputs['inheritedCPU29SourceProof'],
+-  cpu29Objects=inputs['inheritedCPU29Objects'],all29CPUObjectsWholeRuntime71=old.get('all29CPUObjectsWholeRuntime71'))
+- result.pop('all29CPUObjectsWholeRuntime71',None);result.pop('all29CPUObjectsWholeRuntime72',None)
+- result.update(cpuGICVMFailureResultV1Candidate=inputs['cpuPortPin'],cpuGICVMFailureResultV1Contract=inputs['cpuContract'],
+-  cpuGICVMFailureResultSourcePlan=inputs['cpuSourcePlan'],cpu28OtherObjectsWholeRuntime72=True,
+-  factory11ActualChangedObject=inputs['cpu']['actualChangedObjects'][0],actualSameImageVCPUsExitBinding=inputs['sameImageExitBinding'],
++ delta=output/'runtime73-to-runtime74-delta.json';save(delta,dict(baselineCandidate=inputs['baselinePin'],actualOldRows=154,actualNewRows=len(rows),actualOldSignedImages=143,actualNewSignedImages=143,changedExistingRuntimeIDs=changedids,addedRuntimeIDs=[],wholeByteUnchangedSignedImages=140,unchangedFiles=unchanged,dependencyProofOnlyActualCPUProvidersAndManifestEntryRVAsUpdated=True,childCodeResourcesWholeUnchanged=False,oldOtherNestedAndResourceSealsPreserved=True,nativeIOS16ShaderWholeUnchanged=True,allParentFilesExceptCPUProviderWholeUnchanged=True,originalRuntime73ChildCodeImportsAndVTAuthSlotsWhole=True,actualChildEntitlements=inputs['entitlements'],allChildEntitlementsWholeUnchanged=True,childApprovalSHA256=rows[childid]['sha256'],childApprovalCDHash=rows[childid]['cdhash'],childApprovalDerivedFromActualManifest=True,deviceOperations=0))
++ result=copy.deepcopy(old);result.update(schema='Actual Runtime74 CPU-only published-GIC action serialization product',runtimeRoot=str(runtime),manifest=pin(manifestpath),anchorSource=pin(anchor),anchorIOSObject=pin(obj),signatureVerification=pin(signaturepath),files=len(rows),builder=pin(__file__),baselineRuntimeCandidate=inputs['baselinePin'],runtime73CPUSerializedActionsDeltaVerification=pin(delta),wholeByteUnchangedSignedImages=140,codeSigningCommandsActuallyPerformed=3,existingSignedImagesResigned=3,unchangedSignedImagesResigned=0,actualProductPreflightPassed=True,actualChildSpawnExecuted=False,guestBoot=False,independent27Complete=False,deviceOperations=0,trustCacheOperations=0,cpu28OtherObjectsWholeRuntime73=True,originalRuntime73ChildCodeImportsAndVTAuthSlotsWhole=True,cpu29SourceProof=inputs['cpu29SourceProof'],cpu29Objects=inputs['cpu29Objects'])
++ result['historicalRuntime73CPUFailureResultVerification']=dict(cpu29SourceProof=inputs['inheritedCPU29SourceProof'],
++  cpu29Objects=inputs['inheritedCPU29Objects'],cpuGICVMFailureResultV1Candidate=old['cpuGICVMFailureResultV1Candidate'],
++  cpuGICVMFailureResultV1Contract=old['cpuGICVMFailureResultV1Contract'])
++ result.pop('factory11ActualChangedObject',None);result.pop('cpu28OtherObjectsWholeRuntime72',None)
++ result.update(cpuGICVMSerializedActionsV1Candidate=inputs['cpuPortPin'],cpuGICVMSerializedActionsV1Contract=inputs['cpuContract'],
++  cpuGICVMSerializedActionsSourcePlan=inputs['cpuSourcePlan'],cpu28OtherObjectsWholeRuntime73=True,
++  factory12ActualChangedObject=inputs['cpu']['actualChangedObjects'][0],actualSameImageVCPUsExitBinding=inputs['sameImageExitBinding'],
+   actualCurrentCPUExports=155,actualCurrentCPUImports=94,actualCurrentCPULoads=4,
+   actualChangedCPUObjects=inputs['cpu']['actualChangedObjects'],actualWholeCPUObjects=inputs['cpu']['inheritedWholeObjects'],
+-  cpuVMAppleMSITypeV1ContractAppliesToHistoricalV1DeltaOnly=True,
+-  actualChangedRuntimeCDHashes=sorted({row['cdhash']for row in leafsigned+[signed]}),
+-  actualChangedSignedRuntimeFiles=len(leafsigned)+1)
++  cpuGICVMFailureResultV1ContractAppliesToHistoricalV1DeltaOnly=True,
++  actualCPUManifestEntryUpdates=cpuEntryUpdates,actualChangedRuntimeCDHashes=sorted({row['cdhash']for row in leafsigned+[signed]}),
++  actualChangedSignedRuntimeFiles=len(leafsigned)+1,allMDPGVTAndOtherProvidersWholeRuntime73=True)
+  result['genuineSandboxResource']=pin(runtime/rows['child-sandbox-profile']['path']);return result
+@@ -290,11 +240,10 @@
+  ap.add_argument('--baseline-runtime-candidate',required=True,type=pathlib.Path)
+- ap.add_argument('--capability-port-candidate',required=True,type=pathlib.Path)
+- ap.add_argument('--cpu-diagnostic-candidate',required=True,type=pathlib.Path)
++ ap.add_argument('--cpu-serialized-actions-candidate',required=True,type=pathlib.Path)
+  ap.add_argument('--output',required=True,type=pathlib.Path)
+  ap.add_argument('--check-inputs-only',action='store_true');a=ap.parse_args();o=a.output.resolve()
+- need(o.parent==N and not o.exists(),'fresh actual Runtime73 output')
+- inputs=admit_cpu_delta(read_inputs(a.baseline_runtime_candidate.resolve(),a.capability_port_candidate.resolve()),a.cpu_diagnostic_candidate.resolve())
++ need(o.parent==N and not o.exists(),'fresh actual Runtime74 output')
++ inputs=read_inputs(a.baseline_runtime_candidate.resolve(),a.cpu_serialized_actions_candidate.resolve())
+  o.mkdir(mode=0o700);admission=o/'admission.json'
+- save(admission,dict(schema='Runtime73 actual finite PG capability signature admission',baseline=inputs['baselinePin'],
+-  capability=inputs['portPin'],cpuDiagnostic=inputs['cpuPortPin'],cpu28OtherObjectsWholeRuntime72=True,originalRuntime72ChildCodeImportsAndVTAuthSlotsWhole=True,
++ save(admission,dict(schema='Runtime74 actual CPU-only serialization signature admission',baseline=inputs['baselinePin'],
++  cpuSerializedActions=inputs['cpuPortPin'],cpu28OtherObjectsWholeRuntime73=True,originalRuntime73ChildCodeImportsAndVTAuthSlotsWhole=True,
+   original154FilesWholeVerified=True,original143SignatureProvenanceJoined=True,allChildEntitlementsWholeUnchanged=True,deviceOperations=0))
+@@ -305,6 +254,5 @@
+    pin(a.baseline_runtime_candidate.parent/'freeze.json'),inputs['old']['manifest'],inputs['old']['signatureVerification'],
+-   pin(S/'vm27_independent_app_runtime_v4.m'),pin(S/'vm27_actual_executable_image_v1.c'),inputs['portPin'],
+-   pin(a.capability_port_candidate.parent/'freeze.json'),inputs['cpu29SourceProof'],*inputs['cpu29Objects']]
+-  pins += [inputs['cpuPortPin'],pin(a.cpu_diagnostic_candidate.parent/'freeze.json'),inputs['cpu']['provider'],inputs['cpuSourcePlan'],inputs['sameImageExitBinding']['callbackAssembly'],*inputs['cpu']['sourceFiles']]
+-  pins += [v for v in inputs['port'].values()if isinstance(v,dict)and all(k in v for k in('path','bytes','sha256'))]
++   pin(S/'vm27_independent_app_runtime_v4.m'),pin(S/'vm27_actual_executable_image_v1.c'),inputs['cpuPortPin'],
++   pin(a.cpu_serialized_actions_candidate.parent/'freeze.json'),inputs['cpu']['provider'],inputs['cpuSourcePlan'],
++   inputs['sameImageExitBinding']['callbackAssembly'],*inputs['cpu']['sourceFiles'],*inputs['cpu29Objects']]
+   save(o/'freeze.json',dict(files=list({p['path']:p for p in pins}.values()),deviceOperations=0))

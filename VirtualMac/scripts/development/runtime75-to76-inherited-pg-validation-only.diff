@@ -1,0 +1,14 @@
+--- B75
++++ B76
+@@ -83,8 +83,10 @@
+  need(port['baselineRuntimeCandidate']==pin(baseline_path)and port['inheritedDepth24Candidate']==pin(depth_path)and
+       port['providerKey']=='MD'and port['roles']==['child'],'actual combined VT/depth port ancestry')
+  for key in ('newProvider','patchedChildPG','patchedChild','recipe','sourcePlan','actualIOSCompile','actualIOSLink',
+-             'actualMDValidate','actualChildValidate','actualPGValidate'):
++             'actualMDValidate','actualChildValidate'):
+   base.actual_frozen(port[key],pf,'actual frozen VT '+key);exact(port[key])
++ need(port['actualPGValidate']==depth['actualPGValidate'],'same actual inherited depth24 PG validation')
++ base.actual_frozen(port['actualPGValidate'],df,'actual inherited depth24 PG validation');exact(port['actualPGValidate'])
+  need(port['originalProvider']==depth['newProvider'] and port['originalChildPG']==depth['originalChildPG']and
+       port['patchedChildPG']==depth['patchedChildPG']and port['originalChild']==pin(root/rows[childid]['path']),
+       'combined MD starts from successful depth24 and exact R71 Child; PG remains exact depth24 product')

@@ -1,0 +1,4 @@
+#include "vm27_owned_app_child_startup_v3.h"
+#define VM27OwnedAppChildBootstrapBeforeMainV2 VM27OwnedAppChildBootstrapBeforeMainV3
+#include "vm27_owned_app_child_premain_v1.c"
+#undef VM27OwnedAppChildBootstrapBeforeMainV2

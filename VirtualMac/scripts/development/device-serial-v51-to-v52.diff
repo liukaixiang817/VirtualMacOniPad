@@ -1,0 +1,51 @@
+--- dispatch-independent27-disabled-amx-config-device-serial-v51.py
++++ dispatch-independent27-disabled-amx-active-getter-device-serial-v52.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Root-only Runtime55 zero-only disabled AMX configuration update and initialization serial dispatcher; HOST preparation does not execute it.
++"""Root-only Runtime56 disabled AMX active metadata getter update and initialization serial dispatcher; HOST preparation does not execute it.
+ 
+ Each phase delegates to the frozen controller's full ready/prior/once/lock gate.
+ The sole password prompt is retained only in this Python process's memory.
+@@ -13,8 +13,8 @@
+ 
+ sys.dont_write_bytecode=True
+ R=pathlib.Path(__file__).resolve().parents[3]
+-PACKET=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm/independent27-disabled-amx-config-device-v51-attempt1'
+-CANDIDATE_SHA256='fb8017b7795c555bb22e9a13d4e3f60c0f4e759152ce4b1bb69b46bccb620e01'
++PACKET=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm/independent27-disabled-amx-active-getter-device-v52-attempt1'
++CANDIDATE_SHA256='e03e68ae65ec5a1ca5f0ce40dd140994aa23faedd98fa8f4abc8e8fe857ab659'
+ ACTIONS=('close-current-own','preflight','stage','verify','trust','launch','post')
+ 
+ 
+@@ -22,10 +22,10 @@
+     ap=argparse.ArgumentParser(description=__doc__)
+     ap.add_argument('--ready',type=pathlib.Path,required=True)
+     args=ap.parse_args()
+-    spec=importlib.util.spec_from_file_location('exact_disabled_amx_config_controller',PACKET/'control.py')
++    spec=importlib.util.spec_from_file_location('exact_disabled_amx_active_getter_controller',PACKET/'control.py')
+     controller=importlib.util.module_from_spec(spec);spec.loader.exec_module(controller)
+     controller.need(controller.pin(PACKET/'candidate.json')['sha256']==CANDIDATE_SHA256 and
+-                    controller.ACTIONS==ACTIONS,'only concrete reviewed disabled AMX configuration packet and seven phases')
++                    controller.ACTIONS==ACTIONS,'only concrete reviewed disabled AMX active getter packet and seven phases')
+     ready_path=args.ready.resolve()
+     controller.ready_gate(PACKET,ready_path)
+     # Reject an earlier attempt before prompting or executing any device call.
+@@ -40,7 +40,7 @@
+     try:
+         for action in ACTIONS:
+             current=action
+-            print('ROOT_EXACT_DISABLED_AMX_CONFIG_SERIAL_PHASE '+action,flush=True)
++            print('ROOT_EXACT_DISABLED_AMX_ACTIVE_GETTER_SERIAL_PHASE '+action,flush=True)
+             controller.dispatch(argparse.Namespace(packet=PACKET,ready=ready_path,action=action))
+     except BaseException:
+         # A failed launch may own processes. Preserve its failure and delegate
+@@ -48,7 +48,7 @@
+         # have no launch receipt and cannot fabricate one for post admission.
+         if current=='launch' and (PACKET/'device-receipts/launch/receipt.json').is_file() and \
+            not (PACKET/'post-dispatched.json').exists() and not (PACKET/'device-receipts/post').exists():
+-            print('ROOT_EXACT_DISABLED_AMX_CONFIG_FAILED_LAUNCH_POST_CLEANUP',flush=True)
++            print('ROOT_EXACT_DISABLED_AMX_ACTIVE_GETTER_FAILED_LAUNCH_POST_CLEANUP',flush=True)
+             controller.dispatch(argparse.Namespace(packet=PACKET,ready=ready_path,action='post'))
+         raise
+     finally:

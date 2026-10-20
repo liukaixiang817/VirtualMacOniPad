@@ -1,0 +1,179 @@
+--- prepare-independent27-owned-mandatory-failure-device-v58.py
++++ prepare-independent27-serialized-wake-device-v59.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""HOST prepare the actual Runtime62 owned mandatory-field failure diagnostics delta on the current boot.
++"""HOST prepare the actual Runtime63 serialized real wake requests delta on the current boot.
+ 
+ Actual product trees derive every replacement/addition and trust entry. Root
+ alone dispatches under continuing human authorization after exact product/scope review.
+@@ -20,11 +20,11 @@
+ R=pathlib.Path(__file__).resolve().parents[3]
+ N=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm'
+ B=pathlib.Path(__file__).resolve().parent
+-OLD=N/'independent27-additive-ram-device-v57-attempt1'
++OLD=N/'independent27-owned-mandatory-failure-device-v58-attempt1'
+ TEMPLATE=N/'independent27-child-usbh-offline-device-v24-attempt1'
+-POST=N/'independent27-app73-normal-guest-lifecycle-v67-attempt1/device-receipts/post/receipt.json'
+-POST_SHA256='996e86e887d2873c62f3e20822b6318c9a98694965aed36ac8a8f6167320cc4f'
+-STAGE='/private/var/mobile/Library/.VM27-independent27-owned-mandatory-failure-stage-v58'
++POST=N/'independent27-app74-normal-guest-lifecycle-v68-attempt1/device-receipts/post/receipt.json'
++POST_SHA256='e3354e2e1c875f353b196fdc7944bf007f5b833148da9c524708aa735f14bd16'
++STAGE='/private/var/mobile/Library/.VM27-independent27-serialized-wake-stage-v59'
+ APP_PEER=None
+ RUNTIME_PEER=N/'independent27-runtime10-signed-delta-independent-peer-v1-attempt1/review.json'
+ 
+@@ -116,7 +116,7 @@
+     old=json.loads((OLD/'scope.json').read_bytes())
+     app_input=json.loads(base.exact(app['sourceCandidate']).read_bytes())
+     main21=json.loads(base.exact(app_input['sourceCandidate']).read_bytes())
+-    need(app_input['actualUnchangedCompiledObjects']==34 and app_input['actualMain21ObjectReused'] is True and app_input['actualMain21AndOther33CompiledObjectsWholeUnchanged'] is True,'actual34 Main21 App73 objects whole with only new Runtime62 anchor')
++    need(app_input['actualUnchangedCompiledObjects']==34 and app_input['actualMain21ObjectReused'] is True and app_input['actualMain21AndOther33CompiledObjectsWholeUnchanged'] is True,'actual34 Main21 App74 objects whole with only new Runtime63 anchor')
+     need(app_input['genuineSSHRegistrationRouteEnabled'] is False and app_input['sshRegistrationExplicitlyDeferredForFirstBasicGuestBoot'] is True and app_input['actualMain20UIAndSSHDeferralPreserved'] is True,'Main20 display exposure and user-requested guest SSH deferral preserved')
+     need(main21['rawDiskThreadPoolAttachmentContract']==app_input['rawDiskThreadPoolAttachmentContract'],'actual compiled Main21 raw-disk attachment contract')
+     need(app_input['sourceCandidate']==old['appMain21SourceAndObjectCandidate'] and main21['actualRuntimeCandidate']==json.loads(base.exact(main21['baselineCompiledAppCandidate']).read_bytes())['actualRuntimeCandidate'],'same actual compiled Main21 source and original Runtime43 raw-disk constructor basis')
+@@ -127,7 +127,7 @@
+     need(signature['allCodePagesAndSpecialSlotsActuallyVerified'] is True,
+          'actual signed current Runtime whole code-page and special-slot proof')
+     post=json.loads(POST.read_bytes())
+-    need(pin(POST)['sha256']==POST_SHA256 and post['transportExit']==0 and post['finishedUTC']=='2026-10-16T07:48:48.912468+00:00','actual Normal67 post0 binds this new product baseline')
++    need(pin(POST)['sha256']==POST_SHA256 and post['transportExit']==0 and post['finishedUTC']=='2026-10-16T08:05:35.063378+00:00','actual Normal68 post0 binds this new product baseline')
+     generation=load(B/'independent27_initializer_log_generation_v1.py','actual_current_log_generation')
+     actual_generation=generation.actual_post_log_generation(OLD/'candidate.json',OLD/'device-receipts/launch/receipt.json',OLD/'device-receipts/post/receipt.json')
+     BOOT=actual_generation['bootSeconds'];BOOT_UUID=actual_generation['bootSessionUUID'];LOG_IDENTITY=actual_generation['identity'];LOG_DEVICE_INODE=':'.join(LOG_IDENTITY.split(':')[:2])
+@@ -212,6 +212,9 @@
+         cache_create+='mkdir -m 700 '+path+'\nchown 501:501 '+path+'\n'
+     cache_create=cache_check+"printf 'OWN_EXISTING_PRIVATE_CACHE_DIRECTORIES_VERIFIED_AND_RETAINED\\n'\n"
+     scope=copy.deepcopy(old)
++    scope['historicalRuntime62OwnedMandatoryFailureV1Verification']=runtime['historicalRuntime62OwnedMandatoryFailureV1Verification']
++    for key in ('cpu28OtherObjectsWholeRuntime61','consumerProvidersWholeRuntime61','currentConsumerWholeR61','factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61','gicEngine5ObjectWholeRuntime61','factory6ObjectWholeRuntime61','bootstrap25ObjectWholeRuntime61','currentRuntimeConsumerWholeUnchangedFromRuntime61Required','currentRuntimeConsumerWholeUnchangedFromRuntime61'):
++        scope.pop(key,None)
+     scope['historicalRuntime61AdditiveRAMV1Verification']=runtime['historicalRuntime61AdditiveRAMV1Verification']
+     for key in ('cpu26OtherObjectsWholeRuntime60','consumerProvidersWholeRuntime60','currentConsumerWholeR60','factory6AndGICEngine5CurrentObjects','gicEngine5ObjectWholeRuntime60','factory6ActualChangedObject','bootstrap25ActualChangedObject','currentRuntimeConsumerWholeUnchangedFromRuntime60Required','currentRuntimeConsumerWholeUnchangedFromRuntime60'):
+         scope.pop(key,None)
+@@ -280,7 +283,7 @@
+     inherited={key:scope.pop(key) for key in ('currentBootTrustPlan','restoredExistingProductCDHashes','newProductCodeHashes','priorInitializationLaunch',
+         'priorAppRegistration','historicalPriorBootInitializationOnly','inheritedActualSignedRuntimeCDProof',
+         'actualSignedAppProductProof','trustMembershipKnownBeforeDispatch','currentDeviceFacts','actualOwnAppPIDObserved') if key in scope}
+-    scope.update(schema='Actual Runtime62 owned mandatory-field failure diagnostics scope v58',
++    scope.update(schema='Actual Runtime63 serialized real wake requests scope v59',
+         historicalPriorInitAndTrustOnly=dict(scope=pin(OLD/'scope.json'),prior=inherited),
+         oldActualPost=pin(POST),currentInstalledProductsPost=pin(POST),oldScope=pin(OLD/'scope.json'),
+         deviceStage=STAGE,files=files,directories=directories,runtimeCandidate=pin(runtime_path),appCandidate=pin(app_path),
+@@ -318,7 +321,7 @@
+     scope['guestDiskFileIncludedInDeployment']=False
+     scope['guestSSHExplicitlyDeferredForFirstBasicGuestBoot']=True
+     scope['guestSSHRegistrationOrServiceInvokedByThisFirstBoot']=False
+-    scope['currentRuntimeConsumerWholeUnchangedFromRuntime61Required']=True
++    scope['currentRuntimeConsumerWholeUnchangedFromRuntime62Required']=True
+     need(runtime['cpuProviderAndAll29CPUObjectsWholeR41'] is False and 'cpuProviderWholeR41' not in runtime,'prior whole-R41 CPU proof is historical after FactoryV5 replacement')
+     scope['cpuProviderAndAll29CPUObjectsWholeR41']=False
+     scope['runtimeAllWholebytesUnchanged']=False
+@@ -377,7 +380,7 @@
+     scope['cpuISAProfileCandidate']=runtime['cpuISAProfileCandidate']
+     scope['cpuISAProfileContract']=runtime['cpuISAProfileContract']
+     scope['runtime37CPUISAProfileDeltaVerification']=runtime['runtime37CPUISAProfileDeltaVerification']
+-    for key in ('consumerStdioInheritanceCandidate','consumerStdioInheritanceContract','runtime41ConsumerStdioInheritanceDeltaVerification','actualConsumerExports','actualConsumerImports','actualConsumerLoads','actualConsumerAddedImports','consumerFourOwnDependencyLoadsNormalizedToBaselineLoaderPath','cpu28OtherObjectsWholeRuntime61','consumerProvidersWholeRuntime61','currentConsumerWholeR61','factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61','gicEngine5ObjectWholeRuntime61','factory6ObjectWholeRuntime61','bootstrap25ObjectWholeRuntime61'):
++    for key in ('consumerStdioInheritanceCandidate','consumerStdioInheritanceContract','runtime41ConsumerStdioInheritanceDeltaVerification','actualConsumerExports','actualConsumerImports','actualConsumerLoads','actualConsumerAddedImports','consumerFourOwnDependencyLoadsNormalizedToBaselineLoaderPath','cpu28OtherObjectsWholeRuntime62','consumerProvidersWholeRuntime62','currentConsumerWholeR62','factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime62','gicEngine5ObjectWholeRuntime62','factory6ObjectWholeRuntime62','bootstrap25ObjectWholeRuntime62'):
+         scope[key]=runtime[key]
+     need(runtime['cpuVirtualTimerGICContractAppliesToHistoricalFunctionalDeltaOnly'] is True and runtime['currentDiagnosticMaximumExistingPrepareSystemNative8Calls']==1,'old Life35 no-new-native8 contract is source-scoped history; current diagnostic permits atmost one existing typed missing-bank sync')
+     scope['cpuVirtualTimerGICContractAppliesToHistoricalFunctionalDeltaOnly']=True
+@@ -419,6 +422,12 @@
+     scope['factory5WholeClaimsApplyToHistoricalSourceDeltasOnly']=True
+     need(runtime['cpuAdditiveRAMV1ContractAppliesToHistoricalV1DeltaOnly'] is True,'prior additive3-object contract describes its source delta; present MandatoryField diagnostics preserve those functional paths whole')
+     scope['cpuAdditiveRAMV1ContractAppliesToHistoricalV1DeltaOnly']=True
++    need(runtime['cpuOwnedMandatoryFailureV1ContractAppliesToHistoricalV1DeltaOnly'] is True,'prior MandatoryField1-object contract is historical; present Life51 serializes real wake and retains Mandatory4 whole')
++    scope['cpuOwnedMandatoryFailureV1ContractAppliesToHistoricalV1DeltaOnly']=True
++    for key in ('cpuSerializedWakeV1Candidate','cpuSerializedWakeV1Contract','runtime62CPUSerializedWakeV1DeltaVerification','cpuSerializedWakeSourcePlan','mandatory4ObjectWholeRuntime62','additionalNativeImports','all93ExistingNativeImportSemanticsPreserved','additionalNativeImportStrongDefinitionProof','nativeImportClosureSources'):
++        scope[key]=runtime[key]
++    serialized_plan=json.loads(base.exact(scope['cpuSerializedWakeSourcePlan']).read_bytes())
++    for key in serialized_plan['proofs']:scope[key]=runtime[key]
+     for key in ('cpuOwnedMandatoryFailureV1Candidate','cpuOwnedMandatoryFailureV1Contract','runtime61CPUOwnedMandatoryFailureV1DeltaVerification','cpuOwnedMandatoryFailureSourcePlan'):
+         scope[key]=runtime[key]
+     mandatory_plan=json.loads(base.exact(scope['cpuOwnedMandatoryFailureSourcePlan']).read_bytes())
+@@ -494,7 +503,7 @@
+     scope['nativeTargetShaderCandidate']=runtime['nativeTargetShaderCandidate']
+     scope['nativeTargetShaderContract']=runtime['nativeTargetShaderContract']
+     base.exact(scope['PGResourceSourceCandidate']);base.exact(scope['runtime25AddressCapabilityDeltaVerification']);base.exact(scope['pvgAddressRangeCapabilityCandidate']);base.exact(scope['pvgBufferCapabilityCandidate']);base.exact(scope['nativeTargetShaderCandidate'])
+-    need(runtime['baselineRuntimeCandidate']==old['runtimeCandidate'] and len(runtime['genuineResources'])==1,'actual Runtime62 signs from installed Runtime61 with same genuine resource')
++    need(runtime['baselineRuntimeCandidate']==old['runtimeCandidate'] and len(runtime['genuineResources'])==1,'actual Runtime63 signs from installed Runtime62 with same genuine resource')
+     genuine=runtime['genuineResources'][0]
+     shader=next(row for row in files if row['archivePath']==shader_name)
+     need((shader['local']['bytes'],shader['local']['sha256'])==(genuine['actualRuntimeResource']['bytes'],genuine['actualRuntimeResource']['sha256']) and
+@@ -550,9 +559,9 @@
+     for name in ('runtime/parent-flat/VM27LargeConsumerV2.dylib',macos+'VM27LargeConsumerV2.dylib'):
+         current_consumer=next(row for row in files if row['archivePath']==name);prior_consumer=old_by_name[name]
+         need((current_consumer['local']['bytes'],current_consumer['local']['sha256'],current_consumer['cdhash'])==(prior_consumer['local']['bytes'],prior_consumer['local']['sha256'],prior_consumer['cdhash']),'actual whole R42 Consumer stdio image and code hash retained in both roles')
+-    scope['currentRuntimeConsumerWholeUnchangedFromRuntime61']=True
+-    need(scope['currentConsumerWholeR61']['wholeBytesUnchanged'] is True and scope['currentConsumerWholeR61']['baselineRuntimeCandidate']==old['runtimeCandidate'],'current Consumer whole-body proof joins actual installed Runtime61')
+-    need(scope['consumerProvidersWholeRuntime61'] is True and scope['cpu28OtherObjectsWholeRuntime61'] is True,'actual Runtime62 consumer whole Runtime61 and28 untouched CPU objects')
++    scope['currentRuntimeConsumerWholeUnchangedFromRuntime62']=True
++    need(scope['currentConsumerWholeR62']['wholeBytesUnchanged'] is True and scope['currentConsumerWholeR62']['baselineRuntimeCandidate']==old['runtimeCandidate'],'current Consumer whole-body proof joins actual installed Runtime62')
++    need(scope['consumerProvidersWholeRuntime62'] is True and scope['cpu28OtherObjectsWholeRuntime62'] is True,'actual Runtime63 consumer whole Runtime62 and28 untouched CPU objects')
+     reason_port=json.loads(base.exact(scope['childErrorReasonDiagnosticCandidate']).read_bytes())
+     base.exact(scope['runtime27ErrorReasonDeltaVerification'])
+     need(runtime['childErrorReasonDiagnosticCandidate']==old['childErrorReasonDiagnosticCandidate'] and reason_port['providerKey']=='MD'and reason_port['roles']==['child']and
+@@ -697,15 +706,33 @@
+     need((scope['actualConsumerExports'],scope['actualConsumerImports'],scope['actualConsumerLoads'])==(9,80,7) and scope['actualConsumerAddedImports']==consumer_source['actualConsumerAddedImports'] and len(scope['actualConsumerAddedImports'])==6 and scope['consumerFourOwnDependencyLoadsNormalizedToBaselineLoaderPath'] is True,'Consumer own namespace is9 exports80 totalimports7loads with6 real added libSystem imports and four normalized own loadnames')
+     need(runtime['consumerStdioInheritanceCandidate']==old['consumerStdioInheritanceCandidate'] and runtime['consumerStdioInheritanceContract']==old['consumerStdioInheritanceContract'] and runtime['runtime41ConsumerStdioInheritanceDeltaVerification']==old['runtime41ConsumerStdioInheritanceDeltaVerification'],'current Consumer source and its historical R42 one-object deployment proof stay whole')
+     need(all(scope['consumerStdioInheritanceContract'][k] is True for k in ('onlyOwnedBundleModeV5Changed','usesPublicDarwinAddinheritNPForSTDOUTAndSTDERR','childOnlyCloseOnExecClearing','parentDescriptorAndStatusFlagsUnchanged','noNewOpenTruncateOrPathRedirection','checksRealpathFGetPathAndSameDevInode','requiresRegularUID501GID501Mode0600Nlink1AppendWritable','checksBeforeActionsAndImmediatelyBeforeActualSpawn','logsActualParentFDFlagsOncePerStream','argvEnvRegisteredPortsPermissionsAndOwnerStateUnchanged','fileActionsFailuresPreventSpawnAndDestroyInitializedActions','successfulSpawnPIDStateRetainedBeforeCleanupErrors','allStrictNativeLegacyModesUnchanged','CPUProviderAndAll29CPUObjectsWholeR41','ChildMachineBodyWholeR41')) and scope['consumerStdioInheritanceContract']['newRootPermissions'] is False,'only validated owned-log stdout/stderr descriptors reach owned Child; no parent flags, paths, permissions, owner or CPU changes')
++    serialized_source=json.loads(base.exact(scope['cpuSerializedWakeV1Candidate']).read_bytes())
++    base.exact(scope['runtime62CPUSerializedWakeV1DeltaVerification'])
++    baseline_serialized_cpu=json.loads(base.exact(old['cpuOwnedMandatoryFailureV1Candidate']).read_bytes())
++    old_serialized_objects=baseline_serialized_cpu['actualChangedObjects']+baseline_serialized_cpu['inheritedWholeObjects']
++    expected_serialized_whole={row['path']:row for row in old_serialized_objects if pathlib.Path(row['path']).name!='modern_cpu_kernel_lifecycle_v50.o'}
++    need(serialized_source['cpuOwnedMandatoryFailureV1Candidate']==old['cpuOwnedMandatoryFailureV1Candidate'] and len(old_serialized_objects)==29 and len(serialized_source['actualChangedObjects'])==1 and len(serialized_source['inheritedWholeObjects'])==28 and {row['path']:row for row in serialized_source['inheritedWholeObjects']}==expected_serialized_whole and pathlib.Path(serialized_source['actualChangedObjects'][0]['path']).name=='modern_cpu_kernel_lifecycle_v51.o' and serialized_source['allOther28ObjectsWholeUnchanged'] is True,'exact sole Life50 to51 replacement with28 complete whole pins')
++    need(scope['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime62']==[scope['factory6ObjectWholeRuntime62'],scope['bootstrap25ObjectWholeRuntime62'],scope['gicEngine5ObjectWholeRuntime62']] and all(row in serialized_source['inheritedWholeObjects']for row in scope['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime62']+[scope['mandatory4ObjectWholeRuntime62']]),'actual Factory6 Bootstrap25 Engine5 Mandatory4 whole Runtime62')
++    allowed_cond_import=[dict(ordinal=4,weak=0,name='_pthread_cond_wait',addend=0)]
++    need(serialized_source['cpuSerializedWakeV1Contract']==scope['cpuSerializedWakeV1Contract'] and serialized_source['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True and (serialized_source['actualExports'],serialized_source['actualNativeImports'],serialized_source['actualLoads'])==(155,94,4) and serialized_source['all93ExistingNativeImportSemanticsSame'] is True and serialized_source['additionalNativeImports']==scope['additionalNativeImports']==allowed_cond_import and scope['all93ExistingNativeImportSemanticsPreserved'] is True,'actual155/94/4 and exact sole cond_wait addition with all prior93 native semantics unchanged')
++    serialized_binding=scope['actualSameImageVCPUsExitBinding'];base.exact(serialized_binding['callbackAssembly'])
++    need(serialized_binding==serialized_source['actualSameImageVCPUsExitBinding'] and serialized_binding['actualDirectBL']['targetRVA']==serialized_binding['ownExportRVA'] and serialized_binding['externalVCPUsExitImportPresent'] is False,'current own-image wake binding preserved by Runtime63 signing')
++    native_cond_proof=scope['additionalNativeImportStrongDefinitionProof']
++    need(native_cond_proof['resolved'] is True and native_cond_proof['symbol']=='_pthread_cond_wait' and native_cond_proof['actualImport']==allowed_cond_import[0] and native_cond_proof['route'][-1]['actualExport']==dict(flags=0,address=12680),'actual captured native strong definition closes sole added cond_wait import')
++    for row in scope['nativeImportClosureSources']:base.exact(row)
++    need(serialized_source['sourcePlan']==scope['cpuSerializedWakeSourcePlan'] and serialized_plan['contract']==scope['cpuSerializedWakeV1Contract'] and serialized_plan['allowAdditionalNativeImports']==allowed_cond_import and serialized_plan['expectedActualNativeImports']==94,'actual compiled serialized wake plan and sole native delta')
++    for key,row in serialized_plan['proofs'].items():need(scope[key]==serialized_source[key]==row,'actual serialized wake source proof '+key);base.exact(row)
++    serialized_contract=scope['cpuSerializedWakeV1Contract']
++    need(all(serialized_contract[key]is True for key in ('realWakeRequestsForSameOwnedTargetSerializeAcrossThreads', 'queuedAdmissionCountedBeforeLockIsDroppedForFullIdentityValidation', 'activeNativeCallAndQueuedValidationOrConditionWaitersAllPreventDrainCompletion', 'conditionWaitReleasesOwnerMutexAndChecksRealInFlightAndDrainingPredicatesAfterSpuriousWake', 'noTimedPollingOrSyntheticWakeOrNativeRunRetry', 'samePthreadRecursiveSignalAndQueueCounterOverflowStillReturnRealBUSY', 'exactCopiedIdentityCheckedBeforeQueueAndCurrentRegistryIdentityCheckedBeforeWait', 'fullOwnerEpochGenerationPublicationProfileAndActualContextVersionRecheckedAfterQueueBeforeNative10', 'realNative10WakeVersionAndWFxNotificationCallbacksAllRemainOutsideOwnerMutex', 'oneActualNative10ForEachAdmittedSignalAfterItsTurn', 'nativeSlotMaskVersionAndAllExistingForeignOwnerAndOutputRangeGuardsPreserved', 'drainingBroadcastsToQueuedCallsAndTheyReturnRealNOTLIVEWithoutNativeInvocation', 'conditionInitializationFailureReleasesInitializedMutexAndAllocation', 'conditionAndMutexDestroyFailureRetainsDrainingAllocationForRetryWithoutDoubleBorrowRelease', 'committedGICMMIOAndTrueFailurePoisonRulesUnchanged', 'originalNative9ReceiptGuestPCAndRealExitStatusNotFabricated', 'Engine5Factory6Bootstrap25Mandatory4AndAllOther28ObjectsWhole', 'onlyLifecycleObjectReplaced', 'allOther28ObjectsWhole', 'all93ExistingNativeImportSemanticsPreserved', 'onlyAddedImportIsActualSystemPthreadCondWait', 'all155PublicExportNamesAndKindsAndAll4LoadSemanticsUnchanged')) and {key:serialized_contract[key]for key in ('actualChangedObjects', 'actualNativeImports')}=={'actualChangedObjects': 1, 'actualNativeImports': 94},'real same-target cross-thread serialization with queued+active drain pins/native10 outside mutex; same-thread recursive BUSY and real failures/poison preserved without MMIO replay or synthetic wake')
+     mandatory_source=json.loads(base.exact(scope['cpuOwnedMandatoryFailureV1Candidate']).read_bytes())
+     base.exact(scope['runtime61CPUOwnedMandatoryFailureV1DeltaVerification'])
+     baseline_mandatory_cpu=json.loads(base.exact(old['cpuAdditiveRAMV1Candidate']).read_bytes())
+     old_mandatory_objects=baseline_mandatory_cpu['actualChangedObjects']+baseline_mandatory_cpu['inheritedWholeObjects']
+     expected_mandatory_whole={row['path']:row for row in old_mandatory_objects if pathlib.Path(row['path']).name!='modern_vmm_mandatory_field_v3.o'}
+     need(mandatory_source['cpuAdditiveRAMV1Candidate']==old['cpuAdditiveRAMV1Candidate'] and len(old_mandatory_objects)==29 and len(mandatory_source['actualChangedObjects'])==1 and len(mandatory_source['inheritedWholeObjects'])==28 and {row['path']:row for row in mandatory_source['inheritedWholeObjects']}==expected_mandatory_whole and pathlib.Path(mandatory_source['actualChangedObjects'][0]['path']).name=='modern_vmm_mandatory_field_v4.o' and mandatory_source['allOther28ObjectsWholeUnchanged'] is True,'exact sole MandatoryField3 to4 replacement and28 complete whole pins independent of old concatenation order')
+-    need(scope['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61']==[scope['factory6ObjectWholeRuntime61'],scope['bootstrap25ObjectWholeRuntime61'],scope['gicEngine5ObjectWholeRuntime61']] and all(row in mandatory_source['inheritedWholeObjects']for row in scope['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61']),'actual Factory6 Bootstrap25 Engine5 whole Runtime61')
++    need(scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61']==[scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['factory6ObjectWholeRuntime61'],scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['bootstrap25ObjectWholeRuntime61'],scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['gicEngine5ObjectWholeRuntime61']] and all(row in mandatory_source['inheritedWholeObjects']for row in scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61']),'actual Factory6 Bootstrap25 Engine5 whole Runtime61')
+     need(mandatory_source['cpuOwnedMandatoryFailureV1Contract']==scope['cpuOwnedMandatoryFailureV1Contract'] and mandatory_source['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True and (mandatory_source['actualExports'],mandatory_source['actualNativeImports'],mandatory_source['actualLoads'])==(155,93,4),'actual MandatoryField diagnostic source and same155/93/4 namespace')
+-    mandatory_binding=scope['actualSameImageVCPUsExitBinding'];base.exact(mandatory_binding['callbackAssembly'])
++    mandatory_binding=scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['actualSameImageVCPUsExitBinding'];base.exact(mandatory_binding['callbackAssembly'])
+     need(mandatory_binding==mandatory_source['actualSameImageVCPUsExitBinding'] and mandatory_binding['actualDirectBL']['targetRVA']==mandatory_binding['ownExportRVA'] and mandatory_binding['externalVCPUsExitImportPresent'] is False,'current actual direct own-image wake binding preserved by Runtime62 signing')
+     need(mandatory_source['sourcePlan']==scope['cpuOwnedMandatoryFailureSourcePlan'] and mandatory_plan['contract']==scope['cpuOwnedMandatoryFailureV1Contract'],'actual compiled MandatoryField diagnostic plan')
+     for key,row in mandatory_plan['proofs'].items():need(scope[key]==mandatory_source[key]==row,'actual MandatoryField source proof '+key);base.exact(row)
+@@ -915,7 +942,7 @@
+     sparse_source=json.loads(base.exact(scope['cpuPublicRunSparseClockCandidate']).read_bytes())
+     base.exact(scope['runtime42PublicRunSparseClockDeltaVerification'])
+     need(sparse_source['cpuScratchGPRTraceCandidate']==old['cpuScratchGPRTraceCandidate'] and len(sparse_source['actualChangedObjects'])==1 and len(sparse_source['inheritedWholeObjects'])==28 and sparse_source['allOther28ObjectsWholeUnchanged'] is True,'one actual FactoryV5 observation object replaces FactoryV4; other28 CPU objects stay whole')
+-    need(sparse_source['publicRunSparseClockDiagnosticsContract']==scope['publicRunSparseClockDiagnosticsContract'] and sparse_source['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True and (sparse_source['actualExports'],sparse_source['actualNativeImports'],sparse_source['actualLoads'])==(155,93,4) and (scope['actualCurrentCPUExports'],scope['actualCurrentCPUImports'],scope['actualCurrentCPULoads'])==(155,93,4),'actual compiled sparse Run tracing source and unchanged155/93/4 CPU namespace')
++    need(sparse_source['publicRunSparseClockDiagnosticsContract']==scope['publicRunSparseClockDiagnosticsContract'] and sparse_source['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True and (sparse_source['actualExports'],sparse_source['actualNativeImports'],sparse_source['actualLoads'])==(155,93,4) and (scope['actualCurrentCPUExports'],scope['actualCurrentCPUImports'],scope['actualCurrentCPULoads'])==(155,94,4),'historical sparse source155/93/4; actual current CPU155/94/4 with sole proven native cond_wait addition')
+     need(all(scope['publicRunSparseClockDiagnosticsContract'][k] is True for k in ('recordsRunEnterBeforeActualFactoryRunProducerCall','recordsOnlyExistingInitializedProducerReceipt','recordsActualProducerReleaseAndPublicReturnStatus','clockImportAlreadyInExisting93','preservesErrnoAcrossClockAndFormatting','noNewNativeCalls','noAdditionalCPUContextOrOutputPointerReads','noCallsArgumentsFlagsResultsOrOutputsChanged','noCPUOrGuestStateWrites','originalDeferredBorrowReleaseAndFailurePriorityUnchanged','unknownNativeValuesExplicitlyKnownZero','noNativeEntryClaimFromFactoryEnter','Life29NativeOps6AndGPRTraceWholeUnchanged','ChildBodyWholeUnchanged')),'sparse clock tracing uses existing actual receipts and true statuses only, without native-entry inference, CPU reads or state changes')
+     need(scope['publicRunSparseClockDiagnosticsContract']['firstPublicRunSamples']==16 and scope['publicRunSparseClockDiagnosticsContract']['maximumRegularSamples']==36 and scope['publicRunSparseClockDiagnosticsContract']['firstActualPublicProducerOrReleaseErrorSamples']==8 and scope['publicRunSparseClockDiagnosticsContract']['maximumPublicReturnLogLines']==44 and scope['publicRunSparseClockDiagnosticsContract']['clockAPI']=='mach_absolute_time' and scope['publicRunSparseClockDiagnosticsContract']['clockUnits']=='unscaled original ticks','bounded real-time first16 plus sparse Run diagnostics with first8 true errors')
+     trace_source=json.loads(base.exact(scope['cpuScratchGPRTraceCandidate']).read_bytes())
+@@ -1159,7 +1186,7 @@
+         (out/(action+'-syntax.stderr')).write_bytes(result.stderr)
+         command=('sudo -k -S -p "" ' if action!='launch' else '')+'/var/jb/bin/sh -c '+shlex.quote(script)
+         sizes[action]=len(command.encode());need(sizes[action]+10000<262144,'actual ARG_MAX reserve '+action)
+-    candidate=dict(schema='Actual Runtime62 owned mandatory-field failure diagnostics device packet v58',preparer=pin(__file__),
++    candidate=dict(schema='Actual Runtime63 serialized real wake requests device packet v59',preparer=pin(__file__),
+         scope=pin(out/'scope.json'),archive=pin(out/'products.tar'),controller=pin(out/'control.py'),scripts=script_rows,actions=list(scripts),
+         runtimeCandidate=pin(runtime_path),appCandidate=pin(app_path),currentInstalledProductsPost=pin(POST),
+         actualFullFiles=len(files),actualFullCodeDirectoryHashes=len(full),actualChangedFiles=len(changes),
+@@ -1207,7 +1234,8 @@
+     pins += [scope['cpuDisabledAMXStateV1Candidate'],scope['runtime58CPUDisabledAMXStateV1DeltaVerification'],scope['actualNormal64EncodedIDAndAMXStateSnapshot'],scope['actualNativeAMXStateZeroBranchDisassembly'],scope['actualNativeAMXBank57SaveDisassembly']]+scope['historicalRuntime59DisabledAMXStateV1Verification']['factory5AndGICEngine5ObjectsWholeRuntime58']
+     pins += [scope['cpuPinnedRAMReadV1Candidate'],scope['runtime59CPUPinnedRAMReadV1DeltaVerification'],scope['actualNormal65SecondaryCPUAndRAMBusySnapshot'],scope['actualRAMCPUImmutabilitySource'],scope['originalVMOperationReadGateSource']]+scope['historicalRuntime60PinnedRAMReadV1Verification']['factory5AndGICEngine5ObjectsWholeRuntime59']
+     pins += [scope['cpuAdditiveRAMV1Candidate'],scope['runtime60CPUAdditiveRAMV1DeltaVerification'],scope['cpuAdditiveRAMSourcePlan'],scope['historicalRuntime61AdditiveRAMV1Verification']['gicEngine5ObjectWholeRuntime60'],scope['historicalRuntime61AdditiveRAMV1Verification']['factory6ActualChangedObject'],scope['historicalRuntime61AdditiveRAMV1Verification']['bootstrap25ActualChangedObject']]+list(additive_plan['proofs'].values())
+-    pins += [scope['cpuOwnedMandatoryFailureV1Candidate'],scope['runtime61CPUOwnedMandatoryFailureV1DeltaVerification'],scope['cpuOwnedMandatoryFailureSourcePlan']]+scope['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61']+list(mandatory_plan['proofs'].values())
++    pins += [scope['cpuOwnedMandatoryFailureV1Candidate'],scope['runtime61CPUOwnedMandatoryFailureV1DeltaVerification'],scope['cpuOwnedMandatoryFailureSourcePlan']]+scope['historicalRuntime62OwnedMandatoryFailureV1Verification']['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime61']+list(mandatory_plan['proofs'].values())
++    pins += [scope['cpuSerializedWakeV1Candidate'],scope['runtime62CPUSerializedWakeV1DeltaVerification'],scope['cpuSerializedWakeSourcePlan'],scope['mandatory4ObjectWholeRuntime62']]+scope['factory6AndBootstrap25AndGICEngine5ObjectsWholeRuntime62']+list(serialized_plan['proofs'].values())+scope['nativeImportClosureSources']
+     pins += [pin(B/'independent27_initializer_log_generation_v1.py'),actual_generation['initializerLaunch'],actual_generation['initializerPost'],actual_generation['actualPostStdout']]
+     pins += [row['local']for row in files]+[row['old']for row in changes if row['old'] is not None]
+     dump(out/'freeze.json',dict(files=list({p['path']:p for p in pins}.values()),deviceOperations=0,codeSigningOperations=0))

@@ -1,0 +1,116 @@
+--- /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-main28-only-app-v40.py
++++ /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-main29-only-app-v42.py
+@@ -1,8 +1,8 @@
+ #!/usr/bin/env python3
+-"""HOST-only one-Main App build from actual App86/R71; Root alone executes.
++"""HOST-only one-Main App build from actual App87/R72; Root alone executes.
+ 
+-Accept the reviewed Main28 exact-original boot-args restoration retaining VideoToolbox deferral source plan. Reuse the real Main21 compiler
+-arguments and App86 linker arguments, replacing only object0; never sign or run.
++Accept the reviewed Main29 exact-original boot-args restoration retaining VideoToolbox deferral source plan. Reuse the real Main21 compiler
++arguments and App87 linker arguments, replacing only object0; never sign or run.
+ """
+ import argparse
+ import copy
+@@ -17,10 +17,10 @@
+ sys.dont_write_bytecode=True
+ R=pathlib.Path(__file__).resolve().parents[3]
+ N=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm'
+-OLD=N/'independent27-actual-app-videotoolbox-deferred-v86-attempt1/candidate.json'
+-OLD_SHA='063b01abc7b11c583a4796d009a78e631b4eea7aaa07f5252d8152d8741b3301'
+-RUNTIME_SHA='8ae4d5ff21a2ee6bb5fa22f040c66c4df791e7df566fb3681e68c709a2a0ee0a'
+-PLAN_SHA='32ad382585e875cc507466d210d4182a76ac22c1cdc60fc8c0861115236e85ee'
++OLD=N/'independent27-actual-app-depth24-vt-anchor-v87-attempt1/candidate.json'
++OLD_SHA='80ce3a7e87c50ba46030894603949f2e159168f7061ab9248a5e4998c181dd53'
++RUNTIME_SHA='c518b42610b2711149a82fcd327451362104db0423c4e2e778ed072d33373f19'
++PLAN_SHA='55911d1869b29d46d867b127e6933c00b71c8b23627075d113a5d0e406ce5ff5'
+ 
+ 
+ def need(value, reason):
+@@ -50,7 +50,7 @@
+     ap.add_argument('--output',type=pathlib.Path,required=True)
+     args=ap.parse_args();out=args.output.resolve();plan_path=args.source_plan.resolve()
+     need(out.parent==N and not out.exists(),'fresh local one-Main App output')
+-    need(pin(OLD)['sha256']==OLD_SHA and pin(plan_path)['sha256']==PLAN_SHA,'actual frozen App86 baseline and reviewed Main28 source plan')
++    need(pin(OLD)['sha256']==OLD_SHA and pin(plan_path)['sha256']==PLAN_SHA,'actual frozen App87 baseline and reviewed Main29 source plan')
+     plan_pin=pin(plan_path);old=json.loads(OLD.read_bytes());plan=json.loads(plan_path.read_bytes())
+     need(len(old['objects'])==len(old['sourceFiles'])==35 and
+          plan['actualChangedAppObjectIndices']==[0] and len(plan['sourceFiles'])==1,
+@@ -64,21 +64,26 @@
+     need(source['path'].endswith('.m'),'actual complete Objective-C Main source')
+     for row in [*old['sourceFiles'],*old['actualIncludeClosure'],*old['objects'],
+                 *old.get('externalPrecompiledObjects',[]),*old['appFiles'],source,plan['sourceDiff']]: exact(row)
++    need(plan['baselineApp87Candidate']==pin(OLD) and plan['actualRuntime72Candidate']==old['actualRuntimeCandidate'],
++         'actual App87 and signed Runtime72 source-plan bindings')
++    need(source['sha256']==plan['reviewedMain28Source']['sha256'] and
++         exact(source).read_bytes()==exact(plan['reviewedMain28Source']).read_bytes(),
++         'reviewed Main28 source reused byte for byte without new restoration logic')
+     baseline=plan['baselineMain21Source']
+-    need(plan['baselineMain27Source']==old['sourceFiles'][0],'Main28 starts from the actual whole App86 Main27 source')
++    need(plan['baselineMain27Source']==old['sourceFiles'][0],'Main29 starts from the actual whole App87 Main27 source')
+     exact(baseline)
+     runtime=json.loads(exact(old['actualRuntimeCandidate']).read_bytes())
+     need(old['actualRuntimeCandidate']['sha256']==RUNTIME_SHA and
+          runtime['localCodeSigned'] is True and runtime['actualProductPreflightPassed'] is True and
+          old['sourceFiles'][34]==runtime['anchorSource'] and old['objects'][34]==runtime['anchorIOSObject'],
+-         'actual R71 runtime and compiled manifest anchor remain whole')
++         'actual R72 runtime and compiled manifest anchor remain whole')
+     main21_pin=old['inheritedMainCompilerCandidate'];main21=json.loads(exact(main21_pin).read_bytes())
+     need(main21['source']==baseline and main21['actualCompileExit']==0,
+          'actual inherited successful Main21 compiler provenance matches the source plan')
+     compile_pin=main21['actualCompile'];compiler=json.loads(exact(compile_pin).read_bytes())
+     need(compiler['exit']==0,'actual successful Main21 compiler template')
+     links=[row for row in old['commands'] if row['label']=='link-app']
+-    need(len(links)==1 and links[0]['exit']==0,'actual successful App86 link template')
++    need(len(links)==1 and links[0]['exit']==0,'actual successful App87 link template')
+     out.mkdir(mode=0o700);(out/'objects').mkdir(mode=0o700)
+     original_root=pathlib.Path(old['binary']['path']).parent;app=out/'VirtualMacIndependent27.app'
+     need(not any(p.is_symlink() for p in original_root.rglob('*')),'ordinary inherited complete App resources')
+@@ -100,12 +105,12 @@
+     sources=copy.deepcopy(old['sourceFiles']);objects=copy.deepcopy(old['objects'])
+     sources[0]=source;objects[0]=pin(target)
+     argv=list(links[0]['argv']);old_main=old['objects'][0]['path']
+-    need(argv.count(old_main)==argv.count(old['binary']['path'])==1,'one actual App86 Main27 object and output in linker')
++    need(argv.count(old_main)==argv.count(old['binary']['path'])==1,'one actual App87 Main27 object and output in linker')
+     argv[argv.index(old_main)]=str(target);argv[argv.index(old['binary']['path'])]=str(binary)
+     run('link-app',argv);need(binary.stat().st_size<=2097152,'same parent self-inspector bound')
+     run('validate-app',['xcrun','dyld_info','-validate_only',str(binary)])
+     for before,after in zip(old['objects'][1:],objects[1:],strict=True):
+-        exact(after);need(before==after,'all34 other actual App86 objects including Runtime71 anchor whole')
++        exact(after);need(before==after,'all34 other actual App87 objects including Runtime72 anchor whole')
+     app_files=[pin(p)for p in sorted(app.rglob('*'))if p.is_file()]
+     for row in app_files:
+         relative=pathlib.Path(row['path']).relative_to(app)
+@@ -119,20 +124,27 @@
+     record=copy.deepcopy(old)
+     historical_keys=('actualUnchangedCompiledObjects','actualNewAppCompilations','actualOnlyRelinkedRuntimeAnchor',
+                      'actualChangedAppObjectIndices','actualOther34ObjectsWholeApp85',
+-                     'actualUARTAndBootArgsObjectsWholeApp84','mainSourcePlan','mainSourceContractKey')
+-    record['historicalApp86Main27OneMainBuild']={k:record.pop(k)for k in historical_keys if k in record}
+-    record.update(schema='Actual Main28 original boot-args restoration retaining VideoToolbox deferral App build with34 whole App86 objects and whole Runtime71',
++                     'actualUARTAndBootArgsObjectsWholeApp84','actualUARTAndBootArgsObjectsWholeApp86',
++                     'actualMain27AndOther33CompiledObjectsWholeUnchanged',
++                     'mainSourcePlan','mainSourceContractKey')
++    record['historicalApp87Main27AnchorOnlyBuild']={k:record.pop(k)for k in historical_keys if k in record}
++    prior_contract_key=old['mainSourceContractKey']
++    if prior_contract_key in record:
++        record['historicalApp87MainSourceContract']={prior_contract_key:record.pop(prior_contract_key)}
++    record.update(schema='Actual Main29 original boot-args restoration retaining VideoToolbox deferral App build with34 whole App87 objects and whole Runtime72',
+         builder=pin(__file__),sourceCandidate=plan_pin,mainSourcePlan=plan_pin,
+         mainSourceContractKey=contract_key,sourceFiles=sources,objects=objects,commands=commands,
+         binary=pin(binary),appFiles=app_files,actualIncludeClosure=list(closure.values()),
+         inheritedCompiledAppCandidate=pin(OLD),inheritedMainCompilerCandidate=main21_pin,
+         inheritedCompilationCommands=compile_pin,actualChangedAppObjectIndices=[0],actualUnchangedCompiledObjects=34,
+         actualNewAppCompilations=1,actualOnlyMainObjectChanged=True,actualOnlyRelinkedRuntimeAnchor=False,
+-        actualOther34ObjectsWholeApp86=True,actualRuntime71AndAnchorWholeUnchanged=True,
++        actualOther34ObjectsWholeApp87=True,actualRuntime72AndAnchorWholeUnchanged=True,
+         actualObserver2AndBitmap5ObjectsWholeUnchanged=True,allOriginalAppResourcesWholeUnchanged=True,
+         actualMainSourceChanged=True,codeSigned=False,deviceOperations=0,trustCacheOperations=0,
+         codeSigningOperations=0,applicationBinaryLinked=True,applicationPackaged=True,actualGuestBoot=False,
+-        actualSSHVerified=False)
++        actualSSHVerified=False,readyForDeviceExecution=False,
++        executionDeferredUntilRootConfirmsActualGuestFrame=True,
++        actualReviewedMain28SourceCopiedByteForByte=True)
+     record[contract_key]=contract
+     save(out/'candidate.json',record)
+     files=[pin(p)for p in sorted(out.rglob('*'))if p.is_file()]

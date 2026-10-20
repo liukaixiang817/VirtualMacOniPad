@@ -1,0 +1,12 @@
+--- VirtualMac/scripts/development/build-independent27-main-only-app-v32.py
++++ VirtualMac/scripts/development/build-independent27-main-only-app-v33.py
+@@ -28,7 +28,8 @@
+ 
+ def pin(path):
+     path=pathlib.Path(path).resolve()
+-    need(path.is_relative_to(R) and path.is_file() and not path.is_symlink(), 'owned ordinary input/output')
++    sdk_settings=pathlib.Path('/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/SDKSettings.json').resolve()
++    need((path.is_relative_to(R) or path==sdk_settings) and path.is_file() and not path.is_symlink(), 'owned input/output or exact inherited readonly Apple SDK settings')
+     data=path.read_bytes()
+     return dict(path=str(path),bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+ 

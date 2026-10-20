@@ -1,0 +1,11 @@
+--- Device55/control.py
++++ Device56/control.py
+@@ -29,7 +29,7 @@
+ DEVICE_APP_PARENT = ('/private/preboot/3BAC96003F990D2A2530F3FB8BF9293399970140D40FBF3A5A9A6CCCCF018C0C30F94334FCD17DF3DC7434C1EA34FC3E/'
+                      'dopamine-FUG16w/procursus/Applications')
+ DEVICE_APP = DEVICE_APP_PARENT+'/VirtualMacIndependent27.app'
+-DEVICE_STAGE = '/private/var/mobile/Library/.VM27-independent27-disabled-amx-state-stage-v55'
++DEVICE_STAGE = '/private/var/mobile/Library/.VM27-independent27-pinned-ram-read-stage-v56'
+ DEVICE_LOG = '/tmp/VirtualMacIndependent27.log'
+ APP_MAIN = DEVICE_APP+'/VirtualMacIndependent27'
+ CHILD_MAIN = DEVICE_RUNTIME+'/child-flat/VMM.bundle/Contents/XPCServices/com.apple.Virtualization.VirtualMachine.xpc/Contents/MacOS/com.apple.Virtualization.VirtualMachine'

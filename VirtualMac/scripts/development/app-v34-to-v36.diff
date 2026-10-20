@@ -1,0 +1,94 @@
+--- build-independent27-reanchored-main23-app-v34.py
++++ build-independent27-reanchored-main25-app-v36.py
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python3
+-"""Relink actual App82 Main23 and other33 whole objects with a new runtime anchor.
++"""Relink actual App83 Main25 and other33 whole objects with a new runtime anchor.
+ 
+-Only Root executes this HOST builder. All34 Main23 App82 code objects and resources are
++Only Root executes this HOST builder. All34 Main25 App83 code objects and resources are
+ reused by exact content pins; no guest or device code is executed here.
+ """
+ import argparse
+@@ -16,8 +16,8 @@
+ sys.dont_write_bytecode = True
+ R = pathlib.Path(__file__).resolve().parents[3]
+ N = R / 'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm'
+-OLD = N / 'independent27-actual-app-pl011-uart-bootargs-v82-attempt1/candidate.json'
+-OLD_SHA = '3845ce72124d0eedecfea7018f837ec7a885e3bdbd8dcb0bdc518ca03fda262c'
++OLD = N / 'independent27-actual-app-reset-snapshot-maintenance-v83-attempt1/candidate.json'
++OLD_SHA = '1b821e5a8d2ee316f7247a85bfc4810b32ae3a32f1e9000cc94d452b8b4a2dbf'
+ 
+ 
+ def pin(path):
+@@ -42,16 +42,16 @@
+     args = ap.parse_args()
+     output = args.output.resolve()
+     need(output.parent == N and not output.exists(), 'fresh HOST output')
+-    need(pin(OLD)['sha256'] == OLD_SHA, 'original actual App82 Main23 object provenance')
++    need(pin(OLD)['sha256'] == OLD_SHA, 'original actual App83 Main25 object provenance')
+     old = json.loads(OLD.read_bytes())
+     runtime = json.loads(args.runtime_candidate.read_bytes())
+-    need(old['mainSourcePlan']['sha256']=='f39dc138f7bca2813051e782f042885ebf06db841c4510c100d4135c656e505a' and old['sourceFiles'][0]['sha256']=='b27949891a9fd2485ce2106c70c62067b163faf1457ab9c55d5143922c8b8832' and old['objects'][0]['sha256']=='7fb812a08098a612fb2f10bb8fc25f83efb6e1ddd1db65bd67a543bb629b5d31' and old['mainSourceContractKey']=='pl011UARTBootArgumentsV23Contract','actual Main23 source/object and UART boot-args plan whole')
++    need(old['mainSourcePlan']['sha256']=='e6d4bb4013f3c86fab36213cadb131fd397940d95747a6d6c1b7e174fdbfeee1' and old['sourceFiles'][0]['sha256']=='e2635789fae84fb86fb99d96de92a3bb8ccdf36388506c8b9aaa76df44a17dd8' and old['objects'][0]['sha256']=='804db4f22cc2f1d1abb9983f71f2ce62ff3621049685d1f5f6460a8e5d5a86a0' and old['mainSourceContractKey']=='pl011UARTBootArgumentsMaintenanceV25Contract','actual Main25 source/object and UART maintenance plan whole')
+     need(old['rawDiskThreadPoolAttachmentContract']['parentOriginalDescriptorBackendType']==1 and old['rawDiskThreadPoolAttachmentContract']['actualChildEncodedBackend']==3 and old['sshRegistrationExplicitlyDeferredForFirstBasicGuestBoot'] is True and old['actualMain20UIAndSSHDeferralPreserved'] is True,'preserve original raw FD route, selected VM view exposure and guest SSH deferral')
+     need(runtime['localCodeSigned'] and runtime['actualProductPreflightPassed'], 'actual runtime product')
+-    need(runtime['baselineRuntimeCandidate']==old['actualRuntimeCandidate'] and runtime['cpu28OtherObjectsWholeRuntime68'] is True and runtime['cpuResetSnapshotV1Contract']['onlyLife57ObjectChanged'] is True,'actual new Runtime69 snapshot product derives from the installed Runtime68')
++    need(runtime['baselineRuntimeCandidate']==old['actualRuntimeCandidate'] and runtime['cpu28OtherObjectsWholeRuntime69'] is True and runtime['cpuResetPanicPrefixV1Contract']['onlyLife58ObjectChanged'] is True,'actual new Runtime70 panic prefix product derives from the installed Runtime69')
+     need(runtime['canonicalDeviceRoot'] == old['runtimeRoot'], 'same configured device runtime')
+     for row in [*old['sourceFiles'], *old['actualIncludeClosure'], *old['objects'], *old.get('externalPrecompiledObjects', []), *old['appFiles']]:
+-        need(pin(row['path']) == row, 'exact inherited App82 Main23 input')
++        need(pin(row['path']) == row, 'exact inherited App83 Main25 input')
+     need(len(old['objects']) == 35 and len(old['sourceFiles']) == 35, 'original 35 compile units')
+     need(pathlib.Path(old['sourceFiles'][34]['path']).name == 'vm27_independent_runtime_product_anchor_v1.c',
+          'only actual last anchor unit replaced')
+@@ -97,33 +97,36 @@
+         if rel != pathlib.Path('VirtualMacIndependent27'):
+             need((row['bytes'], row['sha256']) == (pin(original_root / rel)['bytes'], pin(original_root / rel)['sha256']),
+                  'every existing App resource whole unchanged')
++    closure={row['path']:row for row in old['actualIncludeClosure'] if row['path']!=old['sourceFiles'][34]['path']}
++    closure[runtime['anchorSource']['path']]=runtime['anchorSource']
+     record = copy.deepcopy(old)
+-    record.update(schema='Actual App83 pure runtime anchor relink with34 whole App82 Main23 objects',
+-                  builder=pin(__file__), sourceFiles=source_files, objects=objects,
++    record.update(schema='Actual App84 pure runtime anchor relink with34 whole App83 Main25 objects',
++                  builder=pin(__file__), sourceFiles=source_files, objects=objects, actualIncludeClosure=list(closure.values()),
+                   commands=commands, binary=pin(binary), appFiles=app_files,
+                   inheritedCompiledAppCandidate=pin(OLD),
+                   inheritedCompilationCommands=pin(OLD.parent / 'commands.json'),
+                   actualRuntimeCandidate=pin(args.runtime_candidate),
+                   actualUnchangedCompiledObjects=34, actualNewAppCompilations=0,
+-                  actualOnlyRelinkedRuntimeAnchor=True,actualMain23AndOther33CompiledObjectsWholeUnchanged=True,
++                  actualOnlyRelinkedRuntimeAnchor=True,actualMain25AndOther33CompiledObjectsWholeUnchanged=True,
+                   codeSigned=False,
+                   deviceOperations=0, applicationBinaryLinked=True, applicationPackaged=True,
+                   actualGuestBoot=False, actualSSHVerified=False)
+-    # App82 really compiled Main23; this current delta only replaces its anchor.
++    # App83 compiled Main25 and replaced its anchor; only the new anchor changes now.
+     historical_keys=('actualUnchangedCompiledObjects','actualNewAppCompilations','actualOnlyRelinkedRuntimeAnchor',
+-                     'actualOnlyMainObjectChanged','actualOther34ObjectsWholeApp81',
+-                     'actualRuntime68AndAnchorWholeUnchanged','actualMainSourceChanged','actualChangedAppObjectIndices')
+-    record['historicalApp82Main23Compilation']={key:old[key]for key in historical_keys if key in old}
+-    for key in ('actualOnlyMainObjectChanged','actualOther34ObjectsWholeApp81',
+-                'actualRuntime68AndAnchorWholeUnchanged','actualMainSourceChanged'):
++                     'actualOnlyMainObjectChanged','actualMain25AndNewRuntimeAnchorChanged',
++                     'actualUARTAndBootArgsMaintenanceOrderFixed','actualOther33ObjectsWholeApp82',
++                     'actualMainSourceChanged','actualChangedAppObjectIndices')
++    record['historicalApp83Main25AndAnchorCompilation']={key:old[key]for key in historical_keys if key in old}
++    for key in ('actualOnlyMainObjectChanged','actualMain25AndNewRuntimeAnchorChanged',
++                'actualUARTAndBootArgsMaintenanceOrderFixed','actualOther33ObjectsWholeApp82','actualMainSourceChanged'):
+         record.pop(key,None)
+     record['actualChangedAppObjectIndices']=[34]
+-    record['actualDisplayObserverAndBitmapObjectsWholeApp82']=True
+-    record['pl011UARTBootArgumentsV23ContractAppliesToHistoricalApp82DeltaOnly']=True
+-    record['actualUARTAndBootArgsObjectsWholeApp82']=True
++    record['actualDisplayObserverAndBitmapObjectsWholeApp83']=True
++    record['pl011UARTBootArgumentsMaintenanceV25ContractAppliesToHistoricalApp83DeltaOnly']=True
++    record['actualUARTAndBootArgsObjectsWholeApp83']=True
+     save(output / 'candidate.json', record)
+     files = [pin(p) for p in sorted(output.rglob('*')) if p.is_file()]
+-    files += [pin(__file__), pin(OLD), pin(args.runtime_candidate), *source_files, *objects, *old.get('externalPrecompiledObjects', []), *old['actualIncludeClosure']]
++    files += [pin(__file__), pin(OLD), pin(args.runtime_candidate), *source_files, *objects, *old.get('externalPrecompiledObjects', []), *closure.values()]
+     save(output / 'freeze.json', dict(files=list({p['path']: p for p in files}.values()), deviceOperations=0))
+     print(json.dumps(dict(candidate=pin(output / 'candidate.json'), binary=pin(binary),
+                           unchangedAppObjects=34, appCompilations=0)))

@@ -1,0 +1,13 @@
+--- pair66
++++ pair67
+@@ -12,8 +12,8 @@
+ 
+ sys.dont_write_bytecode=True
+ R=pathlib.Path(__file__).resolve().parents[3]
+-PACKET=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm/independent27-app77-normal-guest-lifecycle-v71-attempt1'
+-CANDIDATE_SHA256='bb7eac6782c3351071a3c68a41a7bd362c6c2cf9c778718ff1a081470b7e6fab'
++PACKET=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm/independent27-app77-normal-guest-lifecycle-v72-attempt1'
++CANDIDATE_SHA256='5738b84a6d2ab897fa6b1ab2202b2c9bc1d634bb74642eb21143eee07c9864c0'
+ 
+ 
+ def main():

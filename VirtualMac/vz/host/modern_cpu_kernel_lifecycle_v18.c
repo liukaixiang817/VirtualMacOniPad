@@ -1,0 +1,6 @@
+#include "modern_cpu_kernel_lifecycle_v18.h"
+#include "modern_cpu_kernel_lifecycle_v16.c"
+#include "modern_cpu_kernel_physical_timer_v16.inc"
+#include "modern_cpu_kernel_wake_owner_v17.inc"
+#include "modern_cpu_kernel_gic_owner_v18.inc"
+#include "modern_cpu_kernel_gic_run_v18.inc"

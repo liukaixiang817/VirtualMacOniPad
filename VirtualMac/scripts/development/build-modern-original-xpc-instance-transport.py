@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Original27 create/main entrypoints using owned private service transport; local-only execution."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import plistlib
+import re
+import shutil
+import subprocess
+import sys
+sys.dont_write_bytecode = True
+ROOT = Path(__file__).resolve().parents[2]
+N = ROOT.parent / "DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm"
+FROZEN = N / "xpc-approved-code-v1/build-v3"
+RIGHTS = {"platform-application": True, "com.apple.private.security.no-container": True,
+    "com.apple.private.security.no-sandbox": True, "com.apple.private.amfi.can-execute-cdhash": True,
+    "com.apple.private.virtualization.plugin": True, "com.apple.private.virtualization": True}
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def main(output):
+    out = Path(output).resolve(); out.mkdir(mode=0o700, parents=True, exist_ok=False)
+    source = out / "source"; source.mkdir()
+    for p in (Path(__file__), ROOT / "vz/host/modern_xpc_private_consumer.h", ROOT / "vz/host/modern_xpc_private_endpoint.h", ROOT / "vz/host/modern_xpc_bundle_registry.h",
+              ROOT / "vz/host/modern_xpc_approved_code.h", ROOT / "vz/host/modern_xpc_lwcr_policy.h", ROOT / "scripts/tests/test-modern-original-xpc-instance-transport.c", ROOT / "vz/host/modern_xpc_original_instance_transport.c", ROOT / "vz/host/modern_xpc_original_instance_transport.h", ROOT / "scripts/tests/validate-modern-original-xpc-instance-transport.py") :
+        shutil.copyfile(p, source / p.name)
+    pins = ROOT / "vz/host/modern_xpc_original_instance_pins.h"
+    shutil.copyfile(pins, source / pins.name)
+    spec = importlib.util.spec_from_file_location("base", ROOT / "scripts/development/build-modern-xpc-lwcr-policy.py")
+    B = importlib.util.module_from_spec(spec); spec.loader.exec_module(B)
+    old = json.loads((FROZEN / "candidate.json").read_text()); candidates, processes = [], []
+    def run(label, argv):
+        env = {k: v for k, v in os.environ.items() if not k.startswith("DYLD_")}
+        child = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+        try: stdout, stderr = child.communicate(timeout=25)
+        except subprocess.TimeoutExpired: child.kill(); child.communicate(); raise
+        (out / (label + ".argv.json")).write_text(json.dumps(argv, indent=2) + "\n")
+        (out / (label + ".stdout")).write_bytes(stdout); (out / (label + ".stderr")).write_bytes(stderr)
+        processes.append({"label": label, "directChildPID": child.pid, "observedWaitExit": child.returncode, "reaped": True})
+        assert child.returncode == 0, (label, child.returncode, stdout.decode(errors="replace")[-7000:], stderr.decode(errors="replace")[-7000:])
+        return stdout, stderr
+    def sign(role, p, rights, label):
+        if role == "ios": B.target16(p)
+        ent = p.parent / (p.name + ".entitlements"); ent.write_bytes(plistlib.dumps(rights))
+        run(label + "-sign", ["codesign", "--force", "--sign", "-", "--timestamp=none", "--identifier", "com.virtualmac.diagnostics.original-xpc-instance-transport." + p.name, "--entitlements", str(ent), str(p)])
+        run(label + "-strict", ["codesign", "--verify", "--strict", str(p)])
+        run(label + "-validate", ["xcrun", "dyld_info", "-validate_only", str(p)])
+        _, desc = run(label + "-signature", ["codesign", "-dvvv", str(p)])
+        return {"role": role, "name": p.name, "path": str(p), "bytes": p.stat().st_size, "sha256": sha(p), "UUID": B.uuid(p.read_bytes()), "CDHash": re.search(rb"CDHash=([a-f0-9]{40})", desc)[1].decode(), "entitlements": rights}
+    nativeRuns = []
+    for role, sdk, target in (("macos", "macosx", "arm64e-apple-macos13"), ("ios", "iphoneos", "arm64e-apple-ios16.1")):
+        folder = out / role; folder.mkdir(); previous = {}
+        for name in ("VM27ApprovedCode.dylib", "VM27LWCRPolicy.dylib", "VM27BundleRegistry.dylib", "VM27PrivateEndpoint.dylib", "VM27PrivateConsumer.dylib"):
+            if name == "VM27PrivateConsumer.dylib": previousBuild = N / "xpc-owned-service-launch-v1/build-v3"
+            elif name == "VM27BundleRegistry.dylib": previousBuild = N / "xpc-bundle-registry-v1/build-v4"
+            elif name == "VM27PrivateEndpoint.dylib": previousBuild = N / "xpc-private-child-launch-v1/xpc-build-v4"
+            else: previousBuild = FROZEN
+            imported = json.loads((previousBuild / "candidate.json").read_text())
+            original = next(r for r in imported["candidates"] if r["role"] == role and r["name"] == name)
+            p = folder / name; shutil.copyfile(original["path"], p); assert sha(p) == original["sha256"]
+            r = dict(original); r.update({"path": str(p), "source": original["path"], "unchanged": True}); candidates.append(r); previous[name] = r
+        sdkPath = run(role + "-sdk", ["xcrun", "--sdk", sdk, "--show-sdk-path"])[0].decode().strip()
+        base = ["xcrun", "clang", "-target", target, "-isysroot", sdkPath, "-fptrauth-abi-version=0", "-std=c11", "-DVM27_ENABLE_DIAGNOSTIC_ENDPOINT_FAILURE=1", "-fblocks", "-O2", "-Wall", "-Wextra", "-Werror", "-Wno-deprecated-declarations", "-I", str(source), "-Wl,-no_adhoc_codesign"]
+        consumer = folder / "VM27PrivateConsumer.dylib"
+        transport = folder / "VM27OriginalTransport.dylib"
+        run(role + "-transport-compile", base + [str(source / "modern_xpc_original_instance_transport.c"), str(consumer), str(folder / "VM27ApprovedCode.dylib"), "-framework", "Security", "-framework", "CoreFoundation", "-dynamiclib", "-Wl,-install_name,@rpath/VM27OriginalTransport.dylib", "-o", str(transport)])
+        transportRow = sign(role, transport, {}, role + "-transport")
+        candidates.append(transportRow); previous[transport.name] = transportRow
+        macros = []
+        for key, name in (("TRANSPORT", transport.name), ("CONSUMER", consumer.name), ("REGISTRY", "VM27BundleRegistry.dylib"), ("ENDPOINT", "VM27PrivateEndpoint.dylib"), ("APPROVED", "VM27ApprovedCode.dylib"), ("POLICY", "VM27LWCRPolicy.dylib")):
+            row = previous[name]; macros += ['#define VM27_' + key + '_SHA256 "' + row["sha256"] + '"', '#define VM27_' + key + '_BYTES ' + str(row["bytes"]) + 'ULL', '#define VM27_' + key + '_UUID "' + row["UUID"] + '"']
+        (folder / "modern_xpc_factory_pins.h").write_text("\n".join(macros) + "\n")
+        probe = folder / "original-xpc-instance-transport-probe"
+        runtimePath = "/var/root/VirtualMac2/testing/original-xpc-instance-transport-v1" if role == "ios" else str(folder)
+        run(role + "-probe-compile", base + ["-I", str(folder), str(source / "test-modern-original-xpc-instance-transport.c")] + [str(transport)] + [str(folder / n) for n in previous if n != transport.name] + ["-framework", "Security", "-Wl,-rpath,@executable_path", "-Wl,-rpath," + runtimePath, "-o", str(probe)])
+        row = sign(role, probe, RIGHTS if role == "ios" else {}, role + "-probe"); candidates.append(row)
+        run(role + "-transport-imports", ["xcrun", "dyld_info", "-imports", str(transport)])
+        run(role + "-transport-exports", ["xcrun", "dyld_info", "-exports", str(transport)])
+        run(role + "-consumer-imports", ["xcrun", "dyld_info", "-imports", str(consumer)])
+        run(role + "-probe-imports", ["xcrun", "dyld_info", "-imports", str(probe)])
+        if role == "macos":
+            nativeRuns = [[str(probe), row["sha256"], str(row["bytes"]), row["CDHash"], variant] for variant in ("normal", "deny-handshake", "timeout-handshake", "deny-instance", "timeout-instance")]
+    for command in nativeRuns:
+        run("macos-" + command[-1] + "-native", command)
+    result = {"candidates": candidates, "sourceSHA256": {p.name: sha(p) for p in source.iterdir()}, "processes": processes,
+        "deviceOperations": False, "iOSExecuted": False, "originalVMMExecuted": False, "completeBundleRegistration": False,
+        "systemModified": False, "bootstrapChanges": 0, "launchdRegistrations": 0, "MacNativePositiveCovered": False, "MacNativeStrictDenialCovered": True, "originalVMWireProtocolExecuted": False}
+    (out / "candidate.json").write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({"output": str(out), "candidateSHA256": sha(out / "candidate.json"), "iOSFiles": [r for r in candidates if r["role"] == "ios"]}, indent=2))
+
+
+if __name__ == "__main__":
+    assert len(sys.argv) == 2
+    main(sys.argv[1])

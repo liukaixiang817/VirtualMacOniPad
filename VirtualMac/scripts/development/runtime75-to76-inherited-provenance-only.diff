@@ -1,0 +1,46 @@
+--- B75
++++ B76
+@@ -83,8 +83,10 @@
+  need(port['baselineRuntimeCandidate']==pin(baseline_path)and port['inheritedDepth24Candidate']==pin(depth_path)and
+       port['providerKey']=='MD'and port['roles']==['child'],'actual combined VT/depth port ancestry')
+  for key in ('newProvider','patchedChildPG','patchedChild','recipe','sourcePlan','actualIOSCompile','actualIOSLink',
+-             'actualMDValidate','actualChildValidate','actualPGValidate'):
++             'actualMDValidate','actualChildValidate'):
+   base.actual_frozen(port[key],pf,'actual frozen VT '+key);exact(port[key])
++ need(port['actualPGValidate']==depth['actualPGValidate'],'same actual inherited depth24 PG validation')
++ base.actual_frozen(port['actualPGValidate'],df,'actual inherited depth24 PG validation');exact(port['actualPGValidate'])
+  need(port['originalProvider']==depth['newProvider'] and port['originalChildPG']==depth['originalChildPG']and
+       port['patchedChildPG']==depth['patchedChildPG']and port['originalChild']==pin(root/rows[childid]['path']),
+       'combined MD starts from successful depth24 and exact R71 Child; PG remains exact depth24 product')
+@@ -137,18 +139,28 @@
+  for row in cpuobjects:exact(row)
+  graphid=manifest['dependencyProofID'];graphpath=root/rows[graphid]['path'];oldgraph=json.loads(base.regular_bytes(graphpath))
+  need(oldgraph['finalStrongDefinitionGraphClosed']is True and oldgraph['unresolvedStrongImportRows']==[],'existing actual R71 graph closure inherited by exact reference')
+- childdefs=[];pgdefs=[]
+- for image,ordinal,target in [(child,3,childdefs),(pg,10,pgdefs)]:
++ childdefs=[];pgdefs=[];inheritedMetalReexportRows=[]
++ for image,original,ordinal,target in [(child,originalchild,3,childdefs),(pg,originalpg,10,pgdefs)]:
+   for imp in image.imports:
+    if imp['ordinal']!=ordinal:continue
+-   symbol=imp['name'];need(symbol in md.exports and md.exports[symbol]['flags']==0,'actual owned consumer resolves direct current MD export')
++   symbol=imp['name']
++   if symbol not in md.exports or md.exports[symbol]['flags']!=0:
++    need(image is child and symbol in ('_MTLSetShaderCachePath','_OBJC_CLASS_$_MTLTextureDescriptor') and
++         imp['index']<len(original.imports) and semantic(imp)==semantic(original.imports[imp['index']]) and
++         md.loads[1]['cmd']==0x8000001f and md.loads[1]['path']=='/System/Library/Frameworks/Metal.framework/Metal',
++         'only the two exact inherited Child native Metal imports keep their unchanged MD reexport route')
++    inheritedMetalReexportRows.append(dict(actualImport=imp,requiredLoad='@loader_path/MD',
++      currentMDMetalReexport=md.loads[1],inheritedBaselineDefinitionGraphReference=pin(graphpath)))
++    continue
+    target.append(dict(actualImport=imp,requiredLoad='@loader_path/MD',target=port['newProvider'],targetUUID=md.uuid,definition=md.exports[symbol]))
++ need(len(inheritedMetalReexportRows)==2,'exact two inherited native Metal reexport imports')
+  graph=dict(schema='Actual Runtime72 depth24 and coldboot VT unavailable incremental definition proof',
+   finalStrongDefinitionGraphClosed=True,unresolvedStrongImportRows=[],baselineRuntimeCandidate=pin(baseline_path),
+   inheritedBaselineDefinitionGraphReference=pin(graphpath),baselineDependencyProof=pin(graphpath),
+   depth24Candidate=pin(depth_path),vtCandidate=pin(vt_path),actualCurrentMDExports=md.exports,actualCurrentMDImports=md.imports,
+   actualCurrentMDRequiredLoads=md.loads,all49PriorMDNativeSemanticsInherited=True,actualVTAddedStrongNativeRows=addednative,
+   actualCurrentChildMDDefinitions=childdefs,actualCurrentPGMDDefinitions=pgdefs,
++  actualInheritedNativeMetalReexportRows=inheritedMetalReexportRows,
+   all29CPUObjectsWholeRuntime71=True,cpu29SourceProof=cpupin,cpu29Objects=cpuobjects,
+   onlyChangedProviderIDs=[mdid,pgid,childid],oldGraphRerun=False,oldGraphNotInlined=True,deviceOperations=0)
+  return dict(old=old,manifest=manifest,rows=rows,proof=proof,child=child,childID=childid,md=md,pg=pg,mdID=mdid,pgID=pgid,

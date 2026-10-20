@@ -1,0 +1,11 @@
+--- Root-reviewed-B72-draft
++++ build-independent27-signed-runtime-product-v72.py
+@@ -11,7 +11,7 @@
+ sp=importlib.util.spec_from_file_location('runtime69_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
+ BASE_SHA='1f153b6b4498a4dcacd22fd7bb02f09fe65bcc79649a4842c994fb417ea9248d'
+ BASELINE_SHA='fa6253ff902a99bca85dc5110ab8e6d38e131f818be4b1ecfbfdd4012b74769e'
+-PORT_SHA='PENDING_ROOT_ACTUAL_SOURCE57_SHA'
++PORT_SHA='76536d5f26a8d59def430645e9bb3f841f9be9c98b3d4d25f110c9a2bfc24a0e'
+ CONTRACT_KEY='cpuResetSnapshotV1Contract'
+ PLAN_SHA='209080da47c3d15c639ff3bc00d51f9cc9002e25a1eca558f20e3949bc6507ec'
+ KEY='VM27HVVMProduction.dylib';CHILD='com.apple.Virtualization.VirtualMachine';IDS=('parent:'+KEY,'child:'+KEY)

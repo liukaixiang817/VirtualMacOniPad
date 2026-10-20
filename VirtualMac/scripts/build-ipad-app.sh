@@ -27,6 +27,7 @@ for installer_icon in monterey ventura sonoma sequoia tahoe golden-gate ipsw; do
 done
 need_file "$VZ_REPO_ROOT/vz/host/NSViewShim.m"
 need_file "$VZ_REPO_ROOT/vz/host/VZAppSettings.m"
+need_file "$VZ_REPO_ROOT/vz/host/VZBackendSelection.m"
 need_file "$VZ_REPO_ROOT/vz/host/VZDiagnostics.m"
 need_file "$VZ_REPO_ROOT/vz/host/VZFailureDetailsViewController.m"
 need_file "$VZ_REPO_ROOT/vz/host/VZRestoreCatalog.m"
@@ -111,6 +112,7 @@ xcrun --sdk iphoneos clang \
     -Wl,-export_dynamic -Wl,-undefined,dynamic_lookup \
     "$VZ_REPO_ROOT/vz/host/NSViewShim.m" \
     "$VZ_REPO_ROOT/vz/host/VZAppSettings.m" \
+    "$VZ_REPO_ROOT/vz/host/VZBackendSelection.m" \
     "$VZ_REPO_ROOT/vz/host/VZDiagnostics.m" \
     "$VZ_REPO_ROOT/vz/host/VZFailureDetailsViewController.m" \
     "$VZ_REPO_ROOT/vz/host/VZRestoreCatalog.m" \

@@ -49,6 +49,7 @@ NSString *VZInstallationsPath(void);
 - (void)reloadLibrary;
 - (void)presentNewVMFlow;
 - (void)presentSettings;
+- (void)presentFrameworkBackendSettings;
 @end
 
 NS_ASSUME_NONNULL_END

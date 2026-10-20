@@ -1,0 +1,4 @@
+#ifndef VM27_MODERN_CPU_KERNEL_LIFECYCLE_V15_H
+#define VM27_MODERN_CPU_KERNEL_LIFECYCLE_V15_H
+#include "modern_cpu_kernel_debug_claim_v15.h"
+#endif

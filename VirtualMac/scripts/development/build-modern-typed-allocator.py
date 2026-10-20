@@ -14,7 +14,11 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--all-five', action='store_true',
                         help='Also export the three SDK backdeployment malloc/calloc/realloc wrappers')
+    parser.add_argument('--with-valloc', action='store_true',
+                        help='Also export the genuine SDK valloc fallback for DiskImages2; requires --all-five')
     args = parser.parse_args()
+    if args.with_valloc and not args.all_five:
+        parser.error('--with-valloc requires --all-five')
     project = Path(__file__).resolve().parents[2]
     source = project / 'vz/host/modern_typed_allocator_compat.c'
     header_file = project / 'vz/host/modern_typed_allocator.h'
@@ -33,9 +37,12 @@ def main():
         return result
 
     sdk = run('sdk', ['xcrun', '--sdk', 'iphoneos', '--show-sdk-path']).stdout.decode().strip()
-    library_name = 'VM27AllocatorProvider.dylib' if args.all_five else 'VM27TypedAllocatorCompat.dylib'
+    library_name = ('VM27DiskAllocatorProvider.dylib' if args.with_valloc else
+                    'VM27AllocatorProvider.dylib' if args.all_five else 'VM27TypedAllocatorCompat.dylib')
     library = output / library_name
     mode_options = [] if args.all_five else ['-DVZ_TYPED_ALLOCATOR_INCREMENTAL_ONLY=1']
+    if args.with_valloc:
+        mode_options.append('-DVZ_TYPED_ALLOCATOR_INCLUDE_VALLOC=1')
     run('compile', ['xcrun', 'clang', '-target', 'arm64e-apple-ios16.1',
                    '-isysroot', sdk, '-O2', '-std=c11',
                    '-fvisibility=hidden', '-fno-typed-memory-operations-experimental',
@@ -55,12 +62,16 @@ def main():
                         '_malloc_zone_memalign', '_malloc_zone_free', '_posix_memalign'}
     if args.all_five:
         expected_imports |= {'_malloc', '_calloc', '_realloc'}
+    if args.with_valloc:
+        expected_imports.add('_valloc')
     if {line.split()[-1] for line in undefined} != expected_imports:
         raise ValueError('Unexpected allocator imports; only audited old public APIs permitted')
     exports = run('defined', ['xcrun', 'nm', '-gU', str(library)]).stdout.decode().splitlines()
     expected_exports = {'_malloc_type_posix_memalign', '_malloc_type_zone_malloc_with_options'}
     if args.all_five:
         expected_exports |= {'_malloc_type_malloc', '_malloc_type_calloc', '_malloc_type_realloc'}
+    if args.with_valloc:
+        expected_exports.add('_malloc_type_valloc')
     if {line.split()[-1] for line in exports} != expected_exports:
         raise ValueError('Unexpected exported symbols')
     data = library.read_bytes()
@@ -99,10 +110,13 @@ def main():
                     'cdhash': cdhash, 'uuid': uuids[0]},
         'exports': sorted(name[1:] for name in expected_exports),
         'allFiveSDKFallbacks': args.all_five,
+        'vallocSDKFallback': args.with_valloc,
         'undefinedImports': sorted(expected_imports),
         'minimumIOS': '16.1', 'sdkStamp': '16.1', 'arm64eABI': 0,
         'cpuSubtypeWithCapabilities': '0x80000002',
-        'scope': ('Five typed allocator exports with genuine old allocation/reallocation, alignment, clear and ownership'
+        'scope': ('Six typed allocator exports including genuine old valloc page alignment'
+                  if args.with_valloc else
+                  'Five typed allocator exports with genuine old allocation/reallocation, alignment, clear and ownership'
                   if args.all_five else 'Only two typed allocator exports with genuine old-zone allocation, alignment, clear and ownership'),
         'stockAllocatorReplaced': False, 'typedAllocationTelemetryOrMTEImplemented': False,
         'fullSwiftClosurePassed': False, 'fullVZ27Passed': False,

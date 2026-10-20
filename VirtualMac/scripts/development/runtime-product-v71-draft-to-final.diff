@@ -1,0 +1,23 @@
+--- Root-reviewed-v71-draft
++++ build-independent27-signed-runtime-product-v71.py
+@@ -11,9 +11,9 @@
+ sp=importlib.util.spec_from_file_location('runtime68_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
+ BASE_SHA='1f153b6b4498a4dcacd22fd7bb02f09fe65bcc79649a4842c994fb417ea9248d'
+ BASELINE_SHA='ed5a144c7c7d84d35cc938c52154cb0c7a69ea8d530f772a05d09446b4df0e31'
+-PORT_SHA='PENDING_ROOT_ACTUAL_SOURCE56_CANDIDATE'
++PORT_SHA='48d9173eb99564827161dffed98ff92950f3b91053b8067caa81a5ca59c04f1d'
+ CONTRACT_KEY='cpuResetOriginDiagnosticsV1Contract'
+-PLAN_SHA='PENDING_SOURCE56_PLAN'
++PLAN_SHA='0e87ebbd269c3565b115db1e8d5ffbbb4d1243bb63ebda1108e5eb3d8873259d'
+ KEY='VM27HVVMProduction.dylib';CHILD='com.apple.Virtualization.VirtualMachine';IDS=('parent:'+KEY,'child:'+KEY)
+ pin,save=base.pin,base.save
+ def need(value,why):
+@@ -38,6 +38,8 @@
+  base.actual_frozen(port['provider'],pf,'actual compiled reset-origin provider');provider=base.image_profile(base.regular_bytes(exact(port['provider'])),KEY)
+  need(port['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True,'actual compiled reset-origin provider')
+  reader_contract=port[CONTRACT_KEY]
++ need(all(reader_contract[key]is True for key in('onlyLife56AndFactory10ObjectsChanged','allOther27ObjectsWholeUnchanged','allLife55RangeTransactionAndProgressSemanticsPreserved','allOriginalCPUVMOwnerAndOutputGuardsPreserved','allActualHVCReadWriteAndNativeCallSequencesPreserved','noAdditionalNativeCallsOrContextReadsOrWrites','noSecondRunOrTimerOrDelay','noEngineOrIRQOrCounterBehaviorChanges','resetAndUnknownLogsReuseAlreadyReadX0CPSRESRAndIdentity','classificationAffectsOnlyDiagnosticSelection','legacyHVCBeforeAfterBudgetsAndExtraReadsWholeUnchanged','originalVtimerPublicBeginAcquireSetReleaseEndOrderPreserved','originalBorrowSetVtimerOffsetV10BodyWholeUnchanged','oldVtimerPublicWrapperHiddenOnly','callerReturnAddressCapturedAtRealPublicEntryWithBuiltinAndPACStrip','noDynamicLoaderLookupOrNativeReadForCaller','offsetTraceUsesRealIdentifierBorrowEpochGenerationAndFinalStatus','previousOffsetIsExplicitlyPreviousRequestedNotNativeRead','offsetSlotsNeverResetOrReused','samplingExhaustionDoesNotChangeResult','errnoPreservedAroundAllNewDiagnosticEvaluation','diagnosticsDoNotRepairOrSuppressResetOrOffset')) and reader_contract['resetRequestIDs']==['0x84000009','0xc4000009','0x84000012','0xc4000012'] and reader_contract['resetRequestProcessLogLimit']==16 and reader_contract['unknownNonordinaryRequestProcessLogLimit']==16 and reader_contract['totalNewHVCProcessLogLimit']==32 and reader_contract['fixedProcessLifetimeOffsetIdentitySlots']==64 and reader_contract['firstAndChangedOffsetLogLimitPerCPUIdentity']==12 and reader_contract['maximumNewOffsetLinesPerProcess']==768,'bounded truthful reset-origin diagnostics preserve actual HVC, vtimer and native operations')
++ need(port['historicalInstalledRunProgressDiagnosticsV1Contract']==old['cpuRunProgressDiagnosticsV1Contract'] and port['historicalInstalledRangeTransactionV1Contract']==old['cpuRangeTransactionV1Contract'],'installed progress and RAM contracts retained as historical source deltas')
+  need(port['cpuRunProgressDiagnosticsV1Candidate']==old['cpuRunProgressDiagnosticsV1Candidate'] and len(port['actualChangedObjects'])==2 and len(port['inheritedWholeObjects'])==27 and port['allOther27ObjectsWholeUnchanged'] is True,'actual Life56 Factory10 replacements; other27 CPU objects whole Runtime67')
+  base.actual_frozen(port['cpuRunProgressDiagnosticsV1Candidate'],pf,'actual Runtime67 run progress source baseline')
+  for row in port['actualChangedObjects']+port['inheritedWholeObjects']:base.actual_frozen(row,pf,'actual linked provider object');exact(row)

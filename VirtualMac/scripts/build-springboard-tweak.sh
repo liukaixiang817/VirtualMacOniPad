@@ -12,7 +12,7 @@ PLIST="$OUT/VZKeyboardPassthrough.plist"
 
 need_command ldid
 need_command xcrun
-need_file "$VZ_REPO_ROOT/vz/tweak/VZKeyboardPassthrough.m"
+need_file "$VZ_REPO_ROOT/vz/tweak/VZKeyboardPassthroughIndependent27_v2.m"
 need_file "$VZ_REPO_ROOT/vz/tweak/VZKeyboardPassthrough.plist"
 
 mkdir -p "$OUT"
@@ -21,7 +21,7 @@ xcrun --sdk iphoneos clang -arch arm64e \
     -isysroot "$SDK" -dynamiclib -fblocks -framework Foundation \
     -Wl,-undefined,dynamic_lookup \
     -install_name /var/jb/Library/MobileSubstrate/DynamicLibraries/VZKeyboardPassthrough.dylib \
-    "$VZ_REPO_ROOT/vz/tweak/VZKeyboardPassthrough.m" -o "$DYLIB"
+    "$VZ_REPO_ROOT/vz/tweak/VZKeyboardPassthroughIndependent27_v2.m" -o "$DYLIB"
 cp "$VZ_REPO_ROOT/vz/tweak/VZKeyboardPassthrough.plist" "$PLIST"
 ldid -S "$DYLIB"
 echo "SpringBoard keyboard passthrough tweak built: $OUT"

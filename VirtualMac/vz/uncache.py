@@ -465,26 +465,50 @@ def collect_got_refs(buf, dsc):
         if buf[so:so+16].split(b"\0")[0] not in (b"__text", b"__objc_stubs"): continue
         sa, ssz = struct.unpack_from("<QQ", buf, so+32)
         soff = struct.unpack_from("<I", buf, so+48)[0]
-        regs = {}; pos = 0
-        while pos < ssz:
-            adv = pos
-            for ins in md.disasm(bytes(buf[soff+pos:soff+ssz]), sa+pos):
-                adv = (ins.address - sa) + ins.size; m, ops = ins.mnemonic, ins.operands
-                if m == "adrp" and len(ops) == 2:
-                    regs[ops[0].reg] = [ops[1].imm, False]
-                elif ops:
-                    base = disp = None; is_add = (m == "add")
-                    if is_add and len(ops) == 3 and ops[2].type == capstone.CS_OP_IMM:
-                        base, disp = ops[1].reg, ops[2].imm
-                    else:
-                        for op in ops:
-                            if op.type == capstone.CS_OP_MEM:
-                                base, disp = op.mem.base, op.mem.disp; break
-                    if base in regs and not regs[base][1]:
-                        tt = regs[base][0] + (disp or 0)
-                        if not inimg(tt): targets[tt] = is_add    # ADD-to-slot => auth (braa)
-                        regs[base][1] = True
-            pos = adv+4 if adv == pos else adv
+        # This is a bounded basic-block collector. Never carry a definition
+        # through an unknown instruction, control-flow edge, call clobber or
+        # a write to either width of the register. In genuine UniversalHID,
+        # retaining x22 across an LDP fabricated an authenticated "?" GOT
+        # entry from an ordinary collection-count ADD 0x4d8 bytes later.
+        # rewrite_adrp separately follows the complete relocation CFG.
+        def register(reg):
+            name = md.reg_name(reg) or ""
+            if name[:1] in ("w", "x") and name[1:].isdigit():
+                return "x" + name[1:]
+            return name
+        regs = {}
+        for pos in range(0, ssz - ssz % 4, 4):
+            decoded = list(md.disasm(bytes(buf[soff+pos:soff+pos+4]), sa+pos, count=1))
+            if not decoded:
+                regs.clear(); continue
+            ins = decoded[0]; m, ops = ins.mnemonic, ins.operands
+            if m == "adrp" and len(ops) == 2:
+                regs[register(ops[0].reg)] = [ops[1].imm, False]
+                continue
+            base = disp = None; is_add = m == "add"
+            if (is_add and len(ops) == 3 and ops[1].type == capstone.CS_OP_REG
+                    and ops[2].type == capstone.CS_OP_IMM):
+                base, disp = register(ops[1].reg), ops[2].imm
+            else:
+                for op in ops:
+                    if op.type == capstone.CS_OP_MEM:
+                        base, disp = register(op.mem.base), op.mem.disp; break
+            if base in regs and not regs[base][1]:
+                tt = regs[base][0] + (disp or 0)
+                if not inimg(tt): targets[tt] = is_add
+                regs[base][1] = True
+            try:
+                written = {register(r) for r in ins.regs_access()[1]}
+            except Exception:
+                regs.clear(); continue
+            for reg in written: regs.pop(reg, None)
+            if m in ("bl", "blr") or m.startswith("blra"):
+                for reg in [r for r in regs if r.startswith("x") and r[1:].isdigit()
+                            and int(r[1:]) <= 18]:
+                    del regs[reg]
+            elif (m in ("b", "br", "ret", "retab", "retaa", "cbz", "cbnz", "tbz", "tbnz")
+                  or m.startswith(("b.", "bra"))):
+                regs.clear()
     if not targets: return {}
     sm = a2s_batch(list(targets))
     out = {}
@@ -493,6 +517,50 @@ def collect_got_refs(buf, dsc):
         if nm and nm.startswith("_ptr."): nm = nm[5:]
         if nm: out[a] = (nm, is_auth)
     return out
+
+
+def collect_objc_ivar_type_slots(buf):
+    """Bounded ordinary 64-bit ivar-list records, including Swift class lists.
+
+    Swift classes can be absent from __objc_classlist, so inspect declared
+    __objc_const ranges for the objc4 32-byte ivar_t layout. Every candidate
+    must fit wholly in its section and every nonzero offset pointer must
+    reference a file-backed word in this image. A zero offset pointer is
+    accepted only for an original zero-size, zero-alignment record; its null
+    storage pointer is preserved. Malformed/ambiguous candidates are ignored.
+    Only these concrete type-field slots may localize an empty cache string.
+    """
+    segs, _, _ = parse_segments(buf)
+    def offset(address, size=8):
+        for _, va, _, fo, fs, _ in segs:
+            if va <= address and address + size <= va + fs:
+                return fo + address - va
+        return None
+    result = set()
+    for _, _, _, _, _, lc in segs:
+        for i in range(struct.unpack_from("<I", buf, lc+64)[0]):
+            so = lc + 72 + i*80
+            if buf[so:so+16].split(b"\0")[0] != b"__objc_const": continue
+            address, size = struct.unpack_from("<QQ", buf, so+32)
+            fo = struct.unpack_from("<I", buf, so+48)[0]
+            for pos in range(0, max(0, size-7), 4):
+                entry, count = struct.unpack_from("<II", buf, fo+pos)
+                if entry != 32 or not 0 < count <= 1024 or pos+8+count*32 > size: continue
+                slots = []
+                for n in range(count):
+                    at = fo+pos+8+n*32
+                    offptr, name, typ, alignment, width = struct.unpack_from("<QQQII", buf, at)
+                    off = offset(offptr)
+                    valid_offset = (off is not None and offptr % 8 == 0
+                                    and struct.unpack_from("<Q", buf, off)[0] <= 0x100000)
+                    valid_offset |= offptr == 0 and alignment == 0 and width == 0
+                    if (not valid_offset or not name or not typ
+                            or alignment not in (0,1,2,3,4,0xffffffff)
+                            or width > 0x100000):
+                        break
+                    slots.append(address+pos+8+n*32+16)
+                else: result.update(slots)
+    return result
 
 
 def collect_external_branches(buf):
@@ -1538,10 +1606,17 @@ def main(dsc, image_substr, dex_out, final_out, mode="compact"):
     # The old v3 pipeline keeps its layout and string-localization behavior.
     cache_strings = {}
     if modern_cache and mode == "compact":
+        ivar_types = collect_objc_ivar_type_slots(buf)
+        empty_ivar_targets = {t for a, t, au, *_ in fx if not au and a in ivar_types}
+        # An empty type encoding is real metadata, not an unresolved symbol.
+        # Permit it only where every source reference is a parsed, ordinary
+        # ivar_t.type field, never for an authenticated/function/GOT target.
+        empty_ivar_targets -= {t for a, t, au, *_ in fx if au or a not in ivar_types}
         external = {t & 0x00FFFFFFFFFFFFFF for _, t, au, *_ in fx
                     if not in_img(t & 0x00FFFFFFFFFFFFFF)}
         for target, value in read_cache_cstrs(dsc, external, 65536).items():
-            if value and all(32 <= b < 127 for b in value):
+            if (value and all(32 <= b < 127 for b in value)
+                    or value == b"" and target in empty_ivar_targets):
                 cache_strings[target] = value
     string_blob = bytearray()
     string_offsets = {}

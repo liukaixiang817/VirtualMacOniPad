@@ -1,0 +1,160 @@
+--- prepare-independent27-disabled-amx-active-getter-device-v52.py
++++ prepare-independent27-disabled-amx-config100-device-v53.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""HOST prepare the actual Runtime56 disabled AMX active metadata getter delta on the current boot.
++"""HOST prepare the actual Runtime57 exact disabled AMX boot configuration100 delta on the current boot.
+ 
+ Actual product trees derive every replacement/addition and trust entry. Root
+ alone dispatches under continuing human authorization after exact product/scope review.
+@@ -20,11 +20,11 @@
+ R=pathlib.Path(__file__).resolve().parents[3]
+ N=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm'
+ B=pathlib.Path(__file__).resolve().parent
+-OLD=N/'independent27-disabled-amx-config-device-v51-attempt1'
++OLD=N/'independent27-disabled-amx-active-getter-device-v52-attempt1'
+ TEMPLATE=N/'independent27-child-usbh-offline-device-v24-attempt1'
+-POST=N/'independent27-app67-normal-guest-lifecycle-v61-attempt1/device-receipts/post/receipt.json'
+-POST_SHA256='fb26b8ffc85248a472d948966f09cb4574b4d798f07a0500471f773aec69401e'
+-STAGE='/private/var/mobile/Library/.VM27-independent27-disabled-amx-active-getter-stage-v52'
++POST=N/'independent27-app68-normal-guest-lifecycle-v62-attempt1/device-receipts/post/receipt.json'
++POST_SHA256='32d150ccfc7be14f5ee8a3834605564b66e0fa162d30e0d0f1a533313d87357c'
++STAGE='/private/var/mobile/Library/.VM27-independent27-disabled-amx-config100-stage-v53'
+ APP_PEER=None
+ RUNTIME_PEER=N/'independent27-runtime10-signed-delta-independent-peer-v1-attempt1/review.json'
+ 
+@@ -116,7 +116,7 @@
+     old=json.loads((OLD/'scope.json').read_bytes())
+     app_input=json.loads(base.exact(app['sourceCandidate']).read_bytes())
+     main21=json.loads(base.exact(app_input['sourceCandidate']).read_bytes())
+-    need(app_input['actualUnchangedCompiledObjects']==34 and app_input['actualMain21ObjectReused'] is True and app_input['actualMain21AndOther33CompiledObjectsWholeUnchanged'] is True,'actual34 Main21 App67 objects whole with only new Runtime56 anchor')
++    need(app_input['actualUnchangedCompiledObjects']==34 and app_input['actualMain21ObjectReused'] is True and app_input['actualMain21AndOther33CompiledObjectsWholeUnchanged'] is True,'actual34 Main21 App68 objects whole with only new Runtime57 anchor')
+     need(app_input['genuineSSHRegistrationRouteEnabled'] is False and app_input['sshRegistrationExplicitlyDeferredForFirstBasicGuestBoot'] is True and app_input['actualMain20UIAndSSHDeferralPreserved'] is True,'Main20 display exposure and user-requested guest SSH deferral preserved')
+     need(main21['rawDiskThreadPoolAttachmentContract']==app_input['rawDiskThreadPoolAttachmentContract'],'actual compiled Main21 raw-disk attachment contract')
+     need(app_input['sourceCandidate']==old['appMain21SourceAndObjectCandidate'] and main21['actualRuntimeCandidate']==json.loads(base.exact(main21['baselineCompiledAppCandidate']).read_bytes())['actualRuntimeCandidate'],'same actual compiled Main21 source and original Runtime43 raw-disk constructor basis')
+@@ -127,7 +127,7 @@
+     need(signature['allCodePagesAndSpecialSlotsActuallyVerified'] is True,
+          'actual signed current Runtime whole code-page and special-slot proof')
+     post=json.loads(POST.read_bytes())
+-    need(pin(POST)['sha256']==POST_SHA256 and post['transportExit']==0 and post['finishedUTC']=='2026-10-16T06:26:41.448772+00:00','actual Normal61 post0 binds this new product baseline')
++    need(pin(POST)['sha256']==POST_SHA256 and post['transportExit']==0 and post['finishedUTC']=='2026-10-16T06:39:24.693523+00:00','actual Normal62 post0 binds this new product baseline')
+     generation=load(B/'independent27_initializer_log_generation_v1.py','actual_current_log_generation')
+     actual_generation=generation.actual_post_log_generation(OLD/'candidate.json',OLD/'device-receipts/launch/receipt.json',OLD/'device-receipts/post/receipt.json')
+     BOOT=actual_generation['bootSeconds'];BOOT_UUID=actual_generation['bootSessionUUID'];LOG_IDENTITY=actual_generation['identity'];LOG_DEVICE_INODE=':'.join(LOG_IDENTITY.split(':')[:2])
+@@ -212,6 +212,9 @@
+         cache_create+='mkdir -m 700 '+path+'\nchown 501:501 '+path+'\n'
+     cache_create=cache_check+"printf 'OWN_EXISTING_PRIVATE_CACHE_DIRECTORIES_VERIFIED_AND_RETAINED\\n'\n"
+     scope=copy.deepcopy(old)
++    scope['historicalRuntime56DisabledAMXConfigV2Verification']=runtime['historicalRuntime56DisabledAMXConfigV2Verification']
++    for key in ('cpu28OtherObjectsWholeRuntime55','consumerProvidersWholeRuntime55','currentConsumerWholeR55','factory5AndGICEngine5ObjectsWholeRuntime55','currentRuntimeConsumerWholeUnchangedFromRuntime55Required','currentRuntimeConsumerWholeUnchangedFromRuntime55'):
++        scope.pop(key,None)
+     scope['historicalRuntime55DisabledAMXConfigVerification']=runtime['historicalRuntime55DisabledAMXConfigVerification']
+     for key in ('cpu28OtherObjectsWholeRuntime54','consumerProvidersWholeRuntime54','currentConsumerWholeR54','factory5AndGICEngine5ObjectsWholeRuntime54','currentRuntimeConsumerWholeUnchangedFromRuntime54Required','currentRuntimeConsumerWholeUnchangedFromRuntime54'):
+         scope.pop(key,None)
+@@ -262,7 +265,7 @@
+     inherited={key:scope.pop(key) for key in ('currentBootTrustPlan','restoredExistingProductCDHashes','newProductCodeHashes','priorInitializationLaunch',
+         'priorAppRegistration','historicalPriorBootInitializationOnly','inheritedActualSignedRuntimeCDProof',
+         'actualSignedAppProductProof','trustMembershipKnownBeforeDispatch','currentDeviceFacts','actualOwnAppPIDObserved') if key in scope}
+-    scope.update(schema='Actual Runtime56 disabled AMX active metadata getter scope v52',
++    scope.update(schema='Actual Runtime57 exact disabled AMX boot configuration100 scope v53',
+         historicalPriorInitAndTrustOnly=dict(scope=pin(OLD/'scope.json'),prior=inherited),
+         oldActualPost=pin(POST),currentInstalledProductsPost=pin(POST),oldScope=pin(OLD/'scope.json'),
+         deviceStage=STAGE,files=files,directories=directories,runtimeCandidate=pin(runtime_path),appCandidate=pin(app_path),
+@@ -300,7 +303,7 @@
+     scope['guestDiskFileIncludedInDeployment']=False
+     scope['guestSSHExplicitlyDeferredForFirstBasicGuestBoot']=True
+     scope['guestSSHRegistrationOrServiceInvokedByThisFirstBoot']=False
+-    scope['currentRuntimeConsumerWholeUnchangedFromRuntime55Required']=True
++    scope['currentRuntimeConsumerWholeUnchangedFromRuntime56Required']=True
+     need(runtime['cpuProviderAndAll29CPUObjectsWholeR41'] is False and 'cpuProviderWholeR41' not in runtime,'prior whole-R41 CPU proof is historical after FactoryV5 replacement')
+     scope['cpuProviderAndAll29CPUObjectsWholeR41']=False
+     scope['runtimeAllWholebytesUnchanged']=False
+@@ -359,7 +362,7 @@
+     scope['cpuISAProfileCandidate']=runtime['cpuISAProfileCandidate']
+     scope['cpuISAProfileContract']=runtime['cpuISAProfileContract']
+     scope['runtime37CPUISAProfileDeltaVerification']=runtime['runtime37CPUISAProfileDeltaVerification']
+-    for key in ('consumerStdioInheritanceCandidate','consumerStdioInheritanceContract','runtime41ConsumerStdioInheritanceDeltaVerification','actualConsumerExports','actualConsumerImports','actualConsumerLoads','actualConsumerAddedImports','consumerFourOwnDependencyLoadsNormalizedToBaselineLoaderPath','cpu28OtherObjectsWholeRuntime55','consumerProvidersWholeRuntime55','currentConsumerWholeR55','factory5ObjectWholeRuntime43','factory5AndGICEngine5ObjectsWholeRuntime55'):
++    for key in ('consumerStdioInheritanceCandidate','consumerStdioInheritanceContract','runtime41ConsumerStdioInheritanceDeltaVerification','actualConsumerExports','actualConsumerImports','actualConsumerLoads','actualConsumerAddedImports','consumerFourOwnDependencyLoadsNormalizedToBaselineLoaderPath','cpu28OtherObjectsWholeRuntime56','consumerProvidersWholeRuntime56','currentConsumerWholeR56','factory5ObjectWholeRuntime43','factory5AndGICEngine5ObjectsWholeRuntime56'):
+         scope[key]=runtime[key]
+     need(runtime['cpuVirtualTimerGICContractAppliesToHistoricalFunctionalDeltaOnly'] is True and runtime['currentDiagnosticMaximumExistingPrepareSystemNative8Calls']==1,'old Life35 no-new-native8 contract is source-scoped history; current diagnostic permits atmost one existing typed missing-bank sync')
+     scope['cpuVirtualTimerGICContractAppliesToHistoricalFunctionalDeltaOnly']=True
+@@ -387,6 +390,10 @@
+     scope['cpuRaw7FaultOpcodeSnapshotContractAppliesToHistoricalDiagnosticDeltaOnly']=True
+     need(runtime['cpuDisabledAMXConfigContractAppliesToHistoricalV1DeltaOnly'] is True,'prior disabled AMX V1 proof describes its historical source delta; present V2 corrects guarded active metadata getter and first-unhandled sample')
+     scope['cpuDisabledAMXConfigContractAppliesToHistoricalV1DeltaOnly']=True
++    need(runtime['cpuDisabledAMXConfigV2ContractAppliesToHistoricalV2DeltaOnly'] is True,'prior V2 zero-only contract is historical delta; current V3 is exact0/100 read-zero disabled profile')
++    scope['cpuDisabledAMXConfigV2ContractAppliesToHistoricalV2DeltaOnly']=True
++    for key in ('cpuDisabledAMXConfigV3Candidate','cpuDisabledAMXConfigV3Contract','runtime56CPUDisabledAMXConfigV3DeltaVerification','actualNormal62Operand100Snapshot','actualNativeBootConfig100Disassembly','actualNativeContextEnable63Disassembly'):
++        scope[key]=runtime[key]
+     for key in ('cpuDisabledAMXConfigV2Candidate','cpuDisabledAMXConfigV2Contract','runtime55CPUDisabledAMXConfigV2DeltaVerification','actualNormal61RepeatedFaultSnapshot'):
+         scope[key]=runtime[key]
+     for key in ('cpuDisabledAMXConfigCandidate','cpuDisabledAMXConfigContract','runtime54CPUDisabledAMXConfigDeltaVerification','actualNormal60FaultInstructionSnapshot'):
+@@ -446,7 +453,7 @@
+     scope['nativeTargetShaderCandidate']=runtime['nativeTargetShaderCandidate']
+     scope['nativeTargetShaderContract']=runtime['nativeTargetShaderContract']
+     base.exact(scope['PGResourceSourceCandidate']);base.exact(scope['runtime25AddressCapabilityDeltaVerification']);base.exact(scope['pvgAddressRangeCapabilityCandidate']);base.exact(scope['pvgBufferCapabilityCandidate']);base.exact(scope['nativeTargetShaderCandidate'])
+-    need(runtime['baselineRuntimeCandidate']==old['runtimeCandidate'] and len(runtime['genuineResources'])==1,'actual Runtime56 signs from installed Runtime55 with same genuine resource')
++    need(runtime['baselineRuntimeCandidate']==old['runtimeCandidate'] and len(runtime['genuineResources'])==1,'actual Runtime57 signs from installed Runtime56 with same genuine resource')
+     genuine=runtime['genuineResources'][0]
+     shader=next(row for row in files if row['archivePath']==shader_name)
+     need((shader['local']['bytes'],shader['local']['sha256'])==(genuine['actualRuntimeResource']['bytes'],genuine['actualRuntimeResource']['sha256']) and
+@@ -502,9 +509,9 @@
+     for name in ('runtime/parent-flat/VM27LargeConsumerV2.dylib',macos+'VM27LargeConsumerV2.dylib'):
+         current_consumer=next(row for row in files if row['archivePath']==name);prior_consumer=old_by_name[name]
+         need((current_consumer['local']['bytes'],current_consumer['local']['sha256'],current_consumer['cdhash'])==(prior_consumer['local']['bytes'],prior_consumer['local']['sha256'],prior_consumer['cdhash']),'actual whole R42 Consumer stdio image and code hash retained in both roles')
+-    scope['currentRuntimeConsumerWholeUnchangedFromRuntime55']=True
+-    need(scope['currentConsumerWholeR55']['wholeBytesUnchanged'] is True and scope['currentConsumerWholeR55']['baselineRuntimeCandidate']==old['runtimeCandidate'],'current Consumer whole-body proof joins actual installed Runtime55')
+-    need(scope['consumerProvidersWholeRuntime55'] is True and scope['cpu28OtherObjectsWholeRuntime55'] is True,'actual Runtime56 consumer whole Runtime55 and28 untouched CPU objects')
++    scope['currentRuntimeConsumerWholeUnchangedFromRuntime56']=True
++    need(scope['currentConsumerWholeR56']['wholeBytesUnchanged'] is True and scope['currentConsumerWholeR56']['baselineRuntimeCandidate']==old['runtimeCandidate'],'current Consumer whole-body proof joins actual installed Runtime56')
++    need(scope['consumerProvidersWholeRuntime56'] is True and scope['cpu28OtherObjectsWholeRuntime56'] is True,'actual Runtime57 consumer whole Runtime56 and28 untouched CPU objects')
+     reason_port=json.loads(base.exact(scope['childErrorReasonDiagnosticCandidate']).read_bytes())
+     base.exact(scope['runtime27ErrorReasonDeltaVerification'])
+     need(runtime['childErrorReasonDiagnosticCandidate']==old['childErrorReasonDiagnosticCandidate'] and reason_port['providerKey']=='MD'and reason_port['roles']==['child']and
+@@ -649,13 +656,25 @@
+     need((scope['actualConsumerExports'],scope['actualConsumerImports'],scope['actualConsumerLoads'])==(9,80,7) and scope['actualConsumerAddedImports']==consumer_source['actualConsumerAddedImports'] and len(scope['actualConsumerAddedImports'])==6 and scope['consumerFourOwnDependencyLoadsNormalizedToBaselineLoaderPath'] is True,'Consumer own namespace is9 exports80 totalimports7loads with6 real added libSystem imports and four normalized own loadnames')
+     need(runtime['consumerStdioInheritanceCandidate']==old['consumerStdioInheritanceCandidate'] and runtime['consumerStdioInheritanceContract']==old['consumerStdioInheritanceContract'] and runtime['runtime41ConsumerStdioInheritanceDeltaVerification']==old['runtime41ConsumerStdioInheritanceDeltaVerification'],'current Consumer source and its historical R42 one-object deployment proof stay whole')
+     need(all(scope['consumerStdioInheritanceContract'][k] is True for k in ('onlyOwnedBundleModeV5Changed','usesPublicDarwinAddinheritNPForSTDOUTAndSTDERR','childOnlyCloseOnExecClearing','parentDescriptorAndStatusFlagsUnchanged','noNewOpenTruncateOrPathRedirection','checksRealpathFGetPathAndSameDevInode','requiresRegularUID501GID501Mode0600Nlink1AppendWritable','checksBeforeActionsAndImmediatelyBeforeActualSpawn','logsActualParentFDFlagsOncePerStream','argvEnvRegisteredPortsPermissionsAndOwnerStateUnchanged','fileActionsFailuresPreventSpawnAndDestroyInitializedActions','successfulSpawnPIDStateRetainedBeforeCleanupErrors','allStrictNativeLegacyModesUnchanged','CPUProviderAndAll29CPUObjectsWholeR41','ChildMachineBodyWholeR41')) and scope['consumerStdioInheritanceContract']['newRootPermissions'] is False,'only validated owned-log stdout/stderr descriptors reach owned Child; no parent flags, paths, permissions, owner or CPU changes')
++    config_source=json.loads(base.exact(scope['cpuDisabledAMXConfigV3Candidate']).read_bytes())
++    base.exact(scope['runtime56CPUDisabledAMXConfigV3DeltaVerification'])
++    baseline_config_cpu=json.loads(base.exact(old['cpuDisabledAMXConfigV2Candidate']).read_bytes())
++    need(config_source['cpuDisabledAMXConfigV2Candidate']==old['cpuDisabledAMXConfigV2Candidate'] and len(config_source['actualChangedObjects'])==1 and len(config_source['inheritedWholeObjects'])==28 and config_source['inheritedWholeObjects']==baseline_config_cpu['inheritedWholeObjects'] and config_source['allOther28ObjectsWholeUnchanged'] is True,'sole Life46 policy delta;28 CPU objects including Engine5 and ProductionOps whole Runtime56')
++    need(len(scope['factory5AndGICEngine5ObjectsWholeRuntime56'])==2 and all(row in config_source['inheritedWholeObjects']for row in scope['factory5AndGICEngine5ObjectsWholeRuntime56']),'actual Factory5 and Engine5 whole Runtime56')
++    need(config_source['cpuDisabledAMXConfigV3Contract']==scope['cpuDisabledAMXConfigV3Contract'] and config_source['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True and (config_source['actualExports'],config_source['actualNativeImports'],config_source['actualLoads'])==(155,93,4),'actual exact disabled config100 source and same155/93/4 namespace')
++    config_binding=scope['actualSameImageVCPUsExitBinding'];base.exact(config_binding['callbackAssembly'])
++    need(config_binding==config_source['actualSameImageVCPUsExitBinding'] and config_binding['actualDirectBL']['targetRVA']==config_binding['ownExportRVA'] and config_binding['externalVCPUsExitImportPresent'] is False,'current callback targets own hv_vcpus_exit; Runtime57 signed code preserves binding')
++    for key in ('actualNormal62Operand100Snapshot','actualNativeBootConfig100Disassembly','actualNativeContextEnable63Disassembly'):
++        need(scope[key]==config_source[key],'actual config100 source proof '+key);base.exact(scope[key])
++    config_contract=scope['cpuDisabledAMXConfigV3Contract']
++    need(all(config_contract[key]is True for key in ('actualDisabledAMXFunctionalityPreserved', 'actualHostKernelBootMOVKSequenceZeroesEveryHigherBitThenWritesConfig100', 'nativeContextEnableBit63RemainsClearAndForbiddenBank57NeverActivated', 'virtualDisabledConfigurationRemainsReadZeroAndWritesZeroOr100Only', 'noArbitraryNonzeroOrAMXArithmeticOperationSupportClaimed', 'metadataActive4110UsesExistingGICPostFieldV20Getter', 'noSystemMetadataAllowlistExpansion', 'allExistingMSRMRSOperandRt31ProfileOwnerActiveMMUInstructionAndPartialFailureGuardsPreserved', 'actualFirstUnHandledRaw7Fault64SnapshotAfterDisabledConfigEmulationDeclines', 'successfullyEmulatedDisabledConfigDoesNotConsumeFaultOneShot', 'firstEightEligibilityAndActualOpcodeOperandAndRealPCReceiptsPreserved', 'originalNative9ReceiptAndRunStatusPreserved', 'existingGenuineBankOneSyncReusedNoAdditionalNative8', 'noAdditionalDiagnosticPayloadBytesLogged', 'noAMXBacking760OrDirtyBank57Written', 'unknownInstructionTranslationOwnershipOrOtherWriteUsesOriginalRealUndefinedFallback', 'partialEmulationWriteFailurePoisonsCPU', 'existingC1PACAndRealUndefinedFallbackPreserved', 'allExistingDescriptorUniqueOwnRAMVMOperationAndPostBoundaryGuardsPreserved', 'Engine5ProductionOpsV6Factory5ConsumerV6ChildWhole', 'allOther28ObjectsWhole')) and config_contract['onlyAdditionalWriteValueIsExactActualNativeBootDisabledPolicy']=='0x100' and config_contract['exactSelector']=='S3_4_C15_C1_4' and (config_contract['functionalInstructionFetchBytes'],config_contract['maxKernelTotalDiagnosticPayloadBytes'],config_contract['maxFirmwareTotalDiagnosticPayloadBytes'],config_contract['actualChangedObjects'])==(4,192,128,1),'exact native boot disabled configuration0/100 read-zero only; actual bit63 clear/dirty57 untouched, unknown or other writes keep real undefined fallback')
+     getter_source=json.loads(base.exact(scope['cpuDisabledAMXConfigV2Candidate']).read_bytes())
+     base.exact(scope['runtime55CPUDisabledAMXConfigV2DeltaVerification'])
+     baseline_getter_cpu=json.loads(base.exact(old['cpuDisabledAMXConfigCandidate']).read_bytes())
+     need(getter_source['cpuDisabledAMXConfigCandidate']==old['cpuDisabledAMXConfigCandidate'] and len(getter_source['actualChangedObjects'])==1 and len(getter_source['inheritedWholeObjects'])==28 and getter_source['inheritedWholeObjects']==baseline_getter_cpu['inheritedWholeObjects'] and getter_source['allOther28ObjectsWholeUnchanged'] is True,'sole Life45 correction; other28 CPU objects including Engine5 and ProductionOps whole Runtime55')
+-    need(len(scope['factory5AndGICEngine5ObjectsWholeRuntime55'])==2 and all(row in getter_source['inheritedWholeObjects']for row in scope['factory5AndGICEngine5ObjectsWholeRuntime55']),'actual Factory5 and Engine5 whole Runtime55')
++    need(len(scope['historicalRuntime56DisabledAMXConfigV2Verification']['factory5AndGICEngine5ObjectsWholeRuntime55'])==2 and all(row in getter_source['inheritedWholeObjects']for row in scope['historicalRuntime56DisabledAMXConfigV2Verification']['factory5AndGICEngine5ObjectsWholeRuntime55']),'actual Factory5 and Engine5 whole Runtime55')
+     need(getter_source['cpuDisabledAMXConfigV2Contract']==scope['cpuDisabledAMXConfigV2Contract'] and getter_source['actualIOSCompileStrictLinkAndDyldValidatePassed'] is True and (getter_source['actualExports'],getter_source['actualNativeImports'],getter_source['actualLoads'])==(155,93,4),'actual AMX active getter correction source and same155/93/4 namespace')
+-    getter_binding=scope['actualSameImageVCPUsExitBinding'];base.exact(getter_binding['callbackAssembly'])
++    getter_binding=scope['historicalRuntime56DisabledAMXConfigV2Verification']['actualSameImageVCPUsExitBinding'];base.exact(getter_binding['callbackAssembly'])
+     need(getter_binding==getter_source['actualSameImageVCPUsExitBinding'] and getter_binding['actualDirectBL']['targetRVA']==getter_binding['ownExportRVA'] and getter_binding['externalVCPUsExitImportPresent'] is False,'current callback targets own hv_vcpus_exit; Runtime56 signed code preserves binding')
+     need(scope['actualNormal61RepeatedFaultSnapshot']==getter_source['actualNormal61RepeatedFaultSnapshot'],'actual repeated fault source');base.exact(scope['actualNormal61RepeatedFaultSnapshot'])
+     getter_contract=scope['cpuDisabledAMXConfigV2Contract']
+@@ -1032,7 +1051,7 @@
+         (out/(action+'-syntax.stderr')).write_bytes(result.stderr)
+         command=('sudo -k -S -p "" ' if action!='launch' else '')+'/var/jb/bin/sh -c '+shlex.quote(script)
+         sizes[action]=len(command.encode());need(sizes[action]+10000<262144,'actual ARG_MAX reserve '+action)
+-    candidate=dict(schema='Actual Runtime56 disabled AMX active metadata getter device packet v52',preparer=pin(__file__),
++    candidate=dict(schema='Actual Runtime57 exact disabled AMX boot configuration100 device packet v53',preparer=pin(__file__),
+         scope=pin(out/'scope.json'),archive=pin(out/'products.tar'),controller=pin(out/'control.py'),scripts=script_rows,actions=list(scripts),
+         runtimeCandidate=pin(runtime_path),appCandidate=pin(app_path),currentInstalledProductsPost=pin(POST),
+         actualFullFiles=len(files),actualFullCodeDirectoryHashes=len(full),actualChangedFiles=len(changes),
+@@ -1074,7 +1093,8 @@
+     pins += [scope['cpuKernelTTBR1SnapshotCandidate'],scope['runtime52CPUKernelTTBR1SnapshotDeltaVerification'],scope['actualNormal58PostSnapshot'],scope['uninstalledKernelTTBR1SnapshotSourceHistory']]+scope['historicalRuntime53KernelTTBR1SnapshotVerification']['factory5AndGICEngine5ObjectsWholeRuntime52']
+     pins += [scope['cpuRaw7FaultOpcodeSnapshotCandidate'],scope['runtime53CPURaw7FaultOpcodeSnapshotDeltaVerification'],scope['actualNormal59KernelPanicSnapshot']]+scope['historicalRuntime54Raw7FaultOpcodeSnapshotVerification']['factory5AndGICEngine5ObjectsWholeRuntime53']
+     pins += [scope['cpuDisabledAMXConfigCandidate'],scope['runtime54CPUDisabledAMXConfigDeltaVerification'],scope['actualNormal60FaultInstructionSnapshot']]+scope['historicalRuntime55DisabledAMXConfigVerification']['factory5AndGICEngine5ObjectsWholeRuntime54']
+-    pins += [scope['cpuDisabledAMXConfigV2Candidate'],scope['runtime55CPUDisabledAMXConfigV2DeltaVerification'],scope['actualNormal61RepeatedFaultSnapshot']]+scope['factory5AndGICEngine5ObjectsWholeRuntime55']
++    pins += [scope['cpuDisabledAMXConfigV2Candidate'],scope['runtime55CPUDisabledAMXConfigV2DeltaVerification'],scope['actualNormal61RepeatedFaultSnapshot']]+scope['historicalRuntime56DisabledAMXConfigV2Verification']['factory5AndGICEngine5ObjectsWholeRuntime55']
++    pins += [scope['cpuDisabledAMXConfigV3Candidate'],scope['runtime56CPUDisabledAMXConfigV3DeltaVerification'],scope['actualNormal62Operand100Snapshot'],scope['actualNativeBootConfig100Disassembly'],scope['actualNativeContextEnable63Disassembly']]+scope['factory5AndGICEngine5ObjectsWholeRuntime56']
+     pins += [pin(B/'independent27_initializer_log_generation_v1.py'),actual_generation['initializerLaunch'],actual_generation['initializerPost'],actual_generation['actualPostStdout']]
+     pins += [row['local']for row in files]+[row['old']for row in changes if row['old'] is not None]
+     dump(out/'freeze.json',dict(files=list({p['path']:p for p in pins}.values()),deviceOperations=0,codeSigningOperations=0))

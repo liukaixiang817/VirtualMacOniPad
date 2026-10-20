@@ -1,5 +1,6 @@
 #import "VZSettingsViewController.h"
 #import "VZAppSettings.h"
+#import "VZBackendSelection.h"
 #import "VZDiagnostics.h"
 #import "VZLocalization.h"
 #import "VZSupport.h"
@@ -133,6 +134,7 @@
 @property(nonatomic, retain) NSArray<NSDictionary *> *machines;
 @property(nonatomic) CGFloat lastLayoutWidth;
 @property(nonatomic) NSUInteger versionTapCount;
+@property(nonatomic) BOOL focusFrameworkBackend;
 @end
 
 static CGFloat VZSettingsContentWidth(UITableView *tableView)
@@ -158,7 +160,14 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
 
 - (instancetype)initWithMachines:(NSArray<NSDictionary *> *)machines
 {
+    return [self initWithMachines:machines focusFrameworkBackend:NO];
+}
+
+- (instancetype)initWithMachines:(NSArray<NSDictionary *> *)machines
+             focusFrameworkBackend:(BOOL)focus
+{
     if ((self = [super initWithStyle:UITableViewStyleInsetGrouped])) {
+        _focusFrameworkBackend = focus;
         NSMutableArray *validMachines = [NSMutableArray array];
         if ([machines isKindOfClass:NSArray.class]) {
             for (id candidate in machines) {
@@ -174,6 +183,17 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
         _machines = [validMachines copy];
     }
     return self;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    if (self.focusFrameworkBackend) {
+        self.focusFrameworkBackend = NO;
+        [self.tableView scrollToRowAtIndexPath:
+            [NSIndexPath indexPathForRow:3 inSection:3]
+            atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
+    }
 }
 
 - (void)viewDidLoad
@@ -234,7 +254,7 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
 {
     (void)tableView;
     return section == 0 ? 4 : section == 1 ? 6 : section == 2 ? 4 :
-        section == 3 ? 3 : section == 4 ? 3 : section == 5 ? 2 :
+        section == 3 ? 5 : section == 4 ? 3 : section == 5 ? 2 :
         section == 6 ? 1 : 4;
 }
 
@@ -256,7 +276,7 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
             VZL(@"These options affect iPadOS only while Virtual Mac is frontmost and a Virtual Mac is running."),
             VZL(@"These options affect iOS only while Virtual Mac is frontmost and a Virtual Mac is running."));
     if (section == 3)
-        return VZL(@"Debug Logging takes effect the next time a Virtual Mac starts.");
+        return [NSString stringWithFormat:@"%@\n%@", VZL(@"Debug Logging takes effect the next time a Virtual Mac starts."), VZBL(@"Choose the CPU, VMM and Virtualization framework version. Shut down the Virtual Mac before switching. Close and reopen the app if a different version has already been loaded. The GPU backend is configured separately.")];
     return nil;
 }
 
@@ -420,6 +440,20 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
         cell.accessoryView = toggle;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     } else if (indexPath.section == 3) {
+        if (indexPath.row >= 3) {
+            cell.textLabel.text = indexPath.row == 3
+                ? VZBL(@"Framework Backend") : VZBL(@"Loaded Framework Backend");
+            NSString *version = indexPath.row == 3
+                ? VZBackendSelectedVersion() : VZBackendLoadedVersion();
+            cell.detailTextLabel.text = [version isEqualToString:@"27"]
+                ? VZBL(@"macOS 27 (In development)")
+                : [version isEqualToString:@"13.2.1"] ? @"macOS 13.2.1" : version;
+            cell.accessoryType = indexPath.row == 3
+                ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone;
+            cell.selectionStyle = indexPath.row == 3
+                ? UITableViewCellSelectionStyleDefault : UITableViewCellSelectionStyleNone;
+            return cell;
+        }
         NSArray *titles = @[VZL(@"Fix Keyboard Crash"),
                             VZL(@"Fix External Display Scroll Direction"),
                             VZL(@"Debug Logging")];
@@ -520,6 +554,38 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
                 (void)action;
                 [VZAppSettings.sharedSettings setString:values[index]
                     forKey:VZDebugLoggingKey];
+                [self.tableView reloadData];
+            }]];
+    }
+    [picker addAction:[UIAlertAction actionWithTitle:VZL(@"Cancel")
+        style:UIAlertActionStyleCancel handler:nil]];
+    picker.popoverPresentationController.sourceView = cell;
+    picker.popoverPresentationController.sourceRect = cell.bounds;
+    [self presentViewController:picker animated:YES completion:nil];
+}
+
+- (void)chooseFrameworkBackendFrom:(UITableViewCell *)cell
+{
+    UIAlertController *picker = [UIAlertController
+        alertControllerWithTitle:VZBL(@"Framework Backend")
+        message:VZBL(@"macOS 27 is still in development and cannot start a guest yet. Selecting it will never fall back silently to macOS 13.2.1.")
+        preferredStyle:UIAlertControllerStyleActionSheet];
+    NSArray *values = @[@"13.2.1", @"27"];
+    NSArray *titles = @[@"macOS 13.2.1", VZBL(@"macOS 27 (In development)")];
+    for (NSUInteger index = 0; index < values.count; ++index) {
+        [picker addAction:[UIAlertAction actionWithTitle:titles[index]
+            style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                (void)action;
+                NSError *error = nil;
+                if (!VZBackendSelectVersion(values[index], &error)) {
+                    UIAlertController *notice = [UIAlertController
+                        alertControllerWithTitle:VZBL(@"Framework Backend")
+                        message:error.localizedDescription
+                        preferredStyle:UIAlertControllerStyleAlert];
+                    [notice addAction:[UIAlertAction actionWithTitle:VZL(@"OK")
+                        style:UIAlertActionStyleDefault handler:nil]];
+                    [self presentViewController:notice animated:YES completion:nil];
+                }
                 [self.tableView reloadData];
             }]];
     }
@@ -658,6 +724,16 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
     [alert addAction:[UIAlertAction actionWithTitle:VZL(@"Reset")
         style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
             (void)action;
+            if (VZBackendIsRunActive()) {
+                UIAlertController *notice = [UIAlertController
+                    alertControllerWithTitle:VZBL(@"Framework Backend")
+                    message:VZBL(@"Shut down the Virtual Mac before changing its framework backend.")
+                    preferredStyle:UIAlertControllerStyleAlert];
+                [notice addAction:[UIAlertAction actionWithTitle:VZL(@"OK")
+                    style:UIAlertActionStyleDefault handler:nil]];
+                [self presentViewController:notice animated:YES completion:nil];
+                return;
+            }
             [VZAppSettings.sharedSettings resetToDefaults];
             [self.tableView reloadData];
         }]];
@@ -728,6 +804,8 @@ static NSString *VZSettingsFittingTitle(UITableView *tableView,
         [self chooseHUDVisibilityFrom:cell];
     else if (indexPath.section == 3 && indexPath.row == 2)
         [self chooseDebugLoggingFrom:cell];
+    else if (indexPath.section == 3 && indexPath.row == 3)
+        [self chooseFrameworkBackendFrom:cell];
     else if (indexPath.section == 7 && indexPath.row == 0) {
         UIPasteboard.generalPasteboard.string = VZVMLibraryPath();
         UINotificationFeedbackGenerator *feedback = [[[UINotificationFeedbackGenerator alloc] init] autorelease];

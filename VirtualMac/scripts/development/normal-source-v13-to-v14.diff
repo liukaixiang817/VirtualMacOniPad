@@ -1,0 +1,72 @@
+--- prepare-independent27-normal-guest-lifecycle-v13.py
++++ prepare-independent27-normal-guest-lifecycle-v14.py
+@@ -105,8 +105,9 @@
+ '''
+ 
+ 
+-def bounded_run_v4(body, controller):
+-    return controller.prefix(501) + '/var/jb/usr/bin/timeout --signal=TERM --kill-after=20 112 /var/jb/bin/sh -c ' + shlex.quote(body) + '\n'
++def bounded_run_v4(body, controller, term_seconds=112):
++    common.need(term_seconds in (112, 320), 'finite original observe or extended first-boot TERM bound')
++    return controller.prefix(501) + '/var/jb/usr/bin/timeout --signal=TERM --kill-after=20 ' + str(term_seconds) + ' /var/jb/bin/sh -c ' + shlex.quote(body) + '\n'
+ 
+ 
+ def cleanup_body_v4(controller):
+@@ -156,7 +157,7 @@
+ own_late_baseline=0;own_late_frame=0;own_late_progress=0
+ while :;do
+  wall_tick_v4
+- [ "$own_elapsed" -lt 95 ] || break
++ [ "$own_elapsed" -lt 300 ] || break
+  scan_own || exit 77
+  [ -n "$app_rows" ]
+  log_state || exit 81
+@@ -164,7 +165,7 @@
+  if [ "$own_elapsed" -ge 45 ] && [ "$own_late_baseline" = 0 ];then own_late_frame=$own_last;own_late_baseline=1;fi
+  if [ "$own_late_baseline" = 1 ] && [ "$own_last" -gt "$own_late_frame" ];then own_late_progress=1;fi
+  printf 'OWN_OBSERVE elapsed=%s accept=%s state1=%s frames=%s first=%s last=%s lateProgress=%s source=guarded-date\n' "$own_elapsed" "$own_accept" "$own_started" "$own_frames" "$own_first" "$own_last" "$own_late_progress"
+- [ "$own_elapsed" -lt 95 ] || break
++ [ "$own_elapsed" -lt 300 ] || break
+  sleep 1
+ done
+ scan_own || exit 77;log_state || exit 81
+@@ -181,8 +182,8 @@
+ own_handoff=1
+ printf 'OWN_HANDOFF_COMMITTED %s\n' "$OWN_NORMAL_NONCE"
+ '''
+-    # TERM112 leaves20 seconds until the132 hard boundary for exact cleanup.
+-    return bounded_run_v4(body, controller)
++    # TERM320 leaves20 seconds until the340 hard boundary for exact cleanup.
++    return bounded_run_v4(body, controller, term_seconds=320)
+ 
+ 
+ def render_owned(controller, action):
+@@ -386,7 +387,7 @@
+     output.mkdir(mode=0o700)
+     for action, script in scripts.items():
+         (output / (action + '.sh')).write_text(script)
+-    runner = SCRIPT_DIR / 'independent27_normal_guest_lifecycle_v3.py'
++    runner = SCRIPT_DIR / 'independent27_normal_guest_lifecycle_v4.py'
+     shutil.copyfile(runner, output / 'control.py')
+     source_inputs = [pathlib.Path(__file__).resolve(), pathlib.Path(common.__file__), runner, controller_path,
+                      batch_path, controller.HEALTH, pathlib.Path(generation.__file__),
+@@ -394,7 +395,7 @@
+                      args.initializer_launch.resolve(), args.initializer_post.resolve(), args.guest_readonly.resolve(),
+                      args.guest_configuration.resolve(), failed_path, common.exact(failed['request']),
+                      common.exact(failed['stdout']), common.exact(failed['stderr']), *extra_screen_inputs]
+-    plan = dict(schema='Inactive owned normal guest actual same-boot post-derived log handoff packet v13', builder=common.pin(__file__),
++    plan = dict(schema='Inactive owned normal guest actual same-boot post-derived log handoff packet v14', builder=common.pin(__file__),
+         common=common.pin(common.__file__), controller=common.pin(output / 'control.py'),
+         inheritedController=common.pin(controller_path), inheritedProcessFunctionsSHA256=__import__('hashlib').sha256(controller.PROCESS_FUNCTIONS.encode()).hexdigest(),
+         initializerCandidate=common.pin(initializer), initializerLaunch=common.pin(args.initializer_launch.resolve()),
+@@ -419,8 +420,8 @@
+         guestPath=common.GUEST, guestFacts=facts, ownLog=common.LOG, ownAppMain=scope['deviceAppMain'], ownChildMain=scope['deviceChildMain'],
+         sessionNonce=nonce, backupDirectory=session_path, exclusiveOnceURL=True,
+         actions={action: common.pin(output / (action + '.sh')) for action in scripts},
+-        remoteTERMSeconds=112, remoteKILLSeconds=132, startTransportSeconds=145, shortTransportSeconds=55,
+-        observeSeconds=90, wallClockGuardSeconds=95, clockSource='guarded /var/jb/usr/bin/date wall time, not monotonic', hostMonotonicMinimumObservationSeconds=90, hostMonotonicLateProgressAfterSeconds=45, terminalCleanupSeconds=20, boundedACKReadSeconds=5, failedStartPostAdmission='independent readonly OFF-first; never prefix cleanup claim', explicitHandoffAndACKFailureGuards=True, protocolRejectionKeepsSSHOutputOpenThroughNativeCleanup=True, cleanupDiagnosticPipeCannotInterruptValidatedSignals=True, requiresActualStateRunningAndLateCPUBitmapFrameProgressForOffer=True, frameProgressBackend='cpu-bitmap', frameProgressEvidence='successful IOSurface CPU copy, CGImage publication, returned commit and CA transaction completion', frameProgressMaximumDimension=8192, frameProgressIsPhysicalScreenEvidence=False, frameProgressIsMetalGPUCompletion=False,
++        remoteTERMSeconds=320, remoteKILLSeconds=340, startTransportSeconds=355, shortTransportSeconds=55,
++        observeSeconds=90, wallClockGuardSeconds=300, observeWallClockGuardSeconds=95, observeRemoteTERMSeconds=112, observeRemoteKILLSeconds=132, observeTransportSeconds=145, clockSource='guarded /var/jb/usr/bin/date wall time, not monotonic', hostMonotonicMinimumObservationSeconds=90, hostMonotonicLateProgressAfterSeconds=45, terminalCleanupSeconds=20, boundedACKReadSeconds=5, failedStartPostAdmission='independent readonly OFF-first; never prefix cleanup claim', explicitHandoffAndACKFailureGuards=True, protocolRejectionKeepsSSHOutputOpenThroughNativeCleanup=True, cleanupDiagnosticPipeCannotInterruptValidatedSignals=True, requiresActualStateRunningAndLateCPUBitmapFrameProgressForOffer=True, frameProgressBackend='cpu-bitmap', frameProgressEvidence='successful IOSurface CPU copy, CGImage publication, returned commit and CA transaction completion', frameProgressMaximumDimension=8192, frameProgressIsPhysicalScreenEvidence=False, frameProgressIsMetalGPUCompletion=False,
+         ownershipTransfer='Root active goal owns fsync ledger before explicit single ACK; unresolved ACK retains that owner until exact stop',
+         noACKOrStartFailureRunsInheritedExactCleanup=True, followupObserveFailureRetainsExplicitOwnerUntilStop=True,
+         actualVisibleGuest=False, actualGuestStarted=False, actualSSHAvailable=False, networkAvailable=False,

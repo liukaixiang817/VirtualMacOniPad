@@ -37,6 +37,8 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <Block.h>
+#include <mach-o/dyld.h>
+#include "VZFrameworkIdentity.h"
 
 typedef void *xo_t;
 extern xo_t  xpc_connection_create(const char *name, dispatch_queue_t targetq);
@@ -913,6 +915,24 @@ static int vz_sysctlbyname(const char *name, void *oldp, size_t *oldlenp,
 // Each stub uses BRAA x16,x17; sign the replacement with IA and the slot
 // address as its discriminator.
 int vz_rebind_virtualization(void *imageBase) {
+    // Check dyld's actual image identity before changing any protection or slot.
+    // In particular, never apply Ventura RVAs to an extracted macOS27 image.
+    bool knownImage = false;
+    for (uint32_t index = 0; index < _dyld_image_count(); ++index) {
+        const struct mach_header *header = _dyld_get_image_header(index);
+        if ((const void *)header == imageBase) {
+            const struct mach_header_64 *header64 = (const void *)header;
+            knownImage = header64->magic == MH_MAGIC_64 &&
+                header64->sizeofcmds <= 65536 &&
+                VZIsAuditedVenturaImage(header64,
+                    sizeof(*header64) + header64->sizeofcmds);
+            break;
+        }
+    }
+    if (!knownImage) {
+        L("[vzxpchook] unsupported VZ image: no matching 22D68 binding profile");
+        return -2;
+    }
 #if __has_feature(ptrauth_calls)
     char productVersion[32] = {0};
     size_t productVersionSize = sizeof(productVersion);

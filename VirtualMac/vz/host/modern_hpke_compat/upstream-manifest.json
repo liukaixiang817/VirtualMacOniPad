@@ -1,0 +1,171 @@
+{
+  "upstream": "https://github.com/apple/swift-crypto",
+  "tag": "3.0.0",
+  "commit": "629f0b679d0fd0a6ae823d7f750b9ab032c00b80",
+  "privateCompatibilitySemantics": true,
+  "originalCryptoKitBinaryClaimed": false,
+  "sources": [
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/HPKE-AEAD.swift",
+      "originalSHA256": "a7f3de90e8c584ab6c310ffe13852337dcaea41380b6278dcbf2d45c6ce3450a",
+      "generatedPath": "HPKE-AEAD.swift",
+      "generatedSHA256": "758c45dc84e101a691d8ec23ac399874486a83f7315acf74ce394ddddbf5fb09",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/HPKE-Ciphersuite.swift",
+      "originalSHA256": "282a7c2de7045858a50615a3661cafd1e232e4b3b8c826ffce0c548bf45fc57c",
+      "generatedPath": "HPKE-Ciphersuite.swift",
+      "generatedSHA256": "e415e78a3ecbadf143edea2e69b87044ee23c6b236603b074fb4843b453f26e1",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/HPKE-KDF.swift",
+      "originalSHA256": "6853e7f31d1231d4b57e88720f899d33e661465abf697964f127b1976ce6dd89",
+      "generatedPath": "HPKE-KDF.swift",
+      "generatedSHA256": "de515a726180c39f45ca41dbd7ec3b6efff2f8b0074b7ae1f9aaa7d58fec26f2",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/HPKE-KexKeyDerivation.swift",
+      "originalSHA256": "ece513b85df840290c0808c8559d53280a6b50516e5becedceac65e6d4e854ff",
+      "generatedPath": "HPKE-KexKeyDerivation.swift",
+      "generatedSHA256": "25b0983b89e081edb441fd0f9f34325e2c302f001548678da5c9d5de109a9605",
+      "modifications": [
+        "import native CryptoKit primitives",
+        "qualify private natural ExtractAndExpand for both upstream build modes"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/HPKE-LabeledExtract.swift",
+      "originalSHA256": "773635349d0d37fb53e8a902acc315e2faf22fd59f0df98daebe1daa4752cd5a",
+      "generatedPath": "HPKE-LabeledExtract.swift",
+      "generatedSHA256": "9c222076c153bcffcc77c46b72c935a634070b9d9cad22c9c40130017f1d0a59",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/HPKE-Utils.swift",
+      "originalSHA256": "0cde94fd8c503fff6fcebd17262815cf69858bbe52d47aceed766717042dcab1",
+      "generatedPath": "HPKE-Utils.swift",
+      "generatedSHA256": "b11d4710d06906fd3f658e6453f3e8c4b4558ffea06386317d9d8cdd0dd35c7a",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/KEM/Conformances/DHKEM.swift",
+      "originalSHA256": "359e121903fba3c52244a7cb93ea9b9530b327fa59ce4480a7eae84d269e98ee",
+      "generatedPath": "DHKEM.swift",
+      "generatedSHA256": "654b4030684c015234bc74dbb10bfda1cc8bb0152c5122ceae09143e52b1ab33",
+      "modifications": [
+        "import native CryptoKit primitives",
+        "qualify private natural KEM result for both upstream build modes"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/KEM/Conformances/HPKE-KEM-Curve25519.swift",
+      "originalSHA256": "d78db0c5e34bc22e08caf6f0b673bbeca2ecef22b20d91cf9c41eba3627c86b6",
+      "generatedPath": "HPKE-KEM-Curve25519.swift",
+      "generatedSHA256": "1447988e23e199def2c7d2ea04bbe622563353a72b8f0ed1140cbfef8ecd121f",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/KEM/Conformances/HPKE-NIST-EC-KEMs.swift",
+      "originalSHA256": "7c4c554abe02c2460847b84adaf86400d0dbb6f8198d81420ca1f6203758862d",
+      "generatedPath": "HPKE-NIST-EC-KEMs.swift",
+      "generatedSHA256": "96af2a08bb667d20930e417bf4466e1789c21bfde3f168cb9d2505cb20da19a4",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Ciphersuite/KEM/HPKE-KEM.swift",
+      "originalSHA256": "5aaa3260fb43e2fc5e3846cd727b921ae9b95c1f5f345caceac3389ed0d05547",
+      "generatedPath": "HPKE-KEM.swift",
+      "generatedSHA256": "a97ce10c168f7409124ae2b350ff986156942bb6c5f2befec0d663adb0311f59",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/HPKE-Errors.swift",
+      "originalSHA256": "f66ddf8fd78489ea2ce8e7d52815936603853df188ffcaa743da4947de069bff",
+      "generatedPath": "HPKE-Errors.swift",
+      "generatedSHA256": "07a0122feda5f40b5fc8265f3890ea357b5903a2ec5ccdc0ced1d0014a4bbd30",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/HPKE.swift",
+      "originalSHA256": "49a4c332d018ac2ecff07431f33d47e891a121572eb84c70499ad667992080ae",
+      "generatedPath": "HPKE.swift",
+      "generatedSHA256": "f08a36fb1b01b3d2efafde473d599f1f13cf2fdbf1f548b477ef703952b0eade",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Key Schedule/HPKE-Context.swift",
+      "originalSHA256": "b5f262e5138d067206f57d9cd1124a0003902933bfa148fd8eadc2eff1e042fb",
+      "generatedPath": "HPKE-Context.swift",
+      "generatedSHA256": "4779814f17a11186a2b893ef622589ca3d7bcd59a8a0d1ef85cff40f07c03bce",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Key Schedule/HPKE-KeySchedule.swift",
+      "originalSHA256": "086737d5d8779e7741120971f819f492e9a6bf2b5d2010d6f98a65fe2516a228",
+      "generatedPath": "HPKE-KeySchedule.swift",
+      "generatedSHA256": "00ecfaf73eb6b437891798cf27689ac719707a00c19a79e41811304c6700f3bf",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/HPKE/Modes/HPKE-Modes.swift",
+      "originalSHA256": "234ccf2551bf24253ec7e5f12dea1e085c25ef46bdc46326c9b91cd21b2bee4c",
+      "generatedPath": "HPKE-Modes.swift",
+      "generatedSHA256": "234ccf2551bf24253ec7e5f12dea1e085c25ef46bdc46326c9b91cd21b2bee4c",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/KEM/KEM.swift",
+      "originalSHA256": "dc630ff85447609142f2a5b7bb9a3f4a292b997261d536aca69059e94692624e",
+      "generatedPath": "KEM.swift",
+      "generatedSHA256": "1c94e466a1a9ed962322cc51b2665ba094ddba9f9e18c04020d17d92081de6ba",
+      "modifications": [
+        "import native CryptoKit primitives"
+      ]
+    },
+    {
+      "upstreamPath": "Sources/Crypto/Key Agreement/DH.swift",
+      "originalSHA256": "2c777d5cd3844ca631b77e0416385deb4598498fb11030ecd2cd8816d710f6f0",
+      "generatedPath": "DH.swift",
+      "generatedSHA256": "74ca733e0f0046f4857fcb7f11969cbccd1ad26a5401e8079a841cda99fe3afc",
+      "modifications": [
+        "import native CryptoKit primitives",
+        "copy only original DiffieHellmanKeyAgreement protocol prefix, use real native CryptoKit.SharedSecret"
+      ]
+    }
+  ],
+  "authoredNativeConformances": {
+    "file": "NativeConformances.swift",
+    "sha256": "4c47e4785a847910333dd6020aeb9ab9d51854ccbf76f9eaaf73e3352106139c",
+    "purpose": "Natural protocol conformances fulfilled by real native CryptoKit methods; no synthetic key storage"
+  },
+  "scope": "New private natural nominal context VM27HPKE; exact original DI2 HPKE symbol routes require scoped ABI verification"
+}

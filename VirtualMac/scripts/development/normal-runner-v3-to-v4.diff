@@ -1,0 +1,64 @@
+--- independent27_normal_guest_lifecycle_v3.py
++++ independent27_normal_guest_lifecycle_v4.py
+@@ -97,7 +97,7 @@
+         protocol_rejected = True
+         pending.clear()
+         # EOF makes the still-armed native ACK read fail. Keep stdout/stderr
+-        # open and drain until actual SSH exit or the original 145s bound.
++        # open and drain until actual SSH exit or the original 355s bound.
+         if child and child.stdin and not child.stdin.closed:
+             try:
+                 child.stdin.close()
+@@ -107,7 +107,7 @@
+     def drain_remaining():
+         nonlocal dropped
+         while child and (selector.get_map() or child.poll() is None):
+-            remaining = 145 - (time.monotonic() - started)
++            remaining = 355 - (time.monotonic() - started)
+             if remaining <= 0:
+                 return False
+             if not selector.get_map():
+@@ -144,10 +144,10 @@
+             os.set_blocking(stream.fileno(), False)
+             selector.register(stream, selectors.EVENT_READ, channel)
+         while selector.get_map():
+-            remaining = 145 - (time.monotonic() - started)
++            remaining = 355 - (time.monotonic() - started)
+             if remaining <= 0:
+                 bound_expired = True
+-                reject_and_wait('SSH 145-second bound; exact cleanup/OFF remains unproven')
++                reject_and_wait('SSH 355-second bound; exact cleanup/OFF remains unproven')
+                 break
+             for key, _ in selector.select(min(remaining, 1.0)):
+                 try:
+@@ -229,7 +229,7 @@
+                     except (OSError, ValueError, UnicodeError) as caught:
+                         reject_and_wait(type(caught).__name__ + ': ' + str(caught))
+                         break
+-        remaining = 145 - (time.monotonic() - started)
++        remaining = 355 - (time.monotonic() - started)
+         if remaining <= 0:
+             bound_expired = True
+         if bound_expired:
+@@ -237,7 +237,7 @@
+                 child.kill()
+             native_status = child.wait(timeout=2)
+             status = 124
+-            error = (error or 'SSH 145-second bound') + '; actual SSH exit=' + str(native_status) + '; OFF unproven'
++            error = (error or 'SSH 355-second bound') + '; actual SSH exit=' + str(native_status) + '; OFF unproven'
+         else:
+             native_status = child.wait(timeout=remaining)
+             status = 125 if protocol_rejected else native_status
+@@ -258,10 +258,10 @@
+                 if not drain_remaining():
+                     bound_expired = True
+                     status = 124
+-                    error = (error or 'SSH 145-second bound') + '; exact cleanup/OFF unproven'
++                    error = (error or 'SSH 355-second bound') + '; exact cleanup/OFF unproven'
+             # Only the total stream deadline permits killing the SSH client.
+             if child.poll() is None:
+-                if time.monotonic() - started < 145:
++                if time.monotonic() - started < 355:
+                     raise RuntimeError('SSH cleanup drain returned before its bound')
+                 child.kill()
+             actual_final_status = child.wait(timeout=2)

@@ -2,7 +2,7 @@
 
 People have dreamed of running macOS on iPad for [more](https://www.macstories.net/stories/macpad-how-i-created-the-hybrid-mac-ipad-laptop-and-tablet-that-apple-wont-make/) [than](https://github.com/khanhduytran0/MacWSBootingGuide) [a](https://khronokernel.com/apple/silicon/2021/01/17/QEMU-AS.html) [decade](https://worthdoingbadly.com/macappsios/). Today, that dream comes true. With Virtual Mac, iPad finally breaks free from iPadOS, enabling pro apps like Xcode, Terminal, Final Cut Pro, Logic Pro, and Pixelmator Pro to run directly on device. Requires iPad Pro (M1, M2) or iPad Air (M1) running iPadOS 14 up to 16.3.1.
 
-This personal fork adds **2.0.0beta1 (build 1001)** as a separate app alongside original 1.2.3. The beta combines macOS 27 graphics and shader components with the established macOS 13.2.1 CPU/VMM runtime. See the [release changes and tested limits](VirtualMac/docs/releases/2.0.0beta1.md) and [packaging and installation instructions](VirtualMac/docs/releases/virtualmac2-packaging.md). Keep original 1.2.3 installed for its shared installation and network helpers.
+This personal fork adds **2.0.0beta2 (build 1002)** with an independent macOS 27 CPU/VMM/Virtualization and graphics backend. Real guest IPv4 NAT, DHCP, DNS and HTTPS have passed on the tested M2 iPad. See the [beta2 changes, installation and known limits](VirtualMac/docs/releases/2.0.0beta2.md). Cold login/icon issues and advanced features remain under development. [Beta1](VirtualMac/docs/releases/2.0.0beta1.md) is the older separate app using the macOS 13.2.1 CPU/VMM runtime.
 
 ![Screenshot of Virtual Mac on iPad](VirtualMac/screenshots/VirtualMac.png)
 

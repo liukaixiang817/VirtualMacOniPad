@@ -8,6 +8,7 @@
 #import "NSViewShim.h"
 #import "VZVMLibraryViewController.h"
 #import "VZAppSettings.h"
+#import "VZBackendSelection.h"
 #import "VZDiagnostics.h"
 #import "VZFailureDetailsViewController.h"
 #import "VZProgressViewController.h"
@@ -3686,7 +3687,7 @@ static void VZWriteInstallationAttempt(NSString *attemptPath, NSString *state,
 - (void)vmLibrary:(VZVMLibraryViewController *)library
     bootBundleAtPath:(NSString *)path options:(NSDictionary *)options
 {
-    if (gVirtualMachine) {
+    if (gVirtualMachine || VZBackendIsRunActive()) {
         if ([self.activeVMBundlePath isEqualToString:path]) {
             [self vmLibraryResumeActiveVM:library];
             return;
@@ -3786,6 +3787,13 @@ static void VZWriteInstallationAttempt(NSString *attemptPath, NSString *state,
         return;
     }
     NSError *imageError = nil;
+    NSString *backendReason = VZBackendAvailabilityReason(VZBackendSelectedVersion());
+    if (backendReason || VZBackendIsRunActive()) {
+        VZPresentFailureReport(self, VZBL(@"Framework Backend"),
+            backendReason ?: VZBL(@"A Virtual Mac is already starting or running."),
+            nil, VZFailureSupportOptionNone);
+        return;
+    }
     NSURL *persistentURL = persistentRestoreImageURL(url, &imageError);
     [url stopAccessingSecurityScopedResource];
     if (!persistentURL) {
@@ -3851,10 +3859,18 @@ static void VZWriteInstallationAttempt(NSString *attemptPath, NSString *state,
     posix_spawnattr_init(&attributes);
     posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETPGROUP);
     posix_spawnattr_setpgroup(&attributes, 0);
+    NSError *backendError = nil;
+    if (!VZBackendBeginInstallation(&backendError)) {
+        posix_spawnattr_destroy(&attributes);
+        VZPresentFailureReport(self, VZBL(@"Framework Backend"),
+            backendError.localizedDescription, nil, VZFailureSupportOptionNone);
+        return;
+    }
     int result = posix_spawn(&process, launcher, NULL, &attributes,
                              arguments, environ);
     posix_spawnattr_destroy(&attributes);
     if (result != 0) {
+        VZBackendEndInstallation();
         VZWriteInstallationAttempt(attemptPath, @"failed", @{
             @"Failure": [NSString stringWithFormat:@"Could not start installer: %s", strerror(result)]
         });
@@ -3876,6 +3892,7 @@ static void VZWriteInstallationAttempt(NSString *attemptPath, NSString *state,
         do {
             changed = waitpid(process, &status, 0);
         } while (changed < 0 && errno == EINTR);
+        VZBackendEndInstallation();
         int exitCode = changed == process && WIFEXITED(status)
             ? WEXITSTATUS(status) : -1;
         int signalCode = changed == process && WIFSIGNALED(status)
@@ -4159,6 +4176,7 @@ static void VZWriteInstallationAttempt(NSString *attemptPath, NSString *state,
 
 - (void)finishVMAndShowLibraryWithError:(NSError *)error
 {
+    VZBackendEndRun();
     setVMJetsamProtection(NO);
     gSoftwareKeyboardRequested = NO;
     pencilVsockReset();
@@ -4191,7 +4209,15 @@ static void VZWriteInstallationAttempt(NSString *attemptPath, NSString *state,
     gSmartMagnifyRecognizer = nil;
     self.activeVMBundlePath = nil;
     [self presentVMLibrary];
-    if (error) {
+    if ([error.domain isEqualToString:@"VirtualMac.Backend"]) {
+        UIAlertController *notice = [UIAlertController
+            alertControllerWithTitle:VZBL(@"Framework Backend")
+            message:error.localizedDescription
+            preferredStyle:UIAlertControllerStyleAlert];
+        [notice addAction:[UIAlertAction actionWithTitle:VZL(@"OK")
+            style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:notice animated:YES completion:nil];
+    } else if (error) {
         VZPresentFailureReport(self, VZL(@"Virtual Mac Stopped"),
             error.localizedDescription, error.debugDescription,
             VZFailureSupportOptionSuggestDebugLogging |
@@ -4501,6 +4527,10 @@ static void logFramebufferState(id view, id framebuffer, const char *phase) {
 // alongside the port so a device run can prove that the stock
 // process_frame_update callback survived construction and start.
 static void dumpRPCHandlers(id virtualMachine, const char *phase) {
+    if (![VZBackendLoadedVersion() isEqualToString:@"13.2.1"]) {
+        printf("[VirtualMac] RPC diagnostic skipped: no audited private layout\n");
+        return;
+    }
     const uint8_t *vm = (const uint8_t *)(__bridge const void *)virtualMachine;
     const uint8_t *table = *(const uint8_t *const *)(vm + 0x98);
     if (!table) {
@@ -4542,11 +4572,7 @@ static void dumpRPCHandlers(id virtualMachine, const char *phase) {
 // Experimental builds can use a separate, rollback-ready runtime. Normal
 // packages retain the established path when the Info.plist key is absent.
 static NSString *VZRuntimeRoot(void) {
-    id configured = [NSBundle.mainBundle objectForInfoDictionaryKey:@"VirtualMacRuntimeRoot"];
-    if ([configured isKindOfClass:NSString.class] &&
-        [configured hasPrefix:@"/"] && [configured length] > 1)
-        return [configured stringByStandardizingPath];
-    return @"/var/root/VirtualMac";
+    return VZBackendRuntimeRoot();
 }
 
 static NSString *VZRuntimePath(NSString *relativePath) {
@@ -4559,6 +4585,7 @@ static BOOL VZUsesModernPVG(void) {
 }
 
 static BOOL loadExtractedFrameworks(void) {
+    VZBackendMarkLoadAttempt();
     NSString *hookPath =
         [NSBundle.mainBundle pathForResource:@"VZHostCompat"
                                       ofType:@"dylib"];
@@ -4594,6 +4621,8 @@ static BOOL loadExtractedFrameworks(void) {
     Method start = class_getInstanceMethod(
         objc_getClass("VZVirtualMachine"),
         sel_registerName("startWithCompletionHandler:"));
+    if (!start)
+        return NO;
     Dl_info virtualizationInfo = {0};
     dladdr((const void *)method_getImplementation(start), &virtualizationInfo);
     printf("[VirtualMac] VZ image=%p (%s)\n",
@@ -4611,7 +4640,12 @@ static BOOL loadExtractedFrameworks(void) {
            rebindVirtualization, rebindResult);
     if (rebindResult != 0 || !gHostVMStarted)
         return NO;
-    return installFramebufferTrace();
+    if (!installFramebufferTrace())
+        return NO;
+    VZBackendMarkLoaded();
+    printf("[VirtualMac] loaded host Virtualization framework backend=%s root=%s\n",
+           VZBackendLoadedVersion().UTF8String, VZRuntimeRoot().UTF8String);
+    return YES;
 }
 
 static void configureAudio(id configuration, NSDictionary *options) {
@@ -5537,6 +5571,16 @@ static NSDictionary *runtimeDisplayOptions(NSDictionary *options,
 static void startVirtualMachine(UIView *container, id delegate,
                                 NSString *bundlePath,
                                 NSDictionary *options) {
+    NSError *backendError = nil;
+    if (!VZBackendBeginRun(&backendError)) {
+        if (VZBackendIsRunActive()) {
+            VZPresentFailureReport(delegate, VZBL(@"Framework Backend"),
+                backendError.localizedDescription, nil, VZFailureSupportOptionNone);
+            return;
+        }
+        finishVMThreadSafe(delegate, backendError);
+        return;
+    }
     NSDictionary *runtimeOptions = runtimeDisplayOptions(options, container);
     // Ventura's VZ startup performs synchronous XPC and device construction.
     // On iPadOS 14, doing that from a tap blocks UIKit long enough to trip the
@@ -5967,7 +6011,17 @@ static void disconnectExternalDisplay(void) {
              options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
     (void)application; (void)options;
-    if (![url.scheme isEqualToString:@"virtualmac"]) return NO;
+    BOOL ownScheme = NO;
+    for (id type in [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleURLTypes"]) {
+        if (![type isKindOfClass:NSDictionary.class]) continue;
+        id schemes = type[@"CFBundleURLSchemes"];
+        if (![schemes isKindOfClass:NSArray.class]) continue;
+        for (id scheme in schemes)
+            if ([scheme isKindOfClass:NSString.class] && url.scheme &&
+                [scheme caseInsensitiveCompare:url.scheme] == NSOrderedSame)
+                ownScheme = YES;
+    }
+    if (!ownScheme) return NO;
     NSString *action = url.host.lowercaseString;
     // Developer-only visible UI checks for the touch keyboard. Keep these
     // outside libraryController so exercising them does not hide the running
@@ -5980,11 +6034,15 @@ static void disconnectExternalDisplay(void) {
         gSoftwareKeyboardRequested = NO;
         return gInputView && [gInputView resignFirstResponder];
     }
+    if (![@[@"new", @"settings", @"framework-backend", @"library"]
+            containsObject:action]) return NO;
     VZVMLibraryViewController *library = [self libraryController];
     if ([action isEqualToString:@"new"])
         [library presentNewVMFlow];
     else if ([action isEqualToString:@"settings"])
         [library presentSettings];
+    else if ([action isEqualToString:@"framework-backend"])
+        [library presentFrameworkBackendSettings];
     else if ([action isEqualToString:@"library"])
         ;
     else

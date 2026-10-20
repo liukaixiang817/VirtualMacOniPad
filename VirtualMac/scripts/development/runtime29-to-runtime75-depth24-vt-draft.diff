@@ -1,0 +1,336 @@
+--- /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-signed-runtime-product-v29.py
++++ /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-signed-runtime-product-v75.py
+@@ -1,101 +1,159 @@
+ #!/usr/bin/env python3
+-"""Runtime27 product builder: replace only Child MD/PG and re-seal the original Child.
++"""Runtime72 draft: depth24 and truthful coldboot VT unavailable; Root alone signs.
+ 
+ Root alone runs the signing path. Read-only admission does not sign, change the
+ baseline, run an iOS image, or invoke any device API. All unchanged leaves and
+-the dependency proof inherit the exact Runtime26 bytes and signature evidence.
++the dependency proof inherit the exact Runtime71 bytes and signature evidence.
+ """
+ import argparse,copy,hashlib,importlib.util,json,pathlib,plistlib,struct,subprocess,sys
+ sys.dont_write_bytecode=True
+ R=pathlib.Path(__file__).resolve().parents[3];N=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm';S=R/'VirtualMac/vz/host'
+ BASE=pathlib.Path(__file__).with_name('build-independent27-signed-runtime-product-v10.py')
+-sp=importlib.util.spec_from_file_location('runtime27_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
++sp=importlib.util.spec_from_file_location('runtime72_signature_primitives',BASE);base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)
+ BASE_SHA='1f153b6b4498a4dcacd22fd7bb02f09fe65bcc79649a4842c994fb417ea9248d'
+-BASELINE_SHA='56cf658760a4dffee368d818f3a416102758873b5e5b9a8c267e62fcdc4ba98f'
+ CHILD='com.apple.Virtualization.VirtualMachine';CHILD_UUID='4a6a588d1afd30f5a64d6304eb79be0b'
+ KEY='com.apple.security.exception.iokit-user-client-class'
+-PORT_SOURCE=N/'owned-pvg-unified-storage-source-port-v4-attempt3/candidate.json'
+-PORT_SOURCE_SHA='a2e63ea886fa7afdbf31115f36574cdda753e49cfa5ed4d602681987fadd7387'
++# Runtime72 only: the final VT candidate hash is filled after Root reviews its
++# actual compiled receipt. Pending metadata cannot admit the signing path.
++BASELINE_SHA='8ae4d5ff21a2ee6bb5fa22f040c66c4df791e7df566fb3681e68c709a2a0ee0a'
++DEPTH_SHA='c33709cf24151600c25a18dbdb5049ecb4b316c9042757e246ff0694dd8a8967'
++VT_PORT_SHA='PENDING_ROOT_REVIEWED_ACTUAL_VT_PORT'
++DEPTH_SYMBOL='_VM27OwnedPVGIsDepth24Stencil8PixelFormatSupportedV1'
++VT_SYMBOLS=('_VM27OwnedVTSessionCreateV1','_VM27OwnedVTSessionDeliverV1')
+ pin,save=base.pin,base.save
+ 
+ def need(v,why):
+  if not v:raise ValueError(why)
+-
+-def read_inputs(baseline_path):
+- need(pin(BASE)['sha256']==BASE_SHA and pin(baseline_path)['sha256']==BASELINE_SHA,'exact actual Runtime26 and frozen signature primitives')
+- old=json.loads(base.regular_bytes(baseline_path));bf=base.frozen_rows(baseline_path.parent/'freeze.json');base.actual_frozen(pin(baseline_path),bf,'actual baseline candidate')
+- for k in ('manifest','signatureVerification'):base.actual_frozen(old[k],bf,'actual baseline '+k)
+- need(old['localCodeSigned'] is True and old['actualProductPreflightPassed'] is True,'actual signed baseline')
++def exact(row):
++ need(pin(row['path'])=={k:row[k]for k in ('path','bytes','sha256')},'exact file '+row['path']);return pathlib.Path(row['path'])
++def frozen(path):
++ rows=base.frozen_rows(path.parent/'freeze.json');base.actual_frozen(pin(path),rows,'actual frozen candidate');return rows
++def semantic(r):return{k:v for k,v in r.items()if k not in ('at','index')}
++def multiset(rows):
++ return sorted([semantic(r)for r in rows],key=lambda r:json.dumps(r,sort_keys=True))
++def exact_new_slots(original,patched,expected):
++ # Verify all old imports, loads, exports, UUID, code, and every binding except
++ # the selected import-index bits; signed metadata is handled separately.
++ need(patched.uuid==original.uuid and patched.exports==original.exports and
++      [semantic(r)for r in patched.loads]==[semantic(r)for r in original.loads],
++      'actual unchanged importer UUID/export/load semantics')
++ need([semantic(r)for r in patched.imports[:len(original.imports)]]==[semantic(r)for r in original.imports],
++      'all original importer native semantics retained')
++ slots={x[0]for x in expected}
++ for slot,oldindex,index,symbol,ordinal in expected:
++  before=next(r for r in original.binds if r['fileoff']==slot)
++  after=next(r for r in patched.binds if r['fileoff']==slot);imp=patched.imports[index]
++  need(before['index']==oldindex and after['index']==index and imp['name']==symbol and imp['ordinal']==ordinal and
++       not imp['weak'] and imp['addend']==0 and after['word']==(before['word']&~65535)|index,
++       'one approved original auth slot changes only its import index')
++ need([(r['fileoff'],r['word'])for r in original.binds if r['fileoff']not in slots]==
++      [(r['fileoff'],r['word'])for r in patched.binds if r['fileoff']not in slots],'all other auth bindings whole')
++
++def read_inputs(baseline_path,depth_path,vt_path):
++ need(pin(BASE)['sha256']==BASE_SHA and pin(baseline_path)['sha256']==BASELINE_SHA and
++      pin(depth_path)['sha256']==DEPTH_SHA,'actual R71 and successful depth24 V6 inputs')
++ need(len(VT_PORT_SHA)==64 and pin(vt_path)['sha256']==VT_PORT_SHA,'final Root-reviewed actual VT port is required before admission')
++ old=json.loads(base.regular_bytes(baseline_path));bf=frozen(baseline_path)
++ for key in ('manifest','signatureVerification'):base.actual_frozen(old[key],bf,'actual R71 '+key)
++ need(old['localCodeSigned']is True and old['actualProductPreflightPassed']is True,'actual signed R71 baseline')
+  manifest=plistlib.loads(base.regular_bytes(old['manifest']['path']));rows={r['id']:r for r in manifest['files']}
+- need(len(rows)==len(manifest['files'])==154 and sum(r['kind']=='mach-o'for r in rows.values())==143,'actual baseline154files143signed')
++ need(len(rows)==len(manifest['files'])==154,'actual154 Runtime71 files')
+  evidence=json.loads(base.regular_bytes(old['signatureVerification']['path']));proof={r['relativePath']:r for r in evidence['actualSignedFiles']}
+- need(len(proof)==143 and evidence['allCodePagesAndSpecialSlotsActuallyVerified'] is True,'actual baseline signature evidence')
++ need(len(proof)==143 and evidence['allCodePagesAndSpecialSlotsActuallyVerified']is True,'actual143 prior signature proofs')
+  root=pathlib.Path(old['runtimeRoot'])
+  for row in rows.values():
+-  need(base.relative(row['path']),'safe relative path');p=pin(root/row['path']);need((p['bytes'],p['sha256'])==(row['bytes'],row['sha256']),'baseline whole file');base.actual_frozen(p,bf,'frozen baseline file')
++  need(base.relative(row['path']),'safe runtime relative path');p=pin(root/row['path'])
++  need((p['bytes'],p['sha256'])==(row['bytes'],row['sha256']),'whole installed baseline file');base.actual_frozen(p,bf,'frozen actual baseline file')
+   if row['kind']=='mach-o':
+-   ss=proof[row['path']];need(ss['actualSignedFile']==p and ss['uuid']==row['uuid'] and ss['cdhash']==row['cdhash'] and ss['allPrimaryPagesAndSpecialSlotsVerified'] is True,'inherited wholefile/signature join')
+- childid=manifest['childEntryContract']['childID'];childrow=rows[childid];child=base.image_profile(base.regular_bytes(root/childrow['path']),CHILD)
+- need(child.uuid==CHILD_UUID,'original actual Child UUID')
+- prior=proof[childrow['path']]['embeddedEntitlements'];need(isinstance(prior,dict)and len(prior)==14 and prior.get(KEY)==['IOSurfaceRootUserClient','AGXDeviceUserClient'] and prior.get('com.apple.private.virtualization.plugin')is True and prior.get('com.apple.developer.kernel.extended-virtual-addressing')is True,'original actual14 Child permissions retained')
+- ents=copy.deepcopy(prior)
+- need(pin(PORT_SOURCE)['sha256']==PORT_SOURCE_SHA,'exact owned PG capability port candidate')
+- pf=base.frozen_rows(PORT_SOURCE.parent/'freeze.json');base.actual_frozen(pin(PORT_SOURCE),pf,'actual frozen capability source port')
+- port=json.loads(base.regular_bytes(PORT_SOURCE));need(port['baselineRuntimeCandidate']==pin(baseline_path)and port['providerKey']=='MD'and port['roles']==['child']and port['pipelineDiagnosticNotIncluded']is True,'exact child-only MD/PG port; no unrelated pipeline hook')
+- for key in ('newProvider','patchedChildPG','recipe','graph','source','header','unifiedStorageEvidence'):base.actual_frozen(port[key],pf,'actual frozen port '+key)
+- for key in ('originalProvider','originalChildPG'):base.actual_frozen(port[key],bf,'actual baseline input '+key)
+- mdid='child:MD';pgid='child:ParavirtualizedGraphics27.dylib'
+- need(port['originalProvider']==pin(root/rows[mdid]['path'])and port['originalChildPG']==pin(root/rows[pgid]['path']),'port original inputs match current installed MD/PG')
+- md=base.image_profile(base.regular_bytes(port['newProvider']['path']),'MD');pg=base.image_profile(base.regular_bytes(port['patchedChildPG']['path']),'ParavirtualizedGraphics27.dylib');originalpg=base.image_profile(base.regular_bytes(root/rows[pgid]['path']),'original PG')
+- semantic=lambda r:{k:v for k,v in r.items()if k!='at'}
+- inherited_contracts=[port['inheritedBufferContract'],port['adapterContract'],port['detachAdapterContract']]
+- contracts=port['unifiedStorageContracts'];need(len(contracts)==2,'final two-port unified storage contract')
+- added=pg.imports[len(originalpg.imports):];new_names={r['name']for r in added}
+- need(pg.uuid==originalpg.uuid and pg.exports==originalpg.exports and len(added)==len(contracts)==len(port['addedExports']) and
+-      [semantic(r)for r in pg.imports[:len(originalpg.imports)]]==[semantic(r)for r in originalpg.imports] and
+-      [semantic(r)for r in pg.loads]==[semantic(r)for r in originalpg.loads],
+-      'all existing PG imports including three capabilities and required loads/UUID/exports preserved')
+- need(new_names==set(port['addedExports'])=={'_VM27OwnedPVGNewBufferWithLengthOptionsV1','_VM27OwnedPVGDidModifyManagedRangeV1'} and
+-      set(md.exports)==set(base.image_profile(base.regular_bytes(root/rows[mdid]['path']),'old MD').exports)|new_names and md.uuid==port['providerUUID'] and
+-      port['existingCapabilityRoutes261262263WholeUnchanged']is True and port['heapCreationAndHeapBufferRoutesWholeUnchanged']is True,
+-      'only actual Length/DidModify exports/imports added; three capabilities and both Heap routes retained')
+- for contract in contracts:
+-  index=contract['newImportIndex'];symbol=contract['symbol'];imp=pg.imports[index]
+-  need(imp['index']==index and imp['name']==symbol and imp['ordinal']==contract['requiredOrdinal']==10 and not imp['weak']and
+-       pg.loads[-1]['ordinal']==10 and pg.loads[-1]['path']=='@loader_path/MD'and pg.loads[-1]['cmd']==0xc and md.exports[symbol]['flags']==0,
+-       'actual named resource operations use existing required MD10 and direct definitions')
+-  selected_slot=next(row for row in pg.binds if row['fileoff']==contract['authSlotRVA'])
+-  old_slot=next(row for row in originalpg.binds if row['fileoff']==contract['authSlotRVA'])
+-  need(selected_slot['index']==index and old_slot['name']=='_objc_msgSend'and
+-       selected_slot['word']==(old_slot['word']&~65535)|index,
+-       'exact selected auth slot changes only its import index')
+- length_contract,didmodify_contract=contracts
+- need(length_contract['originalSelector']=='newBufferWithLength:options:'and
+-      length_contract['genuineHasUnifiedMemoryRequiredForConversion']is True and length_contract['allOtherOptionsPreserved']is True and
+-      length_contract['nativeMethodTypedAndCalledOnce']is True and length_contract['nativeNewResourcePlusOneOwnershipPreserved']is True and
+-      didmodify_contract['originalSelector']=='didModifyRange:'and didmodify_contract['skipManagedSynchronizationOnlyActualSharedAndNativeUnified']is True and
+-      didmodify_contract['nonSharedNativeTypedMethodForwarded']is True and didmodify_contract['originalCommandSubmissionAndCompletionUnchanged']is True and
+-      port['globalAppleClassMutation']is False and port['genuineUnifiedSharedResourceOperationsActuallyExecuted']is False,
+-      'genuine unified memory and exact Shared resource govern adaptation; native object/ownership/other modes preserved')
+- graph=json.loads(base.regular_bytes(port['graph']['path']));native=graph['actualProviderNativeRows'];loads={r['ordinal']:r for r in md.loads}
+- need(graph['actualProvider']==port['newProvider']and graph['strongRows']==len(native)==len(md.imports)==port['actualProviderNativeImportCount']and
+-      graph['unresolved']==[],'actual incremental MD definitions closed')
+- for row,imp in zip(native,md.imports,strict=True):
+-  need(row['actualImport']==imp and imp['ordinal']>0 and not imp['weak']and row['requiredLoad']==loads[imp['ordinal']]['path']and row['actualDefinition'].get('UUID'),
+-       'actual new MD import joins its captured native definition without re-running the old graph')
+- selected=graph['selectedPGImportsNewStrongDefinitions']
+- expected_indices=[row['requiredPGImportIndex']for row in inherited_contracts]+[row['newImportIndex']for row in contracts]
+- need(len(selected)==len(expected_indices)and [row['actualImport']['index']for row in selected]==expected_indices,
+-      'all actual inherited capability and new operation routes are closed')
+- for row,index in zip(selected,expected_indices,strict=True):
+-  imp=pg.imports[index];symbol=imp['name']
+-  need(row['actualImport']==imp and row['requiredLoad']=='@loader_path/MD'and row['target']==port['newProvider']and
+-       row['targetUUID']==md.uuid and row['definition']==md.exports[symbol]and md.exports[symbol]['flags']==0,
+-       'each actual owned PG import resolves to the new direct MD definition')
+- need(child.imports[327]['name']=='_dup'and child.imports[327]['ordinal']==21,'deployed genuine dup route preserved')
+- graphid=manifest['dependencyProofID'];old_graph=json.loads(base.regular_bytes(root/rows[graphid]['path']));need(old_graph['finalStrongDefinitionGraphClosed']is True and old_graph['unresolvedStrongImportRows']==[],'existing actual baseline dependency proof inherited')
+- merged=dict(schema='Runtime27 only Child MD and actual unified resource operation incremental definitions',finalStrongDefinitionGraphClosed=True,unresolvedStrongImportRows=[],baselineRuntimeCandidate=pin(baseline_path),baselineDependencyProof=pin(root/rows[graphid]['path']),inheritedBaselineDefinitionGraph=old_graph,pvgUnifiedStorageCandidate=pin(PORT_SOURCE),actualChildMDNativeRows=native,actualChildPGImports=pg.imports,actualChildPGRequiredLoads=pg.loads,actualSelectedPGDefinitions=selected,originalPGImportSemanticsInherited=True,allParentNamespaceWholeUnchanged=True,oldFullGraphRecomputed=False,deviceOperations=0)
+- return dict(old=old,manifest=manifest,rows=rows,proof=proof,child=child,childID=childid,entitlements=ents,priorEntitlements=prior,baselinePin=pin(baseline_path),portPin=pin(PORT_SOURCE),port=port,md=md,pg=pg,mdID=mdid,pgID=pgid,graphRaw=(json.dumps(merged,indent=2)+'\n').encode())
++   sig=proof[row['path']]
++   need(sig['actualSignedFile']==p and sig['uuid']==row['uuid']and sig['cdhash']==row['cdhash']and sig['allPrimaryPagesAndSpecialSlotsVerified']is True,'inherited actual signature join')
++ childid=manifest['childEntryContract']['childID'];mdid='child:MD';pgid='child:ParavirtualizedGraphics27.dylib'
++ originalchild=base.image_profile(base.regular_bytes(root/rows[childid]['path']),CHILD)
++ need(originalchild.uuid==CHILD_UUID,'actual current owned Child UUID')
++ prior=proof[rows[childid]['path']]['embeddedEntitlements']
++ need(isinstance(prior,dict)and len(prior)==14 and prior.get(KEY)==['IOSurfaceRootUserClient','AGXDeviceUserClient'] and
++      prior.get('com.apple.private.virtualization.plugin')is True and prior.get('com.apple.developer.kernel.extended-virtual-addressing')is True,'same exact14 Child entitlements')
++ depth=json.loads(base.regular_bytes(depth_path));df=frozen(depth_path)
++ need(depth['baselineRuntimeCandidate']==pin(baseline_path)and depth['providerKey']=='MD'and depth['roles']==['child']and
++      depth['compileLinkAndBothValidateExit']==[0,0,0,0]and depth['all49CurrentMDNativeImportsAndLoadsPreserved']is True,
++      'actual successful depth24 compile/link/both validations retaining current MD linkage')
++ for key in ('newProvider','patchedChildPG','recipe','sourcePlan'):base.actual_frozen(depth[key],df,'actual depth24 '+key);exact(depth[key])
++ need(depth['originalProvider']==pin(root/rows[mdid]['path']) and depth['originalChildPG']==pin(root/rows[pgid]['path']),'depth ancestry joins current R71 MD/PG')
++ port=json.loads(base.regular_bytes(vt_path));pf=frozen(vt_path)
++ need(port['baselineRuntimeCandidate']==pin(baseline_path)and port['inheritedDepth24Candidate']==pin(depth_path)and
++      port['providerKey']=='MD'and port['roles']==['child'],'actual combined VT/depth port ancestry')
++ for key in ('newProvider','patchedChildPG','patchedChild','recipe','sourcePlan','actualIOSCompile','actualIOSLink',
++             'actualMDValidate','actualChildValidate','actualPGValidate'):
++  base.actual_frozen(port[key],pf,'actual frozen VT '+key);exact(port[key])
++ need(port['originalProvider']==depth['newProvider'] and port['originalChildPG']==depth['originalChildPG']and
++      port['patchedChildPG']==depth['patchedChildPG']and port['originalChild']==pin(root/rows[childid]['path']),
++      'combined MD starts from successful depth24 and exact R71 Child; PG remains exact depth24 product')
++ md=base.image_profile(base.regular_bytes(exact(port['newProvider'])),'MD')
++ oldmd=base.image_profile(base.regular_bytes(root/rows[mdid]['path']),'old MD')
++ depthmd=base.image_profile(base.regular_bytes(exact(depth['newProvider'])),'depth MD')
++ pg=base.image_profile(base.regular_bytes(exact(port['patchedChildPG'])),'PG')
++ originalpg=base.image_profile(base.regular_bytes(root/rows[pgid]['path']),'original PG')
++ child=base.image_profile(base.regular_bytes(exact(port['patchedChild'])),CHILD)
++ need(set(md.exports)==set(oldmd.exports)|{DEPTH_SYMBOL,*VT_SYMBOLS} and
++      set(depthmd.exports)==set(oldmd.exports)|{DEPTH_SYMBOL} and len(oldmd.imports)==49,'only reviewed depth24 and two VT exports added')
++ need(all(md.exports[s]['flags']==oldmd.exports[s]['flags']for s in oldmd.exports)and
++      all(md.exports[s]['flags']==0 for s in (DEPTH_SYMBOL,*VT_SYMBOLS)),'all existing direct MD export kinds retained')
++ need([semantic(r)for r in md.loads]==[semantic(r)for r in oldmd.loads],'all current MD required load semantics preserved')
++ remaining=list(md.imports)
++ for imp in oldmd.imports:
++  at=next((i for i,r in enumerate(remaining)if semantic(r)==semantic(imp)),None)
++  need(at is not None,'all49 current native MD import semantics retained');remaining.pop(at)
++ addednative=port['actualVTAddedStrongNativeRows'];need(len(addednative)==len(remaining),'actual additional VT strong-native rows only')
++ loads={r['ordinal']:r for r in md.loads}
++ for row,imp in zip(addednative,remaining,strict=True):
++  need(row['actualImport']==imp and imp['ordinal']>0 and not imp['weak']and row['requiredLoad']==loads[imp['ordinal']]['path']and
++       row['actualDefinition'].get('UUID'),'each added native import has its actual strong definition')
++ need(len(pg.imports)==267 and len(child.imports)==1207 and len(originalchild.imports)==1205,'only actual one PG and two Child imports appended')
++ exact_new_slots(originalpg,pg,[(0x6c8d0,144,266,DEPTH_SYMBOL,10)])
++ exact_new_slots(originalchild,child,[(0x4c62b8,107,1205,VT_SYMBOLS[0],3),(0x4c62c8,109,1206,VT_SYMBOLS[1],3)])
++ need(originalchild.imports[107]['name']=='_VTParavirtualizationHostSessionCreate' and
++      originalchild.imports[109]['name']=='_VTParavirtualizationHostSessionDeliverMessageFromGuest',
++      'real Create and Deliver slots; CreateTerminate index108 is not redirected')
++ for oldimage,newimage,oldpin,newpin,slots in [(originalpg,pg,depth['originalChildPG'],depth['patchedChildPG'],{0x6c8d0}),
++      (originalchild,child,port['originalChild'],port['patchedChild'],{0x4c62b8,0x4c62c8})]:
++  a=base.regular_bytes(exact(oldpin));b=base.regular_bytes(exact(newpin))
++  need(len(newimage.sections)==len(oldimage.sections),'same importer section geometry')
++  for before,after in zip(oldimage.sections,newimage.sections,strict=True):
++   need(before==after,'same original section metadata')
++   at,z=before['fileoff'],before['size']
++   if not at or not z or before['flags']&255 in(1,12,18):continue
++   expected=bytearray(a[at:at+z])
++   for slot in slots:
++    if at<=slot<at+z:expected[slot-at:slot-at+8]=b[slot:slot+8]
++   need(bytes(expected)==b[at:at+z],'original importer code/data whole except exact approved auth slots')
++ contract=port['ownedVTHostUnavailableV1Contract']
++ for key in ('exactOwnedChildCallersAndUIDPathUUIDPlatformRequired','nativeCreateRequiresCompleteFiveAPIEndpoint',
++  'missingCreateReturnsUnimpErrAndNullSession','missingDeliverNullSessionReturnsUnimpErr','originalGuestOSStatusResponsePreserved',
++  'noGuestMessageReadsOrFabricatedSession','allOtherChildBindingsAndCodeWhole','actualDepth24PGAndTwoMDObjectsWhole',
++  'noNewImageLoadOrPermissions','archiveRestoreExplicitlyDeferred'):need(contract[key]is True,'reviewed VT contract '+key)
++ cpupin=old['cpuVMAppleMSITypeV1Candidate'];base.actual_frozen(cpupin,bf,'inherited current29 CPU source proof')
++ cpu=json.loads(base.regular_bytes(exact(cpupin)));cpuobjects=cpu['actualChangedObjects']+cpu['inheritedWholeObjects']
++ need(len(cpuobjects)==29,'actual R71 source proof has29 objects; no CPU object is compiled or replaced')
++ graphid=manifest['dependencyProofID'];graphpath=root/rows[graphid]['path'];oldgraph=json.loads(base.regular_bytes(graphpath))
++ need(oldgraph['finalStrongDefinitionGraphClosed']is True and oldgraph['unresolvedStrongImportRows']==[],'existing actual R71 graph closure inherited by exact reference')
++ childdefs=[];pgdefs=[]
++ for image,ordinal,target in [(child,3,childdefs),(pg,10,pgdefs)]:
++  for imp in image.imports:
++   if imp['ordinal']!=ordinal:continue
++   symbol=imp['name'];need(symbol in md.exports and md.exports[symbol]['flags']==0,'actual owned consumer resolves direct current MD export')
++   target.append(dict(actualImport=imp,requiredLoad='@loader_path/MD',target=port['newProvider'],targetUUID=md.uuid,definition=md.exports[symbol]))
++ graph=dict(schema='Actual Runtime72 depth24 and coldboot VT unavailable incremental definition proof',
++  finalStrongDefinitionGraphClosed=True,unresolvedStrongImportRows=[],baselineRuntimeCandidate=pin(baseline_path),
++  inheritedBaselineDefinitionGraphReference=pin(graphpath),baselineDependencyProof=pin(graphpath),
++  depth24Candidate=pin(depth_path),vtCandidate=pin(vt_path),actualCurrentMDExports=md.exports,actualCurrentMDImports=md.imports,
++  actualCurrentMDRequiredLoads=md.loads,all49PriorMDNativeSemanticsInherited=True,actualVTAddedStrongNativeRows=addednative,
++  actualCurrentChildMDDefinitions=childdefs,actualCurrentPGMDDefinitions=pgdefs,
++  all29CPUObjectsWholeRuntime71=True,cpu29SourceProof=cpupin,cpu29Objects=cpuobjects,
++  onlyChangedProviderIDs=[mdid,pgid,childid],oldGraphRerun=False,oldGraphNotInlined=True,deviceOperations=0)
++ return dict(old=old,manifest=manifest,rows=rows,proof=proof,child=child,childID=childid,md=md,pg=pg,mdID=mdid,pgID=pgid,
++  entitlements=copy.deepcopy(prior),baselinePin=pin(baseline_path),portPin=pin(vt_path),depthPin=pin(depth_path),port=port,
++  graphRaw=(json.dumps(graph,indent=2)+'\n').encode(),cpu29SourceProof=cpupin,cpu29Objects=cpuobjects,
++  addedVTNativeRows=addednative,vtContract=contract,childReplacement=port['patchedChild'])
+ 
+ def assemble(inputs,output):
+  old=inputs['old'];rows=copy.deepcopy(inputs['rows']);runtime=output/'runtime';runtime.mkdir(mode=0o700);commands=[]
+@@ -106,13 +164,13 @@
+  leafraw={};leafimages={inputs['mdID']:inputs['md'],inputs['pgID']:inputs['pg']}
+  for identity,source in replacements.items():
+   path=runtime/rows[identity]['path'];path.unlink();base.copy_regular(pathlib.Path(source['path']),path);leafraw[identity]=base.regular_bytes(path)
+- childid=inputs['childID'];childpath=runtime/rows[childid]['path'];before=base.regular_bytes(childpath);image=inputs['child'];ent=output/'child.entitlements.plist';ent.write_bytes(plistlib.dumps(inputs['entitlements'],sort_keys=True));xpc=childpath.parent.parent.parent
++ childid=inputs['childID'];childpath=runtime/rows[childid]['path'];childpath.unlink();base.copy_regular(pathlib.Path(inputs['childReplacement']['path']),childpath);before=base.regular_bytes(childpath);image=inputs['child'];ent=output/'child.entitlements.plist';ent.write_bytes(plistlib.dumps(inputs['entitlements'],sort_keys=True));xpc=childpath.parent.parent.parent
+  # Remove only FinderInfo introduced on this fresh, unsigned local directory.
+  attrs=subprocess.run(['/usr/bin/xattr',str(xpc)],capture_output=True,timeout=10);need(attrs.returncode==0,'fresh own XPC attributes')
+  if b'com.apple.FinderInfo' in attrs.stdout.splitlines():run('remove-new-xpc-finderinfo',['/usr/bin/xattr','-d','com.apple.FinderInfo',xpc])
+  # Preserve the established temporary-XPC signing path; no File Provider xattrs ship.
+  import tempfile
+- with tempfile.TemporaryDirectory(prefix='vm27-pvg-unified27-sign-',dir='/private/tmp') as temporary:
++ with tempfile.TemporaryDirectory(prefix='vm27-depth24-vt72-sign-',dir='/private/tmp') as temporary:
+   txpc=pathlib.Path(temporary)/xpc.name;txpc.mkdir(mode=0o700)
+   for file in xpc.rglob('*'):
+    if file.is_file():base.copy_regular(file,txpc/file.relative_to(xpc),executable=bool(file.stat().st_mode&0o111))
+@@ -139,23 +197,28 @@
+    key='MacOS/'+pathlib.PurePosixPath(rows[identity]['path']).name
+    if table in inherited:inherited[table].pop(key,None)
+    if table in original:original[table].pop(key,None)
+- need(inherited==original,'all other resources, native shader, rules and nested seals preserved; only Child MD/PG seals replaced')
++ need(inherited==original,'all other resources, native shader, rules and nested seals preserved; only reviewed Child MD/PG seals replaced')
+  cr=pin(runtime/rows['child-coderesources']['path']);rows['child-coderesources'].update(bytes=cr['bytes'],sha256=cr['sha256'])
+  after=base.regular_bytes(childpath);actual=base.image_profile(after,CHILD)
+- need(actual.sections==image.sections and actual.imports==image.imports and actual.binds==image.binds and actual.exports==image.exports and actual.loads==image.loads and actual.uuid==image.uuid,'all original Child namespace/PAC/code geometry unchanged')
++ need(actual.sections==image.sections and actual.imports==image.imports and actual.binds==image.binds and actual.exports==image.exports and actual.loads==image.loads and actual.uuid==image.uuid,'actual unsigned Child port namespace/PAC/code geometry preserved by signing')
+  for sec in image.sections:
+   at,z=sec['fileoff'],sec['size']
+-  if at and z and sec['flags']&255 not in(1,12,18):need(before[at:at+z]==after[at:at+z],'every backed original code/data section unchanged')
++  if at and z and sec['flags']&255 not in(1,12,18):need(before[at:at+z]==after[at:at+z],'every backed unsigned Child port section preserved by signing')
+  sig=base.signature(after,CHILD_UUID,{1:base.regular_bytes(runtime/rows['child-info']['path']),3:resources});prior=inputs['proof'][rows[childid]['path']]
+- need(sig['embeddedEntitlements']==inputs['entitlements'] and len(sig['embeddedEntitlements'])==14 and sig['codeLimit']==prior['codeLimit'] and sig['signatureFileOffset']==prior['signatureFileOffset'],'actual14 permission values and original code/signature boundary')
++ need(sig['embeddedEntitlements']==inputs['entitlements'] and len(sig['embeddedEntitlements'])==14 and sig['signatureFileOffset']==sig['codeLimit'],'actual14 permission values and original code/signature boundary')
+  need({r['slot']for r in sig['actualSpecialSlots']if r['external']}=={1,3},'actual original Info1/CodeResources3')
+- oldcmd=next(c for c in image.commands if c['cmd']==0x1d);newcmd=next(c for c in actual.commands if c['cmd']==0x1d);need(oldcmd['at']==newcmd['at'],'same signature metadata command location')
+- expected=bytearray(before[:prior['signatureFileOffset']]);expected[oldcmd['at']+12:oldcmd['at']+16]=after[newcmd['at']+12:newcmd['at']+16]
+- # Signing may resize only the LINKEDIT extent holding the enlarged signature.
+- oldlink=next(c for c in image.commands if c['cmd']==0x19 and c['raw'][8:24].rstrip(b'\0')==b'__LINKEDIT');newlink=next(c for c in actual.commands if c['cmd']==0x19 and c['raw'][8:24].rstrip(b'\0')==b'__LINKEDIT')
+- need(oldlink['at']==newlink['at'],'same LINKEDIT command location')
+- for off in (32,48):expected[oldlink['at']+off:oldlink['at']+off+8]=after[newlink['at']+off:newlink['at']+off+8]
+- need(bytes(expected)==after[:sig['signatureFileOffset']],'all pre-signature bytes unchanged except signature size and LINKEDIT extent')
++ newcmd=next(c for c in actual.commands if c['cmd']==0x1d);nonsig=[c for c in actual.commands if c['cmd']!=0x1d]
++ need(len(nonsig)==len(image.commands)and actual.ncmds==image.ncmds+1 and actual.sizeofcmds==image.sizeofcmds+16,
++      'signing adds only one CodeSignature metadata command to actual unsigned Child')
++ for oldcommand,newcommand in zip(image.commands,nonsig,strict=True):
++  expectedcommand=bytearray(oldcommand['raw'])
++  if oldcommand['cmd']==0x19 and oldcommand['raw'][8:24].rstrip(b'\0')==b'__LINKEDIT':
++   for off in(32,48):expectedcommand[off:off+8]=newcommand['raw'][off:off+8]
++  need(bytes(expectedcommand)==newcommand['raw'],'every non-signature load command whole except signature LINKEDIT extent')
++ need(len(before)<=sig['signatureFileOffset']<=len(before)+16,'only bounded signature-alignment padding added')
++ expected=bytearray(before)+bytes(sig['signatureFileOffset']-len(before));struct.pack_into('<II',expected,16,actual.ncmds,actual.sizeofcmds)
++ expected[32:32+actual.sizeofcmds]=b''.join(command['raw']for command in actual.commands)
++ need(bytes(expected)==after[:sig['signatureFileOffset']],'every unsigned port byte preserved except signer header/extent metadata and bounded zero padding')
+  segment=next(g for g in actual.segments if g['name']=='__LINKEDIT');need(segment['fileoff']+segment['filesize']==len(after) and segment['size']>=segment['filesize'],'actual bounded LINKEDIT extent')
+  p=pin(childpath);rel=rows[childid]['path'];rows[childid].update(bytes=p['bytes'],sha256=p['sha256'],cdhash=sig['cdhash']);signed=dict(role='child',key=CHILD,relativePath=rel,actualSignedFile=p,**sig)
+  proofid=inputs['manifest']['dependencyProofID'];proofpath=runtime/rows[proofid]['path'];proofpath.write_bytes(inputs['graphRaw']);pp=pin(proofpath);rows[proofid].update(bytes=pp['bytes'],sha256=pp['sha256'])
+@@ -168,16 +231,34 @@
+  anchor=output/'vm27_independent_runtime_product_anchor_v1.c';anchor.write_text('#include "vm27_independent_app_runtime_anchor_v1.h"\nconst uint8_t VM27IndependentRuntimeManifestSHA256V1[32]={'+','.join(str(x)for x in hashlib.sha256(raw).digest())+'};\nconst size_t VM27IndependentRuntimeManifestBytesV1='+str(len(raw))+';\n');obj=output/'vm27_independent_runtime_product_anchor_v1.ios.o';run('compile-actual-anchor-ios',['xcrun','--sdk','iphoneos','clang','-target','arm64e-apple-ios16.1','-I',S,'-Wall','-Wextra','-Werror','-c',anchor,'-o',obj])
+  probe=output/'actual-product-preflight.m';probe.write_text('#import "vm27_independent_app_runtime_v1.h"\n#include <stdio.h>\nint main(int n,const char**v){@autoreleasepool{if(n!=2)return 2;NSError*e=nil;BOOL ok=VM27IndependentAppRuntimePreflightV1([NSString stringWithUTF8String:v[1]],&e);if(!ok)fprintf(stderr,"%s\\n",e.localizedDescription.UTF8String);return ok?0:1;}}\n');exe=output/'actual-product-preflight';run('compile-actual-product-preflight',['xcrun','--sdk','macosx','clang','-fobjc-arc','-O2','-Wall','-Wextra','-Werror','-DVM27_INDEPENDENT_RUNTIME_TESTING=1','-I',S,probe,S/'vm27_independent_app_runtime_v4.m',S/'vm27_actual_executable_image_v1.c',anchor,'-framework','Foundation','-o',exe]);run('run-actual-product-preflight',[exe,runtime])
+  inherited=[dict(r,actualSignedFile=pin(runtime/r['relativePath']))for r in inputs['proof'].values()if r['relativePath']not in{rows[i]['path']for i in (childid,*replacements)}];signaturepath=output/'signature-verification.json';save(signaturepath,dict(actualSignedFiles=inherited+leafsigned+[signed],actualSignedImages=143,allCodeDirectoriesPrimarySHA256=True,allCodePagesAndSpecialSlotsActuallyVerified=True,old140SignedWholeFilesAndCDProofInherited=True,inheritedSignatureProof=old['signatureVerification'],actualIOSImagesExecuted=False,deviceOperations=0))
+- changedids=[i for i in inputs['rows'] if rows[i]!=inputs['rows'][i]];need(set(changedids)=={childid,'child-coderesources',proofid,*replacements},'only Child MD/PG/main/seal and incremental dependency proof rows change')
+- delta=output/'runtime26-to-runtime27-delta.json';save(delta,dict(baselineCandidate=inputs['baselinePin'],actualOldRows=154,actualNewRows=len(rows),actualOldSignedImages=143,actualNewSignedImages=143,changedExistingRuntimeIDs=changedids,addedRuntimeIDs=[],wholeByteUnchangedSignedImages=140,unchangedFiles=unchanged,dependencyProofOnlyActualChildMDAndSelectedPGRoutesUpdated=True,childCodeResourcesWholeUnchanged=False,oldOtherNestedAndResourceSealsPreserved=True,nativeIOS16ShaderWholeUnchanged=True,allParentFilesWholeUnchanged=True,originalChildCodeImportsPACUUIDWholeUnchanged=True,actualChildEntitlements=inputs['entitlements'],allChildEntitlementsWholeUnchanged=True,childApprovalSHA256=rows[childid]['sha256'],childApprovalCDHash=rows[childid]['cdhash'],childApprovalDerivedFromActualManifest=True,deviceOperations=0))
+- result=copy.deepcopy(old);result.update(schema='Actual Runtime27 Child-only genuine unified Shared resource product',runtimeRoot=str(runtime),manifest=pin(manifestpath),anchorSource=pin(anchor),anchorIOSObject=pin(obj),signatureVerification=pin(signaturepath),files=len(rows),builder=pin(__file__),baselineRuntimeCandidate=inputs['baselinePin'],pvgUnifiedStorageCandidate=inputs['portPin'],pvgUnifiedStorageContracts=inputs['port']['unifiedStorageContracts'],pvgUnifiedStorageEvidence=inputs['port']['unifiedStorageEvidence'],runtime26UnifiedStorageDeltaVerification=pin(delta),wholeByteUnchangedSignedImages=140,codeSigningCommandsActuallyPerformed=3,existingSignedImagesResigned=3,unchangedSignedImagesResigned=0,actualProductPreflightPassed=True,actualChildSpawnExecuted=False,guestBoot=False,independent27Complete=False,deviceOperations=0,trustCacheOperations=0,genuineUnifiedSharedResourceOperationsActuallyExecuted=False)
++ changedids=[i for i in inputs['rows'] if rows[i]!=inputs['rows'][i]];need(set(changedids)=={childid,'child-coderesources',proofid,*replacements},'only Child MD/main/seal and incremental dependency proof rows change')
++ delta=output/'runtime71-to-runtime72-delta.json';save(delta,dict(baselineCandidate=inputs['baselinePin'],actualOldRows=154,actualNewRows=len(rows),actualOldSignedImages=143,actualNewSignedImages=143,changedExistingRuntimeIDs=changedids,addedRuntimeIDs=[],wholeByteUnchangedSignedImages=140,unchangedFiles=unchanged,dependencyProofOnlyActualChildMDPGAndTwoVTImportsUpdated=True,childCodeResourcesWholeUnchanged=False,oldOtherNestedAndResourceSealsPreserved=True,nativeIOS16ShaderWholeUnchanged=True,allParentFilesWholeUnchanged=True,originalChildTextWholeAndOnlyTwoReviewedAuthSlotsAndAppendImportsChanged=True,actualChildEntitlements=inputs['entitlements'],allChildEntitlementsWholeUnchanged=True,childApprovalSHA256=rows[childid]['sha256'],childApprovalCDHash=rows[childid]['cdhash'],childApprovalDerivedFromActualManifest=True,deviceOperations=0))
++ result=copy.deepcopy(old);result.update(schema='Actual Runtime72 owned depth24 and truthful coldboot VT unavailable product',runtimeRoot=str(runtime),manifest=pin(manifestpath),anchorSource=pin(anchor),anchorIOSObject=pin(obj),signatureVerification=pin(signaturepath),files=len(rows),builder=pin(__file__),baselineRuntimeCandidate=inputs['baselinePin'],ownedVTUnavailableCandidate=inputs['portPin'],ownedVTHostUnavailableV1Contract=inputs['vtContract'],ownedPGDepth24Candidate=inputs['depthPin'],runtime71Depth24AndVTDeltaVerification=pin(delta),wholeByteUnchangedSignedImages=140,codeSigningCommandsActuallyPerformed=3,existingSignedImagesResigned=3,unchangedSignedImagesResigned=0,actualProductPreflightPassed=True,actualChildSpawnExecuted=False,guestBoot=False,independent27Complete=False,deviceOperations=0,trustCacheOperations=0,actualVTAdapterExecuted=False,all29CPUObjectsWholeRuntime71=True,cpu29SourceProof=inputs['cpu29SourceProof'],cpu29Objects=inputs['cpu29Objects'],actualVTAddedStrongNativeRows=inputs['addedVTNativeRows'])
+  result['genuineSandboxResource']=pin(runtime/rows['child-sandbox-profile']['path']);return result
+ 
+ def main():
+- ap=argparse.ArgumentParser();ap.add_argument('--baseline-runtime-candidate',required=True,type=pathlib.Path);ap.add_argument('--output',required=True,type=pathlib.Path);ap.add_argument('--check-inputs-only',action='store_true');a=ap.parse_args();o=a.output.resolve();need(o.parent==N and not o.exists(),'fresh actual output');inputs=read_inputs(a.baseline_runtime_candidate.resolve());o.mkdir(mode=0o700);admission=o/'admission.json';save(admission,dict(schema='Runtime27 actual Child MD/PG unified Shared storage-only signature admission',baseline=inputs['baselinePin'],original154FilesWholeVerified=True,original143SignatureProvenanceJoined=True,allChildEntitlementsWholeUnchanged=True,deviceOperations=0))
++ ap=argparse.ArgumentParser(description=__doc__)
++ ap.add_argument('--baseline-runtime-candidate',required=True,type=pathlib.Path)
++ ap.add_argument('--depth24-port-candidate',required=True,type=pathlib.Path)
++ ap.add_argument('--vt-port-candidate',required=True,type=pathlib.Path)
++ ap.add_argument('--output',required=True,type=pathlib.Path)
++ ap.add_argument('--check-inputs-only',action='store_true');a=ap.parse_args();o=a.output.resolve()
++ need(o.parent==N and not o.exists(),'fresh actual Runtime72 output')
++ inputs=read_inputs(a.baseline_runtime_candidate.resolve(),a.depth24_port_candidate.resolve(),a.vt_port_candidate.resolve())
++ o.mkdir(mode=0o700);admission=o/'admission.json'
++ save(admission,dict(schema='Runtime72 actual depth24 and coldboot VT unavailable signature admission',
++  baseline=inputs['baselinePin'],depth24=inputs['depthPin'],vt=inputs['portPin'],all29CPUObjectsWholeRuntime71=True,
++  original154FilesWholeVerified=True,original143SignatureProvenanceJoined=True,allChildEntitlementsWholeUnchanged=True,deviceOperations=0))
+  if a.check_inputs_only:print(json.dumps(dict(admission=pin(admission),signed=False,deviceOperations=0)));return
+  try:
+-  result=assemble(inputs,o);result['admission']=pin(admission);candidate=o/'candidate.json';save(candidate,result);pins=[pin(p)for p in o.rglob('*')if p.is_file()]+[pin(__file__),pin(BASE),inputs['baselinePin'],pin(a.baseline_runtime_candidate.parent/'freeze.json'),inputs['old']['manifest'],inputs['old']['signatureVerification'],pin(S/'vm27_independent_app_runtime_v4.m'),pin(S/'vm27_actual_executable_image_v1.c'),inputs['portPin'],pin(PORT_SOURCE.parent/'freeze.json')]+[v for v in inputs['port'].values()if isinstance(v,dict)and all(k in v for k in('path','bytes','sha256'))];save(o/'freeze.json',dict(files=list({p['path']:p for p in pins}.values()),deviceOperations=0));print(json.dumps(dict(candidate=pin(candidate),freeze=pin(o/'freeze.json'),manifest=result['manifest'],anchor=result['anchorSource'])))
+-
++  result=assemble(inputs,o);result['admission']=pin(admission);candidate=o/'candidate.json';save(candidate,result)
++  pins=[pin(p)for p in o.rglob('*')if p.is_file()]+[pin(__file__),pin(BASE),inputs['baselinePin'],
++   pin(a.baseline_runtime_candidate.parent/'freeze.json'),inputs['old']['manifest'],inputs['old']['signatureVerification'],
++   pin(S/'vm27_independent_app_runtime_v4.m'),pin(S/'vm27_actual_executable_image_v1.c'),inputs['portPin'],
++   inputs['depthPin'],pin(a.vt_port_candidate.parent/'freeze.json'),pin(a.depth24_port_candidate.parent/'freeze.json'),
++   inputs['cpu29SourceProof'],*inputs['cpu29Objects']]
++  pins += [v for v in inputs['port'].values()if isinstance(v,dict)and all(k in v for k in('path','bytes','sha256'))]
++  save(o/'freeze.json',dict(files=list({p['path']:p for p in pins}.values()),deviceOperations=0))
++  print(json.dumps(dict(candidate=pin(candidate),freeze=pin(o/'freeze.json'),manifest=result['manifest'],anchor=result['anchorSource'])))
+  except Exception as error:save(o/'failure.json',dict(error=repr(error),deviceOperations=0));raise
+ if __name__=='__main__':main()

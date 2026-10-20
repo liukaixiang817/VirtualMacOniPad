@@ -65,6 +65,15 @@ void *VZTypedRealloc(void *pointer, size_t size, uint64_t type_id) {
     return VZOriginalRealloc(pointer, size);
 }
 #endif
+#ifdef VZ_TYPED_ALLOCATOR_INCLUDE_VALLOC
+// Apple's _malloc.h backdeployment branch uses real valloc when the typed
+// entry is absent. Page alignment, zero-size and ownership remain native.
+extern void *VZOriginalValloc(size_t) __asm("_valloc");
+void *VZTypedValloc(size_t size, uint64_t type_id) {
+    (void)type_id;
+    return VZOriginalValloc(size);
+}
+#endif
 int VZTypedPosixMemalign(void **memptr, size_t alignment, size_t size, uint64_t type_id) {
     (void)type_id;
     return VZOriginalPosixMemalign(memptr, alignment, size);

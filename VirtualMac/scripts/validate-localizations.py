@@ -95,3 +95,18 @@ for locale in sorted(EXPECTED):
         fail(f"{locale} has inconsistent localized app names")
 
 print(f"localization audit passed: {len(EXPECTED)} language variants, {len(source_keys)} UI strings")
+
+# The experimental backend table is translated in English and Chinese first;
+# other existing app languages use Foundation's explicit English key fallback.
+backend_keys = set()
+for source in sources:
+    backend_keys.update(re.findall(r'VZBL\(@"((?:[^"\\]|\\.)*)"\)', source.read_text()))
+for locale in ("en", "zh_CN", "zh_HK", "zh_TW"):
+    path = RESOURCE_ROOT / f"{locale}.lproj" / "Backend.strings"
+    entries = STRINGS_PATTERN.findall(path.read_text())
+    if [k for k, _ in entries] != sorted(backend_keys, key=str.casefold):
+        fail(f"{locale} backend keys are incomplete, repeated, or not sorted")
+    for key, value in entries:
+        if not value or sorted(FORMAT_PATTERN.findall(key)) != sorted(FORMAT_PATTERN.findall(value)):
+            fail(f"{locale} invalid backend translation for {key!r}")
+print(f"backend localization audit passed: {len(backend_keys)} strings, English and Chinese")

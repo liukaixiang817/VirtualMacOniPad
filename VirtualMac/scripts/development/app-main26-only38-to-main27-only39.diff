@@ -1,0 +1,47 @@
+--- /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-main26-only-app-v38.py
++++ /Users/liukaixiang/Documents/VirtualMacOniPad/VirtualMac/scripts/development/build-independent27-main27-only-app-v39.py
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python3
+ """HOST-only one-Main App build from actual App85/R71; Root alone executes.
+ 
+-Accept the reviewed Main26 exact-original boot-args restoration source plan. Reuse the real Main21 compiler
++Accept the reviewed Main27 independent27 VideoToolbox accelerator deferral source plan. Reuse the real Main21 compiler
+ arguments and App85 linker arguments, replacing only object0; never sign or run.
+ """
+ import argparse
+@@ -20,7 +20,7 @@
+ OLD=N/'independent27-actual-app-vmapple-msi-type-anchor-v85-attempt1/candidate.json'
+ OLD_SHA='7d9fd977415b7e7027e269f4a4075290cbe0fa4607a6915f1d4022dbb9ea2e3a'
+ RUNTIME_SHA='8ae4d5ff21a2ee6bb5fa22f040c66c4df791e7df566fb3681e68c709a2a0ee0a'
+-PLAN_SHA='ba5397825941cafcf016f12b2d4808be189f847196fe827d7e7ea9d71db349a0'
++PLAN_SHA='c6c3e7b8eb8fe3d1297327417b363e05de95e41505f57a5b46908e820006aaab'
+ 
+ 
+ def need(value, reason):
+@@ -50,7 +50,7 @@
+     ap.add_argument('--output',type=pathlib.Path,required=True)
+     args=ap.parse_args();out=args.output.resolve();plan_path=args.source_plan.resolve()
+     need(out.parent==N and not out.exists(),'fresh local one-Main App output')
+-    need(pin(OLD)['sha256']==OLD_SHA and pin(plan_path)['sha256']==PLAN_SHA,'actual frozen App85 baseline and reviewed Main26 source plan')
++    need(pin(OLD)['sha256']==OLD_SHA and pin(plan_path)['sha256']==PLAN_SHA,'actual frozen App85 baseline and reviewed Main27 source plan')
+     plan_pin=pin(plan_path);old=json.loads(OLD.read_bytes());plan=json.loads(plan_path.read_bytes())
+     need(len(old['objects'])==len(old['sourceFiles'])==35 and
+          plan['actualChangedAppObjectIndices']==[0] and len(plan['sourceFiles'])==1,
+@@ -65,7 +65,7 @@
+     for row in [*old['sourceFiles'],*old['actualIncludeClosure'],*old['objects'],
+                 *old.get('externalPrecompiledObjects',[]),*old['appFiles'],source,plan['sourceDiff']]: exact(row)
+     baseline=plan['baselineMain21Source']
+-    need(plan['baselineMain25Source']==old['sourceFiles'][0],'Main26 starts from the actual whole App85 Main25 source')
++    need(plan['baselineMain25Source']==old['sourceFiles'][0],'Main27 starts from the actual whole App85 Main25 source')
+     exact(baseline)
+     runtime=json.loads(exact(old['actualRuntimeCandidate']).read_bytes())
+     need(old['actualRuntimeCandidate']['sha256']==RUNTIME_SHA and
+@@ -121,7 +121,7 @@
+                      'actualChangedAppObjectIndices','actualMain25AndOther33CompiledObjectsWholeUnchanged',
+                      'actualUARTAndBootArgsObjectsWholeApp84','mainSourcePlan','mainSourceContractKey')
+     record['historicalApp85Main25AndRuntimeAnchorRelink']={k:record.pop(k)for k in historical_keys if k in record}
+-    record.update(schema='Actual Main26 original boot-args restoration App build with34 whole App85 objects and whole Runtime71',
++    record.update(schema='Actual Main27 VideoToolbox accelerator deferral App build with34 whole App85 objects and whole Runtime71',
+         builder=pin(__file__),sourceCandidate=plan_pin,mainSourcePlan=plan_pin,
+         mainSourceContractKey=contract_key,sourceFiles=sources,objects=objects,commands=commands,
+         binary=pin(binary),appFiles=app_files,actualIncludeClosure=list(closure.values()),

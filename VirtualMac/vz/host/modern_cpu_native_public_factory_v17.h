@@ -1,0 +1,5 @@
+#ifndef VM27_MODERN_CPU_NATIVE_PUBLIC_FACTORY_V17_H
+#define VM27_MODERN_CPU_NATIVE_PUBLIC_FACTORY_V17_H
+#include "modern_cpu_native_public_factory_v16.h"
+#include "modern_cpu_kernel_lifecycle_v21.h"
+#endif

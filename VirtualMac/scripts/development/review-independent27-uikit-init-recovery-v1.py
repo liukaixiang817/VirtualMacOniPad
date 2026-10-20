@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Finite HOST delta review; no product redeployment, signing or device calls."""
+import argparse,ast,hashlib,importlib.util,json,pathlib,shlex,sys
+sys.dont_write_bytecode=True
+R=pathlib.Path(__file__).resolve().parents[3];N=R/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm';B=R/'VirtualMac/scripts/development'
+def need(v,m):
+ if not v:raise ValueError(m)
+def pin(p):
+ p=pathlib.Path(p).resolve();b=p.read_bytes();return dict(path=str(p),bytes=len(b),sha256=hashlib.sha256(b).hexdigest())
+def actual(r):
+ need(pin(r['path'])=={k:r[k]for k in ('path','bytes','sha256')},'actual pin '+r['path']);return pathlib.Path(r['path'])
+def load(p,n):
+ sp=importlib.util.spec_from_file_location(n,p);m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m);return m
+def funcs(t):return {n.name:ast.dump(n,include_attributes=False)for n in ast.parse(t).body if isinstance(n,ast.FunctionDef)}
+def value(t,k):
+ return next(ast.literal_eval(n.value)for n in ast.parse(t).body if isinstance(n,ast.Assign)and any(isinstance(x,ast.Name)and x.id==k for x in n.targets))
+def body(t):
+ at=t.index('/var/jb/bin/sh -c ',t.index('/var/jb/usr/bin/timeout'))+len('/var/jb/bin/sh -c ');p=shlex.split(t[at:]);need(len(p)==1,'one bounded shell body');return p[0]
+def main():
+ ap=argparse.ArgumentParser();ap.add_argument('--candidate',required=True,type=pathlib.Path);ap.add_argument('--output',required=True,type=pathlib.Path);a=ap.parse_args();o=a.output.resolve();need(o.parent==N and not o.exists(),'fresh peer');d=a.candidate.parent;c=json.loads(a.candidate.read_bytes());sf=d/'freeze.json'
+ for r in json.loads(sf.read_bytes())['files']:actual(r)
+ s=json.loads(actual(c['scope']).read_bytes());oldp=actual(c['originalInstalledDeltaCandidate']);old=json.loads((oldp.parent/'scope.json').read_bytes());prior=N/'independent27-uikit-filter-device-independent-peer-v1-attempt1/review.json';pr=json.loads(prior.read_bytes());need(pr['controllerPacketCandidate']==pin(oldp)and pr['findings']==[]and pr['finiteLocalScopePassed'],'previous exact full255/142 product/control peer inherited')
+ for key in ['files','directories','trustCacheCDHashes','newTrustCacheCDHashes','trustCacheRegistrationCount','actualNativeCDSubset','inheritedActualSignedRuntimeCDProof','inheritedActualSignedAppPeer','runtimeCandidate','appCandidate','continuingHumanAuthorization','bootSeconds']:need(s[key]==old[key],'exact installed products/proofs/current authorization unchanged '+key)
+ need(len(s['files'])==255 and len(s['trustCacheCDHashes'])==142 and s['trustCacheRegistrationCount']==6 and s['deltaFiles']==[]and s['newOwnDirectories']==[]and not s['productUpdatesPerformed']and s['initializationOnly'],'actual255/142/6 and zero deployment delta')
+ need(not(d/'products.tar').exists()and s['currentInstalledProductsPost']is None and s['oldActualPost']is None and s['originalDeltaBackupDirectory']==old['deviceStage'],'no archive/current post fabrication/original backups retained')
+ receipts=[]
+ for key,rc in [('actualOriginalStage0',0),('actualOriginalVerify8',8)]:
+  p=actual(c[key]);r=json.loads(p.read_bytes());req=json.loads(actual(r['request']).read_bytes());t=actual(r['stdout']).read_text();actual(r['stderr']);need(r['transportExit']==rc and req['packetCandidate']==pin(oldp),'actual stage0/failedverify8 unchanged')
+  if rc==0:need(t.count('OWN_EXACT_PRODUCT_UPDATED ')==9 and 'INDEPENDENT27_ALL_DELTA_INSTALLED_EXACT_BACKUPS_RETAINED_NO_TRUST_OR_GUEST'in t,'actual all nine updates already finished')
+  else:need(t.strip()=='UNEXPECTED_OWN_PROCESS  4293     1   501 '+old['deviceAppMain']and 'INDEPENDENT27_ALL_ACTUAL_PRODUCTS_EXACT'not in t,'verify8 only unexpected ownApp, never fake successful validation')
+  receipts += [c[key],r['request'],r['stdout'],r['stderr']]
+ for phase in ['trust','launch','post']:need(not(oldp.parent/(phase+'-dispatched.json')).exists()and not(oldp.parent/'device-receipts'/phase).exists(),'prior later phase still never dispatched '+phase)
+ control=actual(c['controller']).read_text();oldctrl=(oldp.parent/'control.py').read_text();nf,of=funcs(control),funcs(oldctrl);need({k for k in nf if nf[k]!=of[k]}=={'ready_gate','dispatch'}and value(control,'PROCESS_FUNCTIONS')==value(oldctrl,'PROCESS_FUNCTIONS'),'only ready/prioraction/noarchive dispatch delta; exact process identity/cleanup inherited')
+ need(value(control,'ACTIONS')==('close-current-own','verify','trust','launch','post')and "previous = {'verify':'close-current-own','trust':'verify','launch':'trust','post':'launch'}"in control and 'success=args.action != \'post\''in control,'actual five bounded once phases and fresh successful predecessor receipts')
+ for token in ["review.get('controllerPacketCandidate') == pin(packet/'candidate.json')","auth['scope'] == pin(packet/'scope.json')","auth['trustCacheCDHashes'] == scope['newTrustCacheCDHashes']","scope['originalTrustActionNeverDispatched'] is True","for field,code in (('currentInstalledProductsStage',0),('priorVerificationFailure',8))","not (prior_packet/(name+'-dispatched.json')).exists()","need(not output.exists(), 'serial action never repeated')","data = b''"]:need(token in control,'exact ready/continuing scope/priorfail and no repeat gate '+token)
+ fast=load(B/'independent27_device_product_verify_fast_v1.py','recovery_peer_fast');full=fast.batch_check(s);cd=fast.cd_check(s,s['actualNativeCDSubset']);scripts={k:actual(r).read_text()for k,r in c['scripts'].items()};v=body(scripts['verify']);need(full in v and cd in v and v.index(full)<v.index('mkdir -m 700 "$OWN_STAGE"')and v.index(cd)<v.index('mkdir -m 700 "$OWN_STAGE"'),'fresh full255SHA+meta/nativeCD3 plus inherited health before any own diagnostic write')
+ need((d/'health-root.sh').read_bytes()==(oldp.parent/'health-root.sh').read_bytes()and (d/'health-root.sh').read_text()in v,'actual currenthealth/old6/boot exact inherited')
+ for token in ['[ ! -e "$OWN_STAGE" ] && [ ! -L "$OWN_STAGE" ]','chown 0:0 "$OWN_STAGE"','0:0:700','cp -p "$OWN_LOG" "$OWN_STAGE/backup-app-log"','= "$own_log_sha" ]','= "$own_log_meta" ]','= "$own_log_identity" ]','501:501:600:1:0','set -C; : > "$OWN_STAGE/verify-complete"']:need(token in v,'fresh0700 diag/stable owned log backup+same inode before emptying '+token)
+ need(v.index('cp -p "$OWN_LOG"')<v.index(': > "$OWN_LOG"')and v.index('= "$own_log_meta" ]')<v.index(': > "$OWN_LOG"'),'true prior log exact backup and pretruncate stability')
+ for action in ['close-current-own','launch','post']:need(scripts[action]==(oldp.parent/(action+'.sh')).read_text().replace(old['deviceStage'],s['deviceStage']),'entire inherited precise action only stagepath changes '+action)
+ trust=body(scripts['trust']);adds=[x.removeprefix('jbctl trustcache add ')for x in trust.splitlines()if x.startswith('jbctl trustcache add ')];need(adds==s['newTrustCacheCDHashes']and len(adds)==6 and full in trust and 'verify-complete'in trust and trust.index('trust-dispatched')<trust.index('jbctl trustcache add ')and trust.count('jbctl trustcache info')==1 and '[ "$own_actual_trust_exit" = 0 ]'in trust,'six original un-dispatched hashes only/truefreshverification then actualnative single membership')
+ need(all('expected["'+h+'"]'in trust for h in s['trustCacheCDHashes'])and "INDEPENDENT27_ACTUAL_ALL_ACTIVE_OWN_TRUST_MEMBERSHIP_EXACT"in trust,'all142 native membership/native status/raw output required')
+ need(not any(t in v for t in ['cp "$OWN_STAGE/new-','mv -f ','mv -n ','tar -x','rm -rf','chmod 777'])and not any(t in '\n'.join(scripts.values())for t in ['trustcache clear','killall','setuid','sandbox_apply']),'no product copy/move/reinstall/systemprivilege or unknown sandbox changes')
+ sizes={}
+ for action,text in scripts.items():
+  need('/var/jb/usr/bin/timeout --signal=TERM --kill-after=3 '+('20'if action=='close-current-own'else'45')+' /var/jb/bin/sh -c 'in text,'actual bounded timeout/kill '+action);cmd=('sudo -k -S -p "" 'if action!='launch'else'')+'/var/jb/bin/sh -c '+shlex.quote(text);sizes[action]=len(cmd.encode());need(sizes[action]+10000<262144,'real current argmax reserved '+action)
+ need(sizes==c['quotedCommandBytes']and max(sizes.values())==217248,'exact five quoted argv lengths')
+ o.mkdir(mode=0o700);report=dict(schema='Installed UIKit filter init recovery finite independent peer',controllerPacketCandidate=pin(a.candidate),packetFreeze=pin(sf),actualScope=c['scope'],originalReviewedPacket=pin(oldp),priorPacketPeer=pin(prior),actualStage0=c['actualOriginalStage0'],actualVerify8=c['actualOriginalVerify8'],actualVerificationNotFalsified=True,actualProducts255And142CDWholeInventoryInherited=True,productDeploymentOperations=0,newProductFiles=0,originalNineBackupsPreserved=True,originalSixTCsNotPreviouslyDispatched=True,exactNewTCs=s['newTrustCacheCDHashes'],freshCloseVerifyTrustLaunchPostOnce=True,full255AndCD3AndHealthBeforeDiagnosticWrites=True,currentLogStableBackupBeforeSameInodeTruncate=True,strictFreshRoot0700DiagnosticDirectory=True,oneTrueNativeTrustQueryAndAll142MembershipRequired=True,processCleanupAndStable2sAndPostEntireByteInheritedExceptStagePath=True,actualContinuedHumanScopeRequired=True,actualRemoteLimits20Or45PlusKill3=True,SSH55Inherited=True,maximumQuotedCommandBytes=217248,deviceOperations=0,trustCacheOperations=0,guestBootRequested=False,sandboxProfileApplied=False,nativeSandboxApplyUnavailable=45,findings=[],passed=True,finiteLocalScopePassed=True)
+ (o/'review.json').write_text(json.dumps(report,indent=2)+'\n');rows=[pin(__file__),pin(a.candidate),pin(sf),c['scope'],c['controller'],c['preparer'],pin(oldp),pin(oldp.parent/'control.py'),pin(oldp.parent/'scope.json'),pin(prior),pin(B/'independent27_device_product_verify_fast_v1.py')]+receipts+list(c['scripts'].values())+[s['continuingHumanAuthorization'],s['inheritedActualSignedRuntimeCDProof'],s['inheritedActualSignedAppPeer'],s['actualSignedRuntimeIndependentPeer'],pin(o/'review.json')];(o/'freeze.json').write_text(json.dumps(dict(files=list({r['path']:r for r in rows}.values()),deviceOperations=0),indent=2)+'\n');print(json.dumps(dict(review=pin(o/'review.json'),freeze=pin(o/'freeze.json'),findings=[])))
+if __name__=='__main__':main()

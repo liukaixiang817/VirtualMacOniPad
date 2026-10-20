@@ -1,0 +1,12 @@
+// Framework backend selection. Other languages use the English key fallback.
+"A Virtual Mac is already starting or running." = "A Virtual Mac is already starting or running.";
+"Choose the CPU, VMM and Virtualization framework version. Shut down the Virtual Mac before switching. Close and reopen the app if a different version has already been loaded. The GPU backend is configured separately." = "Choose the CPU, VMM and Virtualization framework version. Shut down the Virtual Mac before switching. Close and reopen the app if a different version has already been loaded. The GPU backend is configured separately.";
+"Close and reopen Virtual Mac to load the selected framework backend. Different framework versions cannot be loaded in the same app process." = "Close and reopen Virtual Mac to load the selected framework backend. Different framework versions cannot be loaded in the same app process.";
+"Framework Backend" = "Framework Backend";
+"Loaded Framework Backend" = "Loaded Framework Backend";
+"macOS 27 (In development)" = "macOS 27 (In development)";
+"macOS 27 CPU, VMM and Virtualization compatibility is still being implemented. This backend cannot start a guest yet. Choose macOS 13.2.1 to use the working backend." = "macOS 27 CPU, VMM and Virtualization compatibility is still being implemented. This backend cannot start a guest yet. Choose macOS 13.2.1 to use the working backend.";
+"macOS 27 is still in development and cannot start a guest yet. Selecting it will never fall back silently to macOS 13.2.1." = "macOS 27 is still in development and cannot start a guest yet. Selecting it will never fall back silently to macOS 13.2.1.";
+"Not loaded" = "Not loaded";
+"Shut down the Virtual Mac before changing its framework backend." = "Shut down the Virtual Mac before changing its framework backend.";
+"Unknown framework backend. Choose macOS 13.2.1 or macOS 27 in Settings." = "Unknown framework backend. Choose macOS 13.2.1 or macOS 27 in Settings.";

@@ -1,0 +1,144 @@
+{
+  "aliases": [
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO11CiphersuiteV23P256_SHA256_AES_GCM_256AEvgZ",
+      "naturalSymbol": "_$s8VM27HPKE0B0O11CiphersuiteV23P256_SHA256_AES_GCM_256AEvgZ",
+      "originalDemangled": "static CryptoKit.HPKE.Ciphersuite.P256_SHA256_AES_GCM_256.getter : CryptoKit.HPKE.Ciphersuite",
+      "naturalDemangled": "static VM27HPKE.HPKE.Ciphersuite.P256_SHA256_AES_GCM_256.getter : VM27HPKE.HPKE.Ciphersuite",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO11CiphersuiteVMa",
+      "naturalSymbol": "_$s8VM27HPKE0B0O11CiphersuiteVMa",
+      "originalDemangled": "type metadata accessor for CryptoKit.HPKE.Ciphersuite",
+      "naturalDemangled": "type metadata accessor for VM27HPKE.HPKE.Ciphersuite",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO6SenderV12recipientKey11ciphersuite4infoAEx_AC11CiphersuiteV10Foundation4DataVtKcAA023HPKEDiffieHellmanPublicF0RzlufC",
+      "naturalSymbol": "_$s8VM27HPKE0B0O6SenderV12recipientKey11ciphersuite4infoAEx_AC11CiphersuiteV10Foundation4DataVtKcAA023HPKEDiffieHellmanPublicE0RzlufC",
+      "originalDemangled": "CryptoKit.HPKE.Sender.init<A where A: CryptoKit.HPKEDiffieHellmanPublicKey>(recipientKey: A, ciphersuite: CryptoKit.HPKE.Ciphersuite, info: Foundation.Data) throws -> CryptoKit.HPKE.Sender",
+      "naturalDemangled": "VM27HPKE.HPKE.Sender.init<A where A: VM27HPKE.HPKEDiffieHellmanPublicKey>(recipientKey: A, ciphersuite: VM27HPKE.HPKE.Ciphersuite, info: Foundation.Data) throws -> VM27HPKE.HPKE.Sender",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO6SenderV15encapsulatedKey10Foundation4DataVvg",
+      "naturalSymbol": "_$s8VM27HPKE0B0O6SenderV15encapsulatedKey10Foundation4DataVvg",
+      "originalDemangled": "CryptoKit.HPKE.Sender.encapsulatedKey.getter : Foundation.Data",
+      "naturalDemangled": "VM27HPKE.HPKE.Sender.encapsulatedKey.getter : Foundation.Data",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO6SenderV4sealy10Foundation4DataVxKAG0G8ProtocolRzlF",
+      "naturalSymbol": "_$s8VM27HPKE0B0O6SenderV4sealy10Foundation4DataVxKAG0F8ProtocolRzlF",
+      "originalDemangled": "CryptoKit.HPKE.Sender.seal<A where A: Foundation.DataProtocol>(A) throws -> Foundation.Data",
+      "naturalDemangled": "VM27HPKE.HPKE.Sender.seal<A where A: Foundation.DataProtocol>(A) throws -> Foundation.Data",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO6SenderVMa",
+      "naturalSymbol": "_$s8VM27HPKE0B0O6SenderVMa",
+      "originalDemangled": "type metadata accessor for CryptoKit.HPKE.Sender",
+      "naturalDemangled": "type metadata accessor for VM27HPKE.HPKE.Sender",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO9RecipientV10privateKey11ciphersuite4info012encapsulatedF0AEx_AC11CiphersuiteV10Foundation4DataVANtKcAA024HPKEDiffieHellmanPrivateF0RzlufC",
+      "naturalSymbol": "_$s8VM27HPKE0B0O9RecipientV10privateKey11ciphersuite4info012encapsulatedE0AEx_AC11CiphersuiteV10Foundation4DataVANtKcAA024HPKEDiffieHellmanPrivateE0RzlufC",
+      "originalDemangled": "CryptoKit.HPKE.Recipient.init<A where A: CryptoKit.HPKEDiffieHellmanPrivateKey>(privateKey: A, ciphersuite: CryptoKit.HPKE.Ciphersuite, info: Foundation.Data, encapsulatedKey: Foundation.Data) throws -> CryptoKit.HPKE.Recipient",
+      "naturalDemangled": "VM27HPKE.HPKE.Recipient.init<A where A: VM27HPKE.HPKEDiffieHellmanPrivateKey>(privateKey: A, ciphersuite: VM27HPKE.HPKE.Ciphersuite, info: Foundation.Data, encapsulatedKey: Foundation.Data) throws -> VM27HPKE.HPKE.Recipient",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO9RecipientV4openy10Foundation4DataVxKAG0G8ProtocolRzlF",
+      "naturalSymbol": "_$s8VM27HPKE0B0O9RecipientV4openy10Foundation4DataVxKAG0F8ProtocolRzlF",
+      "originalDemangled": "CryptoKit.HPKE.Recipient.open<A where A: Foundation.DataProtocol>(A) throws -> Foundation.Data",
+      "naturalDemangled": "VM27HPKE.HPKE.Recipient.open<A where A: Foundation.DataProtocol>(A) throws -> Foundation.Data",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEO9RecipientVMa",
+      "naturalSymbol": "_$s8VM27HPKE0B0O9RecipientVMa",
+      "originalDemangled": "type metadata accessor for CryptoKit.HPKE.Recipient",
+      "naturalDemangled": "type metadata accessor for VM27HPKE.HPKE.Recipient",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEOMa",
+      "naturalSymbol": "_$s8VM27HPKE0B0OMa",
+      "originalDemangled": "type metadata accessor for CryptoKit.HPKE",
+      "naturalDemangled": "type metadata accessor for VM27HPKE.HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEOMn",
+      "naturalSymbol": "_$s8VM27HPKE0B0OMn",
+      "originalDemangled": "nominal type descriptor for CryptoKit.HPKE",
+      "naturalDemangled": "nominal type descriptor for VM27HPKE.HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4HPKEON",
+      "naturalSymbol": "_$s8VM27HPKE0B0ON",
+      "originalDemangled": "type metadata for CryptoKit.HPKE",
+      "naturalDemangled": "type metadata for VM27HPKE.HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VAA017HPKEDiffieHellmanfD0AAWP",
+      "naturalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0V8VM27HPKE017HPKEDiffieHellmanfD0AHWP",
+      "originalDemangled": "protocol witness table for CryptoKit.P256.KeyAgreement.PublicKey : CryptoKit.HPKEDiffieHellmanPublicKey in CryptoKit",
+      "naturalDemangled": "protocol witness table for CryptoKit.P256.KeyAgreement.PublicKey : VM27HPKE.HPKEDiffieHellmanPublicKey in VM27HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VAA017HPKEDiffieHellmanfD0AAWP",
+      "naturalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V8VM27HPKE017HPKEDiffieHellmanfD0AHWP",
+      "originalDemangled": "protocol witness table for CryptoKit.P256.KeyAgreement.PrivateKey : CryptoKit.HPKEDiffieHellmanPrivateKey in CryptoKit",
+      "naturalDemangled": "protocol witness table for CryptoKit.P256.KeyAgreement.PrivateKey : VM27HPKE.HPKEDiffieHellmanPrivateKey in VM27HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VAA017HPKEDiffieHellmanfD0AAMc",
+      "naturalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0V8VM27HPKE017HPKEDiffieHellmanfD0AHMc",
+      "originalDemangled": "protocol conformance descriptor for CryptoKit.P256.KeyAgreement.PublicKey : CryptoKit.HPKEDiffieHellmanPublicKey in CryptoKit",
+      "naturalDemangled": "protocol conformance descriptor for CryptoKit.P256.KeyAgreement.PublicKey : VM27HPKE.HPKEDiffieHellmanPublicKey in VM27HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    },
+    {
+      "originalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VAA017HPKEDiffieHellmanfD0AAMc",
+      "naturalSymbol": "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V8VM27HPKE017HPKEDiffieHellmanfD0AHMc",
+      "originalDemangled": "protocol conformance descriptor for CryptoKit.P256.KeyAgreement.PrivateKey : CryptoKit.HPKEDiffieHellmanPrivateKey in CryptoKit",
+      "naturalDemangled": "protocol conformance descriptor for CryptoKit.P256.KeyAgreement.PrivateKey : VM27HPKE.HPKEDiffieHellmanPrivateKey in VM27HPKE",
+      "newPrivateSemantics": true,
+      "originalTypeContextNameRetained": false
+    }
+  ],
+  "DI2AliasCount": 14,
+  "SDKConformanceDescriptorAliasCount": 2,
+  "nativeReexports": [
+    "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0V18x963RepresentationAGx_tKc10Foundation15ContiguousBytesRzlufC",
+    "_$s9CryptoKit4P256O12KeyAgreementO06PublicD0VMa",
+    "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V17pemRepresentationAGSS_tKcfC",
+    "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V17pemRepresentationSSvg",
+    "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V18x963Representation10Foundation4DataVvg",
+    "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0V18x963RepresentationAGx_tKc10Foundation15ContiguousBytesRzlufC",
+    "_$s9CryptoKit4P256O12KeyAgreementO07PrivateD0VMa"
+  ],
+  "ABIStillRequiresOriginalTypedCaller": true
+}

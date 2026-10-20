@@ -39,6 +39,9 @@ extern "C" {
 VZ_TYPED_EXPORT void *VZTypedMalloc(size_t, uint64_t) __asm("_malloc_type_malloc");
 VZ_TYPED_EXPORT void *VZTypedCalloc(size_t, size_t, uint64_t) __asm("_malloc_type_calloc");
 VZ_TYPED_EXPORT void *VZTypedRealloc(void *, size_t, uint64_t) __asm("_malloc_type_realloc");
+#ifdef VZ_TYPED_ALLOCATOR_INCLUDE_VALLOC
+VZ_TYPED_EXPORT void *VZTypedValloc(size_t, uint64_t) __asm("_malloc_type_valloc");
+#endif
 VZ_TYPED_EXPORT int VZTypedPosixMemalign(void **, size_t, size_t, uint64_t) __asm("_malloc_type_posix_memalign");
 // Exact SDK public ABI: type_id is fourth, options fifth. No new zone layout.
 VZ_TYPED_EXPORT void *VZTypedZoneWithOptions(malloc_zone_t *, size_t, size_t,
