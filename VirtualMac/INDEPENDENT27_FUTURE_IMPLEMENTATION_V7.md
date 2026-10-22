@@ -1,3 +1,23 @@
+2026-10-21 启动热点进展：Runtime133/CPU76/GIC12/App187/Dev174/Normal198 已真实冷启动交接0。中断回调计数改为原生32位原子值，物理定时批次在完成状态发布后依次释放CPU与控制器存活计数，减少一次全局锁往返；其余28个CPU对象、原生接口和IRQ/调度语义保持。功能/差分/四所有者并发与Reset 53806检查、TSAN 54486检查通过。真机壁纸/菜单/Dock/设置可见主区及侧栏图标完整，图标服务PID615 runs1/never exited；原生暂停state2与恢复state1均verified1/nativeError0，恢复后剪贴板HELLO重连。冷启动首帧41–46秒且包含一次3秒采样，不据此声称稳定加速或30秒Ready。实际采样仍定位物理定时入口、虚拟定时路由和GetLines全局锁争用，应继续减少无状态变化的重复读取。源码与证据说明docs/independent27-gic-atomic-pins.md。当前版本的正常关机清理尚待下一次真实停止时确认，不重复泛化渲染探针；beta2仍暂缓上传。
+
+2026-10-21 GUI 优先更新：Runtime132/CPU75/GIC11/App186/Normal197 保持独立 macOS27 后端。真实冷启动与退出设置→Dock重开后，原生USB画面确认通用主区域与侧栏所有可见图标，以及关于本机、显示器、菜单栏页面、壁纸/菜单/Dock均完整。图标服务PID530 runs1/never exited（03:22:13UTC，登录03:09:45UTC，持续超过12分钟）。两条真实崩溃路径分别为CoreGraphics缓存释放与CoreImage DAG内核释放；仅关闭其中之一均未过冷验证。当前来宾用户同时启用两个原生兼容选项，原生Metal保留。可恢复、构建限定的源码在vz/guest/configure_native_graphics_pipeline_v1.sh，说明在docs/independent27-native-graphics-compatibility.md。旧CI_DISABLE_LOADING_ARCHIVES选项已恢复不存在。该兼容措施暂缓高级DAG生命周期实现，未修改系统框架；尚未自动部署到新来宾。一次冷GUI回归不等于所有App无错误；首帧44–50秒，约30秒完整Ready未达标，开机/登录负载、全应用GUI、性能和物理多指仍待继续。本文以下旧版本待办以本段与实际证据为准。
+
+2026-10-21 最新验收（仅进阶本轮，不是整体目标完成）：Runtime129/CPU72/App182/Main46/GuestTools22/来宾工具V6/Dev169/Normal189 已在真实iPad独立27后端运行。来宾GUI工具实际UID501登录自动启动，真实HELLO后才同步；暂停完成state2、恢复完成state1均由原生回调验证。恢复后工具自动重新HELLO，无手动开关；22222认证、Apple HTTPS200、Unicode文字双向、合法2x2 PNG原生解码及往返后四像素RGBA比较均通过。UIImage/UIPasteboard会重新编码PNG，bytes相等不是内容相等：旧originalRestored=0是编码字节比较，专项原生像素与文字读回均为1。原生截图先黑屏（来宾显示已睡眠），实际Esc输入后完整桌面/设置恢复，未宣称物理三指/鼠标全量复验。固定摘要：normal189-native-pause-clipboard-final-proof-v1.json。
+
+设置→通用“同步iPadOS剪贴板”默认开启，可关闭。支持有界文字、PNG/JPEG/TIFF、RTF/HTML/URL表示（本轮实际测试Unicode文字与PNG）；单帧编码最多4MiB、16项目；文件传输不在本轮范围。后台/暂停/关闭时停止新同步，停止VM时关闭自身监听；5秒HELLO和5/15秒保活防止旧连接残留。剪贴板内容不记入日志，原生字段只记录计数与布尔值。测试曾覆盖剪贴板，第一次旧测试脚本异常时原来内容恢复未证明；不要把后续已知样例的恢复等同于早期用户原内容已恢复。
+
+仍优先待办：冷启动与壁纸/图标迟缓、CoreImage图标服务生命周期故障、CPU定时中断全局锁竞争、精确校时。3秒真实Normal188采样已定位PhysicalTimer→GIC全局mutex；GIC8/lifecycle68已是O2，不重复O2和泛化CI探针。clock17绝对时间在QGA排队后变旧，Normal189出现向后约10秒调整并读回偏差13秒；下一版应使用原生时间读样本/宿主中点偏差，再在执行时对来宾当前时间加偏差，并容忍小抖动，避免反复倒调。尚未实现，声音物理听感、麦克风、IPv6/桥接、GPU其余高级特性仍未全验收。beta2/V9保持冻结且未上传，用户明确暂缓发布。
+
+2026-10-21 剪贴板双向真机结果：Normal188/App180配来宾诊断工具V4，固定中英文/组合字符/emoji和PNG已经在两个原生剪贴板间真实读回成功（normal188-clipboard-bidirectional-native-proof-v8.json）。测试脚本的JavaScript数组曾被桥接为NSDictionary，现已用实际NSMutableArray修正；早期测试清空了来宾剪贴板，首次测试原内容恢复未证明，不能宣称已恢复。旧恢复比较直接对比UIPasteboard.items对象得到0，后续App182改为逐表示类型的原始数据比较，尚待设备复验。
+
+App182/Main46/GuestTools22已实际安装（Dev169，3自有文件1哈希，Runtime129不变），即将Normal189启动。来宾工具V6和宿主Bridge5加入5秒HELLO、5秒ping/15秒失活回收；只有实际HELLO后才发送剪贴板；工具安装完成后显式排空旧连接。Main46在真正启动完成后刷新暂停菜单，避免初建HUD时VM为空导致缺少暂停按钮。此次不进入冻结的beta2/V9发布快照，用户已明确暂缓上传。接下来先检验无需手动切换开关的登录自启动、双向复制与原生暂停恢复后的重连。
+
+2026-10-21 剪贴板实测边界更新：Normal187 原生 vsock 连接建立，Root读回专属GUI LaunchAgent runs1/never exited、UID501、helper SHA bf8921b5…与预期相符。独立命令行iPad探针报PBError11，缺少UIApplication剪贴板上下文，写入读回0；因此它不是桥接失败证据，也不是真实恢复成功（该marker已在receipt更正为未证明）。探针已准确清理。App180已安装，换用App内固定文字/PNG有界原位测试、仅内存备份与恢复；GuestTools21还停止了缺失可选旧菜单包时每10秒的无效修复。完整同步与启动性能结论仍待实际结果。
+
+2026-10-21 进阶开发更新：用户明确暂缓上传 beta2，V9包和158eba7本地源码快照保持冻结，未push/tag/发布。原生 Pause/Resume 已在 App176/Normal186 实机完成：真实 pause 回调 state=2、resume 回调 state=1、两次 verified=1，恢复后22222认证、DHCP/DNS/Apple HTTPS200再次通过。输入和显示恢复仍需当前设备完整交互复验，不能据此称所有高级生命周期完成。
+
+剪贴板同步为用户新增必需项。App178/Main45/GuestTools19 已安装并在 Normal187 真正启动交接0；原生 VZ27 vsock505051 注册成功。设置→通用新增“同步 iPadOS 剪贴板”，默认开启；来宾专属 Aqua LaunchAgent 登录自动启动，Root只安装工具，实际读写由登录用户的 AppKit 进程执行。文字/PNG/JPEG/TIFF/RTF/HTML/URL有界传输，单帧最多4MiB、16项目；宿主作版本协调，避免回写循环和已知并发覆盖。后台、关闭开关、暂停时禁止新同步并关闭连接，不记录剪贴板内容。文件与文件承诺不在当前范围。双向文字/PNG、实际GUI自启动、设置关闭、暂停恢复后的重连均待实测，不能把编译及端口注册当成同步成功。
+
 2026-10-21 正式包复验：2.0.0beta2/1002 最终安装包已在 Dev165 完成实际 dpkg 安装和全部265文件哈希、UID/GID、mode核验；运行库保留原700/600权限和私有0600 sandbox资源检查。Normal185 真正启动交接0，原生IOSurface首帧样本45秒，四CPU实际运行，22222认证、DHCP、DNS与Apple HTTPS200均通过。已由原生USB截图确认登录后壁纸、菜单和Dock完整；20秒仍淡出，冷延迟仍未修复。包与源码材料已备齐，私有GitHub目标仍待用户确认：当前origin为公开库，未上传。后续Pause/Resume的Main44宿主候选已编译，但不进入beta2快照，尚未设备签名或运行。
 
 2026-10-21 发布准备更新：Runtime129/CPU72 已在 Dev158/Normal181 实机运行。App174/Normal182 加入原生输出音频及 Playback 会话，来宾实际识别 Apple Virtual Sound Device、2声道48kHz默认输出，afplay系统声音返回0；尚无物理听感证据。App175/Main43/Normal183 加入原生VZ27 FileHandle Ethernet与libslirp IPv4 NAT，真实DHCP获得10.0.2.15、路由10.0.2.2、DNS10.0.2.3并解析Apple域名，HTTPS返回200；独立vsock22222 SSH保持可用。正常关机停止回调已确认。网卡通过后按用户要求准备2.0.0beta2/1002，使用独立com.mac.virtual.independent27包，不发布到误识别的公开仓库；私有目标待确认。正式deb实机安装及启动复验进行中。

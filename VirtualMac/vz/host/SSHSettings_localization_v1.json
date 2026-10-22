@@ -1,0 +1,142 @@
+{
+  "SSH": {
+    "en": "SSH",
+    "zh_CN": "SSH",
+    "zh_TW": "SSH"
+  },
+  "Enable SSH Forwarding": {
+    "en": "Enable SSH Forwarding",
+    "zh_CN": "启用 SSH 转发",
+    "zh_TW": "啟用 SSH 轉送"
+  },
+  "Access": {
+    "en": "Access",
+    "zh_CN": "访问范围",
+    "zh_TW": "存取範圍"
+  },
+  "This iPad Only": {
+    "en": "This iPad Only",
+    "zh_CN": "仅此 iPad",
+    "zh_TW": "僅此 iPad"
+  },
+  "Local Network": {
+    "en": "Local Network",
+    "zh_CN": "局域网",
+    "zh_TW": "區域網路"
+  },
+  "Allow Internet Access": {
+    "en": "Allow Internet Access",
+    "zh_CN": "允许公网访问",
+    "zh_TW": "允許網際網路存取"
+  },
+  "IP Version": {
+    "en": "IP Version",
+    "zh_CN": "IP 协议",
+    "zh_TW": "IP 協定"
+  },
+  "iPad Listening Port": {
+    "en": "iPad Listening Port",
+    "zh_CN": "iPad 监听端口",
+    "zh_TW": "iPad 監聽連接埠"
+  },
+  "Apply Now": {
+    "en": "Apply Now",
+    "zh_CN": "立即应用",
+    "zh_TW": "立即套用"
+  },
+  "Applying SSH settings…": {
+    "en": "Applying SSH settings…",
+    "zh_CN": "正在应用 SSH 设置…",
+    "zh_TW": "正在套用 SSH 設定…"
+  },
+  "Enter a port from 1 to 65535.": {
+    "en": "Enter a port from 1 to 65535.",
+    "zh_CN": "请输入 1 至 65535 之间的端口。",
+    "zh_TW": "請輸入 1 至 65535 之間的連接埠。"
+  },
+  "SSH applied, but the settings could not be saved.": {
+    "en": "SSH applied, but the settings could not be saved.",
+    "zh_CN": "SSH 已应用，但无法保存设置。",
+    "zh_TW": "SSH 已套用，但無法儲存設定。"
+  },
+  "Virtual Mac is off. Settings apply at its next start.": {
+    "en": "Virtual Mac is off. Settings apply at its next start.",
+    "zh_CN": "虚拟机未运行，设置将在下次启动时生效。",
+    "zh_TW": "虛擬機器未執行，設定將在下次啟動時生效。"
+  },
+  "SSH forwarding is off.": {
+    "en": "SSH forwarding is off.",
+    "zh_CN": "SSH 转发已关闭。",
+    "zh_TW": "SSH 轉送已關閉。"
+  },
+  "SSH listener is unavailable. Apply settings to retry.": {
+    "en": "SSH listener is unavailable. Apply settings to retry.",
+    "zh_CN": "SSH 监听不可用，请应用设置重试。",
+    "zh_TW": "SSH 監聽無法使用，請套用設定重試。"
+  },
+  "Listening on port": {
+    "en": "Listening on port",
+    "zh_CN": "正在监听端口",
+    "zh_TW": "正在監聽連接埠"
+  },
+  "Guest bridge connected": {
+    "en": "Guest bridge connected",
+    "zh_CN": "来宾通道已连接",
+    "zh_TW": "客體通道已連線"
+  },
+  "Waiting for the guest agent.": {
+    "en": "Waiting for the guest agent.",
+    "zh_CN": "正在等待来宾代理。",
+    "zh_TW": "正在等待客體代理程式。"
+  },
+  "Guest SSH service is enabled.": {
+    "en": "Guest SSH service is enabled.",
+    "zh_CN": "来宾 SSH 服务已启用。",
+    "zh_TW": "客體 SSH 服務已啟用。"
+  },
+  "SSH settings cannot be applied to this Virtual Mac right now.": {
+    "en": "SSH settings cannot be applied to this Virtual Mac right now.",
+    "zh_CN": "当前无法将 SSH 设置应用到此虚拟机。",
+    "zh_TW": "目前無法將 SSH 設定套用至此虛擬機器。"
+  },
+  "The SSH connection owner changed.": {
+    "en": "The SSH connection owner changed.",
+    "zh_CN": "SSH 连接已改变，请重试。",
+    "zh_TW": "SSH 連線已變更，請重試。"
+  },
+  "The Virtual Mac stopped while applying SSH settings.": {
+    "en": "The Virtual Mac stopped while applying SSH settings.",
+    "zh_CN": "应用 SSH 设置时虚拟机已停止。",
+    "zh_TW": "套用 SSH 設定時虛擬機器已停止。"
+  },
+  "The SSH listener could not be created.": {
+    "en": "The SSH listener could not be created.",
+    "zh_CN": "无法创建 SSH 监听，请检查端口是否已被占用。",
+    "zh_TW": "無法建立 SSH 監聽，請檢查連接埠是否已被占用。"
+  },
+  "Invalid SSH settings.": {
+    "en": "Invalid SSH settings.",
+    "zh_CN": "SSH 设置无效。",
+    "zh_TW": "SSH 設定無效。"
+  },
+  "SSH settings must be applied on the main queue.": {
+    "en": "SSH settings must be applied on the main queue.",
+    "zh_CN": "当前无法应用 SSH 设置，请重试。",
+    "zh_TW": "目前無法套用 SSH 設定，請重試。"
+  },
+  "Settings apply at the first Virtual Mac start.": {
+    "en": "Settings apply at the first Virtual Mac start.",
+    "zh_CN": "设置将在虚拟机首次启动时生效。",
+    "zh_TW": "設定將在虛擬機器首次啟動時生效。"
+  },
+  "Addresses for the selected settings:": {
+    "en": "Addresses for the selected settings:",
+    "zh_CN": "所选设置对应的 iPad 地址：",
+    "zh_TW": "所選設定對應的 iPad 位址："
+  },
+  "The guest SSH service starts automatically. Apply Now changes forwarding for the running Virtual Mac and disconnects existing SSH sessions. Save the Virtual Mac settings to use them at its next boot. Local uses loopback only. LAN accepts private, link-local and attached-subnet clients. Internet allows other clients, subject to your router, public IP address and firewall; this does not configure port forwarding on your router. Use the guest's existing SSH account.": {
+    "en": "The guest SSH service starts automatically. Apply Now changes forwarding for the running Virtual Mac and disconnects existing SSH sessions. Save the Virtual Mac settings to use them at its next boot. Local uses loopback only. LAN accepts private, link-local and attached-subnet clients. Internet allows other clients, subject to your router, public IP address and firewall; this does not configure port forwarding on your router. Use the guest's existing SSH account.",
+    "zh_CN": "来宾 SSH 服务会随开机自动启动。“立即应用”可修改运行中虚拟机的转发，并断开现有 SSH 会话；虚拟机关闭时请保存设置，供下次启动使用。本机模式仅监听回环地址；局域网模式允许私有地址、链路本地地址及直连子网的客户端；公网模式还允许其他客户端，实际可达性取决于路由器、公网 IP 和防火墙，本设置不会修改路由器端口转发。IPv6 链路本地地址需使用客户端网卡的作用域。请使用来宾系统原有的 SSH 账号登录。",
+    "zh_TW": "客體 SSH 服務會隨開機自動啟動。「立即套用」可修改執行中虛擬機器的轉送，並中斷現有 SSH 工作階段；虛擬機器關閉時請儲存設定，供下次啟動使用。本機模式僅監聽迴路位址；區域網路模式允許私有位址、鏈結本地位址及直連子網路的用戶端；網際網路模式還允許其他用戶端，實際可達性取決於路由器、公網 IP 和防火牆，本設定不會修改路由器連接埠轉送。IPv6 鏈結本地位址需使用用戶端網卡的範圍。請使用客體系統原有的 SSH 帳號登入。"
+  }
+}

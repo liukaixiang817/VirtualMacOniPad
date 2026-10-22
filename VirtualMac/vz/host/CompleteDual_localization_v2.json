@@ -1,0 +1,62 @@
+{
+  "Full macOS 13": {
+    "en": "Full macOS 13",
+    "zh_CN": "全 macOS 13",
+    "zh_TW": "全 macOS 13"
+  },
+  "Full macOS 27": {
+    "en": "Full macOS 27",
+    "zh_CN": "全 macOS 27",
+    "zh_TW": "全 macOS 27"
+  },
+  "The selected backend supplies CPU, VMM, Virtualization and GPU together. Shut down the Virtual Mac, change the backend, then close and reopen the app.": {
+    "en": "The selected backend supplies CPU, VMM, Virtualization and GPU together. Shut down the Virtual Mac, change the backend, then close and reopen the app.",
+    "zh_CN": "后端统一切换 CPU、VMM、Virtualization 与 GPU。请先关闭虚拟机，选择后端后关闭并重新打开 App。",
+    "zh_TW": "後端統一切換 CPU、VMM、Virtualization 與 GPU。請先關閉虛擬機，選擇後端後關閉並重新開啟 App。"
+  },
+  "macOS 27 supports shared NAT networking and Disabled. A saved bridge setting uses NAT with this backend.": {
+    "en": "macOS 27 supports shared NAT networking and Disabled. A saved bridge setting uses NAT with this backend.",
+    "zh_CN": "macOS 27 支持 NAT 共享网络或停用网络。保存的桥接配置在此后端使用 NAT。",
+    "zh_TW": "macOS 27 支援 NAT 共享網路或停用網路。已儲存的橋接設定在此後端使用 NAT。"
+  },
+  "Audio playback and OpenGL are available. Microphone input, Metal BC override and video encoding acceleration are not available with this backend yet.": {
+    "en": "Audio playback and OpenGL are available. Microphone input, Metal BC override and video encoding acceleration are not available with this backend yet.",
+    "zh_CN": "此后端已支持音频播放与 OpenGL。麦克风输入、Metal BC 覆盖和视频编码加速尚未实现。",
+    "zh_TW": "此後端已支援音訊播放與 OpenGL。麥克風輸入、Metal BC 覆蓋和影片編碼加速尚未實現。"
+  },
+  "macOS 27 currently uses the USB keyboard device.": {
+    "en": "macOS 27 currently uses the USB keyboard device.",
+    "zh_CN": "macOS 27 目前使用 USB 键盘设备。",
+    "zh_TW": "macOS 27 目前使用 USB 鍵盤裝置。"
+  },
+  "The Virtual Mac pauses when you lock iPad in the foreground. Resume After Unlock only resumes a lock-triggered pause; manual pauses stay paused. Changes apply at the next Virtual Mac start.": {
+    "en": "The Virtual Mac pauses when you lock iPad in the foreground. Resume After Unlock only resumes a lock-triggered pause; manual pauses stay paused. Changes apply at the next Virtual Mac start.",
+    "zh_CN": "当此 App 在前台时，锁定 iPad 会暂停虚拟机。解锁后自动恢复只恢复锁屏触发的暂停，手动暂停保持不变。设置在下次启动虚拟机时生效。",
+    "zh_TW": "當此 App 在前景時，鎖定 iPad 會暫停虛擬機。解鎖後自動恢復只恢復鎖定觸發的暫停，手動暫停保持不變。設定在下次啟動虛擬機時生效。"
+  },
+  "Select the complete macOS 13 or macOS 27 backend. CPU, VMM, Virtualization and GPU switch together. Shut down the guest and reopen the app after changing it.": {
+    "en": "Select the complete macOS 13 or macOS 27 backend. CPU, VMM, Virtualization and GPU switch together. Shut down the guest and reopen the app after changing it.",
+    "zh_CN": "选择全 macOS13 或全 macOS27 后端，统一切换 CPU、VMM、Virtualization 与 GPU。请先关闭虚拟机，更改后关闭并重开 App。",
+    "zh_TW": "選擇全 macOS13 或全 macOS27 後端，統一切換 CPU、VMM、Virtualization 與 GPU。請先關閉虛擬機，更改後關閉並重開 App。"
+  },
+  "Select one complete backend, including CPU, VMM, Virtualization and GPU. Shut down the guest and reopen the app after changing the backend.": {
+    "en": "Select one complete backend, including CPU, VMM, Virtualization and GPU. Shut down the guest and reopen the app after changing the backend.",
+    "zh_CN": "选择一套完整后端，包括 CPU、VMM、Virtualization 与 GPU。请先关闭虚拟机，切换后端后关闭并重开 App。",
+    "zh_TW": "選擇一套完整後端，包括 CPU、VMM、Virtualization 與 GPU。請先關閉虛擬機，切換後端後關閉並重開 App。"
+  },
+  "Shared IPv4 NAT networking and Disabled are available. A saved bridge setting uses NAT with either backend.": {
+    "en": "Shared IPv4 NAT networking and Disabled are available. A saved bridge setting uses NAT with either backend.",
+    "zh_CN": "支持 IPv4 NAT 共享网络或停用网络。保存的桥接配置在两套后端均使用 NAT。",
+    "zh_TW": "支援 IPv4 NAT 共享網路或停用網路。已儲存的橋接設定在兩套後端均使用 NAT。"
+  },
+  "Installation Unavailable": {
+    "en": "Installation Unavailable",
+    "zh_CN": "暂不支持安装",
+    "zh_TW": "暫不支援安裝"
+  },
+  "Restore-image installation is not included in this beta. Existing virtual machines can be opened from the library.": {
+    "en": "Restore-image installation is not included in this beta. Existing virtual machines can be opened from the library.",
+    "zh_CN": "此测试版尚未包含恢复镜像安装功能。可以从虚拟机列表打开已有虚拟机。",
+    "zh_TW": "此測試版尚未包含還原映像安裝功能。可以從虛擬機列表開啟已有虛擬機。"
+  }
+}

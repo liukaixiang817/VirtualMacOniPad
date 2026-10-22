@@ -1,0 +1,17 @@
+{
+  "Three-Finger System Gestures": {
+    "en": "Three-Finger System Gestures",
+    "zh_CN": "三指系统手势",
+    "zh_TW": "三指系統手勢"
+  },
+  "Four-Finger System Gestures": {
+    "en": "Four-Finger System Gestures",
+    "zh_CN": "四指系统手势",
+    "zh_TW": "四指系統手勢"
+  },
+  "Magic Keyboard: swipe up for Mission Control, down for app windows, and left or right to switch spaces. Changes apply at the next Virtual Mac start.": {
+    "en": "Magic Keyboard: swipe up for Mission Control, down for app windows, and left or right to switch spaces. Changes apply at the next Virtual Mac start.",
+    "zh_CN": "妙控键盘：上滑显示 Mission Control，下滑显示应用窗口，左右滑动切换桌面空间。更改在下一次启动虚拟机时生效。",
+    "zh_TW": "巧控鍵盤：上滑顯示 Mission Control，下滑顯示 App 視窗，左右滑動切換桌面空間。更改在下一次啟動虛擬機時生效。"
+  }
+}

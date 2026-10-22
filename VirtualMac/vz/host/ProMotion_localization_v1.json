@@ -1,0 +1,12 @@
+{
+  "120 Hz ProMotion": {
+    "en": "120 Hz ProMotion",
+    "zh_CN": "120Hz ProMotion 高刷新率",
+    "zh_TW": "120Hz ProMotion 高更新率"
+  },
+  "120 Hz uses the macOS27 backend on compatible ProMotion screens. Low Power Mode and iPadOS may limit refresh rate. Changes apply at the next Virtual Mac start.": {
+    "en": "120 Hz uses the macOS27 backend on compatible ProMotion screens. Low Power Mode and iPadOS may limit refresh rate. Changes apply at the next Virtual Mac start.",
+    "zh_CN": "120Hz 适用于兼容 ProMotion 屏幕上的 macOS27 后端。低电量模式与 iPadOS 可能限制刷新率，下次启动虚拟机时生效。",
+    "zh_TW": "120Hz 適用於相容 ProMotion 螢幕上的 macOS27 後端。低耗電模式與 iPadOS 可能限制更新率，下次啟動虛擬機時生效。"
+  }
+}
