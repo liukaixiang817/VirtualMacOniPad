@@ -34,3 +34,10 @@ IPv4 and IPv6 loopback SSH host-key exchange, switching to22224 and restoring
 scope policies, bind collisions, stale tokens and control-channel reconnect.
 An external WAN connection and a clean guest installation are separate device
 acceptance items; they must not be inferred from loopback tests.
+
+Long native pause can leave an apparently connected control channel unable to
+open new streams. Reapplying the same listener settings on the actual device
+restored authenticated SSH without changing the guest. App239 now runs that
+existing controlled drain/recreate operation after a verified native Resume.
+Existing SSH sessions may disconnect across pause/resume; new authentication
+uses the same guest account. Final packaged-device regression is pending.
