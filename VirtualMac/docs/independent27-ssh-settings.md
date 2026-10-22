@@ -40,4 +40,8 @@ open new streams. Reapplying the same listener settings on the actual device
 restored authenticated SSH without changing the guest. App239 now runs that
 existing controlled drain/recreate operation after a verified native Resume.
 Existing SSH sessions may disconnect across pause/resume; new authentication
-uses the same guest account. Final packaged-device regression is pending.
+uses the same guest account. Final packaged-device native Resume followed by authenticated SSH passed on the
+complete macOS27 graph. Whole13 authenticated SSH and HTTPS also passed after
+App241 switched to the original explicit-queue initializer; macOS13 has no
+public VM queue getter. Framework aliases must resolve to the same admitted
+image, and the original VM queue, listener ABI and ownership checks remain.
