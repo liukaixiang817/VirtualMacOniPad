@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0beta4",
+  "appBuild": 1004,
+  "packageVersion": "1004-1",
+  "releaseTag": "2.0.0beta4-r1",
+  "runtime": 158,
+  "appCandidate": 248,
+  "packageSHA256": "273ce8d02a4721ad2d946373fc9c6822d891de55a31d670de38d552e1028e195",
+  "appCDHash": "218876352bf1a292339ae4c880487f4fe5df17a4",
+  "reportedFailure": {
+    "model": "iPad13,8",
+    "chip": "M1",
+    "OS": "16.1.1",
+    "build": "20B101",
+    "jailbreak": "Dopamine 3.0.10 rootless",
+    "error": "Owned child startup failed (13)",
+    "packageState": "half-configured",
+    "includedOSCrashReports": 0,
+    "reportDevicePhysicallyTested": false
+  },
+  "localTests": {
+    "secureLogInitializer": "pass: fresh creation, inherited group and 0644 repair, append/inode preservation, symlink/hardlink/wrong-owner/FIFO rejection",
+    "installer": "pass: no ldid, idempotence, tamper/hash-binding rejection, missing trust detection",
+    "finalNetworkSourceRelinkExit": 0
+  },
+  "actualDevice": {
+    "model": "iPad14,6",
+    "chip": "M2",
+    "OS": "16.1.1",
+    "build": "20B101",
+    "jailbreak": "Dopamine 2.4.8 rootless",
+    "oldBeta4Reproduction": "same error 13 before posix_spawn with own log mobile:wheel 0644",
+    "finalFullDebInstall": true,
+    "packageStatus": "install ok installed 1004-1",
+    "unpackAndConfigureSecondsApprox": 14,
+    "logPermissionAutomaticallyRepaired": "mobile:mobile 0600",
+    "logInodeAndExistingContentPreserved": true,
+    "consumerStdoutStderrAccepted": true,
+    "posixSpawnStatus": 0,
+    "completeMacOS27GuestStarted": true,
+    "guestOS": "macOS 26.6.2 / 25G83",
+    "SSHViaIPadPort22222": true,
+    "guestAppleHTTPSStatus": 200,
+    "nativeUSBVisual": "awake macOS login page with wallpaper and pointer",
+    "blackScreenObservation": "Display resumed after transient guest user-activity wake. GPU processes alive and native command buffers completed; no GPU regression established.",
+    "evidenceSHA256": {
+      "oldFailure": "ee702cb90f065356eb8c8607e6918b2b0a6d0ef6fd0ecf69fbe1a4d0a2b1e33b",
+      "installation": "7c53dbbc38c3f827fc903f524dbf6d0bcad60023f3b66d91277ec4cb366f7120",
+      "normalStart": "2e6eaa8c36b2608b5a00696b7992867f88fac508f11eb6c4b81f06dfadde63ba",
+      "guestSSHHTTPS": "5b98c8224a9a8b4afd8f013f92c41037a13c9c02f9c0ca0804876200acef5b8d",
+      "nativeAwakeScreenshot": "5a7d78197585cb3f4d20f63e5c30e0f2e1e827a17d12837b01921624009f93e1"
+    }
+  },
+  "dependencies": {
+    "defaultEnvironment": "standard rootless Dopamine (not roothide)",
+    "bundled": [
+      "complete macOS13 runtime",
+      "complete macOS27 runtime",
+      "App host compatibility library",
+      "static libslirp / GLib / proxy-libintl",
+      "guest helper resources"
+    ],
+    "extraLDIDRequired": false,
+    "requiresExistingJailbreakBootstrap": true,
+    "existing123Required": false
+  },
+  "retainedPreviousAcceptance": {
+    "cursorActivityWakeFixIncluded": true,
+    "displayCallbackMedianMS": 8.34,
+    "displayCallbackMaximumMS": 8.76,
+    "measurement": "Prior Beta4 real cursor test, unchanged display/input code. Callback cadence, not physical end-to-end FPS; not rerun in this revision.",
+    "completeMacOS13": "Runtime bytes unchanged; previous Beta3 dual-backend guest/SSH/HTTPS acceptance retained, not a fresh App248 full13 boot."
+  },
+  "limitations": [
+    "Report M1 device was not connected; recovery demonstrated by reproducing its descriptor failure on M2.",
+    "Only M2 16.1.1 has current physical-device acceptance. Other admitted models/builds remain experimental.",
+    "Fresh IPSW guest creation, remaining GUI/icon issues and advanced GPU work remain deferred.",
+    "New diagnostic ZIP entries compiled; descriptor/install output checked directly, new export UI not exercised in this revision."
+  ],
+  "rawUserDiagnosticsPublished": false
+}

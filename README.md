@@ -2,7 +2,7 @@
 
 People have dreamed of running macOS on iPad for [more](https://www.macstories.net/stories/macpad-how-i-created-the-hybrid-mac-ipad-laptop-and-tablet-that-apple-wont-make/) [than](https://github.com/khanhduytran0/MacWSBootingGuide) [a](https://khronokernel.com/apple/silicon/2021/01/17/QEMU-AS.html) [decade](https://worthdoingbadly.com/macappsios/). Today, that dream comes true. With Virtual Mac, iPad finally breaks free from iPadOS, enabling pro apps like Xcode, Terminal, Final Cut Pro, Logic Pro, and Pixelmator Pro to run directly on device. Requires iPad Pro (M1, M2) or iPad Air (M1) running iPadOS 14 up to 16.3.1.
 
-This personal fork adds **2.0.0beta4 (build 1004)** with complete selectable macOS 13 and independent macOS 27 backends. Beta4 removes the development device/build lock and opens **experimental Dopamine iOS/iPadOS 15–16.3.1 support** for M1/M2 iPads and A16 iPhone 14 Pro / Pro Max, with local diagnostic export for compatibility feedback. Current device acceptance is limited to an M2 iPad on 16.1.1. See [Beta4 installation, testing and limitations](VirtualMac/docs/releases/2.0.0beta4.md).
+This personal fork adds **2.0.0beta4 revision 1 (App build 1004 / package 1004-1)** with complete selectable macOS 13 and independent macOS 27 backends. Beta4 removes the development device/build lock and opens **experimental Dopamine iOS/iPadOS 15–16.3.1 support** for M1/M2 iPads and A16 iPhone 14 Pro / Pro Max, with local diagnostic export for compatibility feedback. Current device acceptance is limited to an M2 iPad on 16.1.1. Revision 1 fixes fresh-device log permission failures and removes the extra ldid dependency. See [Beta4 revision 1 installation and validation](VirtualMac/docs/releases/2.0.0beta4-r1.md) and [the existing Beta4 limitations](VirtualMac/docs/releases/2.0.0beta4.md).
 
 ![Screenshot of Virtual Mac on iPad](VirtualMac/screenshots/VirtualMac.png)
 
@@ -10,7 +10,7 @@ As seen on: [iGeneration](https://www.igen.fr/ipad/2026/08/virtual-mac-fait-tour
 
 ## Beta4 installation
 
-Download the complete deb from [Releases](https://github.com/liukaixiang817/VirtualMacOniPad/releases), shut down the guest and close VirtualMac, then install through the existing Dopamine package manager. This upgrades Beta3, preserves disks/settings and does not require 1.2.3. Beta4 currently opens existing VM bundles; fresh guest installation from an IPSW is deferred. Other device/OS combinations are experimental and should report failures through Settings → Export Diagnostics.
+Download `VirtualMac_2.0.0beta4_1004-1.deb` from [Beta4 revision 1](https://github.com/liukaixiang817/VirtualMacOniPad/releases/tag/2.0.0beta4-r1), shut down the guest and close VirtualMac, then install through the existing Dopamine package manager. This upgrades Beta3 or the original Beta4 (including a half-configured installation), preserves disks/settings and does not require 1.2.3. Standard rootless Dopamine is the default; both full backends, networking libraries and guest helper resources are bundled. No separate ldid installation is needed. The device must already have a working Dopamine bootstrap. Beta4 currently opens existing VM bundles; fresh guest installation from an IPSW is deferred. Other device/OS combinations are experimental and should report failures through Settings → Export Diagnostics.
 
 ## Installation (upstream 1.x)
 
