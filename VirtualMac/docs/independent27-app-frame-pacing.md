@@ -167,3 +167,52 @@ convention. The host tests verified an assumed transform, not physical device
 semantics. No finite pan test was triggered in Normal252. Roll back the exact
 already-trusted App220 main and retain the original recognizer/VZ mapping.
 Do not ship the copied-pan axes header, receiver3 or App221 builder.
+
+
+## Beta4: cursor-only refresh activity
+
+The user reports intermittent pointer lag accompanied by a sharp refresh-rate
+drop. Beta3 App241 / Runtime155 was retained as the published baseline. A
+12-second desktop Mission Control capture delivered279 frames, with producer
+gap p95=19.736ms and max422.270ms; its650ms trigger spacing includes static
+intervals and cannot establish a rendering ceiling. Arrival-to-main p95 was
+.027ms, main-to-submit .087ms, CA callback .118ms and callback-to-main .005ms.
+The first earlier window was the guest idle/login screen and is excluded from
+Mission Control acceptance.
+
+Inspection found the host CADisplayLink activity deadline updated only by full
+IOSurface frames. Genuine guest cursor updates use a separate callback and
+never refreshed that deadline. A synchronized9.345-second cursor-only sequence
+sent1080 pointer moves (actual interval p50=8.280ms,p95=11.280ms,max=12.438ms).
+Its actual finite window4 received no full-frame arrivals and no host refresh
+interval summary. Inspection of the native after-screenshot shows that the
+guest cursor did not leave its prior position: remote move packet publication
+was not established as genuine guest cursor delivery. This experiment is not
+a valid cursor-refresh acceptance result. The missing activity update is a
+source-level defect; it still requires a real cursor-callback comparison and
+does not establish that every reported stall shares this cause.
+
+App242 / display16 adds the same existing activity wake to genuine cursor
+updates. Guest-authoritative position/hotspot, IOSurface ownership, native
+completion/ACK order, selected60/120Hz policy and quarter-second idle stop are
+unchanged. Compiled/signed candidate passed and App242 was installed as a one-file
+development update; unchanged15 entitlements and Runtime155 were retained.
+No Beta3 release artifact is replaced by this development candidate.
+
+Read-only guest sampling showed no swap use, load average0.63 at that instant
+and no new crash reports in the sampled20-minute window. Host pressure state
+was1; these snapshots do not rule out transient CPU, GPU or memory stalls.
+
+The corrected device test uses the guest public CoreGraphics cursor-warp API
+for9 seconds and reads the actual cursor location18 times. All18 matched the
+requested points, and the original cursor position was restored. It does not
+generate keys/buttons, change accessibility permissions, or test physical
+Magic Keyboard forwarding. The exact temporary guest helper was removed.
+
+App242's synchronized12.092-second host window received one full-frame update
+and1108 CADisplayLink intervals: p50=8.337ms,p95=8.479ms,max=8.758ms,zero above
+33.5ms. Thus genuine cursor-only activity now keeps the selected120Hz host
+reservation alive even without full-frame updates. These are refresh callbacks,
+not physical panel FPS or an old/new measured end-to-end latency claim. The
+invalid remote-move baseline is excluded. Other transient rendering/input stalls
+remain under investigation; overall smoothness is not marked complete.

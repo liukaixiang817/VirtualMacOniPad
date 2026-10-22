@@ -1,0 +1,71 @@
+{
+  "version": "2.0.0beta4",
+  "build": 1004,
+  "appRevision": 246,
+  "runtimeRevision": 158,
+  "createdUTC": "2026-10-22T10:52:32.003254+00:00",
+  "debSHA256": "8d69375a63f073ca449d0d9ef8dd783ccf08380196cc3e2d6fb382235d936db5",
+  "testedHost": {
+    "model": "iPad14,6",
+    "chip": "Apple M2",
+    "system": "iPadOS 16.1.1",
+    "build": "20B101",
+    "jailbreak": "Dopamine"
+  },
+  "experimentalRange": {
+    "hardware": [
+      "M1 iPads",
+      "M2 iPads",
+      "A16 iPhone 14 Pro and Pro Max"
+    ],
+    "system": "15.0 through 16.3.1, only combinations actually supported by the device and Dopamine",
+    "otherModelsOrBuildsDeviceVerified": false,
+    "ios14Supported": false
+  },
+  "currentFinalPackageTests": {
+    "packageInstalledAndFilesVerified": true,
+    "completeMacOS27GuestBoot": true,
+    "nativeUSBDesktopWallpaperMenuBarDockVisible": true,
+    "guestSSHPort22222Authenticated": true,
+    "guestHTTPSAppleHTTP200": true,
+    "guestSystem": "macOS 26.6.2 (25G83)",
+    "correspondingNetworkAppRelinkSucceeded": true,
+    "reportIssueURL": "https://github.com/liukaixiang817/VirtualMacOniPad/issues/new",
+    "repositoryIssueFormVerified": true
+  },
+  "diagnosticExport": {
+    "actualLocalZIPExportedThroughFilesUI": true,
+    "includesIndependentLogAndLaunchHistory": true,
+    "matchingOwnVMMAndGPUCrashReportsInspected": true,
+    "otherAppCrashReportsExcluded": true,
+    "automaticUpload": false,
+    "exportTestAppRevision": 244,
+    "sameDiagnosticObjectInFinalApp": true,
+    "previousLaunchTailImplemented": true,
+    "previousLaunchTailCrashCycleRetested": false
+  },
+  "cursorRefresh": {
+    "measuredAppRevision": 242,
+    "fixSourcePreservedInFinalApp": true,
+    "actualGuestCursorMoves": 1080,
+    "verifiedPositions": 18,
+    "displayCallbackIntervals": 1108,
+    "medianMs": 8.337,
+    "p95Ms": 8.479,
+    "maxMs": 8.758,
+    "intervalsOver33_5Ms": 0,
+    "physical120FPSClaimed": false,
+    "hardwareEndToEndLatencyMeasured": false
+  },
+  "inheritedBeta3Evidence": [
+    "Complete macOS13 runtime is byte-preserved; boot/SSH/HTTPS previously accepted in Beta3, not re-run on this final App",
+    "Lock pause/resume, SSH controls, multi-finger gestures, clipboard and other prior feature evidence are inherited, not all re-tested here"
+  ],
+  "limitations": [
+    "Other hardware and OS builds are experimental and may reject missing host APIs or native ABI, or crash",
+    "Cold boot target, all GUI icons and absence of stutter are not acceptance claims for this release",
+    "Physical audio, microphone, advanced GPU, guest IPv6/bridging and WAN reachability not fully accepted",
+    "Fresh guest installation from IPSW remains deferred",
+    "Existing 1.2.3 was preserved on the test iPad; no clean-device uninstall test was performed"
+  ]
+}

@@ -2,13 +2,17 @@
 
 People have dreamed of running macOS on iPad for [more](https://www.macstories.net/stories/macpad-how-i-created-the-hybrid-mac-ipad-laptop-and-tablet-that-apple-wont-make/) [than](https://github.com/khanhduytran0/MacWSBootingGuide) [a](https://khronokernel.com/apple/silicon/2021/01/17/QEMU-AS.html) [decade](https://worthdoingbadly.com/macappsios/). Today, that dream comes true. With Virtual Mac, iPad finally breaks free from iPadOS, enabling pro apps like Xcode, Terminal, Final Cut Pro, Logic Pro, and Pixelmator Pro to run directly on device. Requires iPad Pro (M1, M2) or iPad Air (M1) running iPadOS 14 up to 16.3.1.
 
-This personal fork adds **2.0.0beta2 (build 1002)** with an independent macOS 27 CPU/VMM/Virtualization and graphics backend. Real guest IPv4 NAT, DHCP, DNS and HTTPS have passed on the tested M2 iPad. See the [beta2 changes, installation and known limits](VirtualMac/docs/releases/2.0.0beta2.md). Cold login/icon issues and advanced features remain under development. [Beta1](VirtualMac/docs/releases/2.0.0beta1.md) is the older separate app using the macOS 13.2.1 CPU/VMM runtime.
+This personal fork adds **2.0.0beta4 (build 1004)** with complete selectable macOS 13 and independent macOS 27 backends. Beta4 removes the development device/build lock and opens **experimental Dopamine iOS/iPadOS 15–16.3.1 support** for M1/M2 iPads and A16 iPhone 14 Pro / Pro Max, with local diagnostic export for compatibility feedback. Current device acceptance is limited to an M2 iPad on 16.1.1. See [Beta4 installation, testing and limitations](VirtualMac/docs/releases/2.0.0beta4.md).
 
 ![Screenshot of Virtual Mac on iPad](VirtualMac/screenshots/VirtualMac.png)
 
 As seen on: [iGeneration](https://www.igen.fr/ipad/2026/08/virtual-mac-fait-tourner-macos-sur-certains-ipad-jailbreakes-157355), [ifun.de](https://www.ifun.de/open-source-projekt-bringt-macos-auf-das-ipad-285132/), [La Manzana Mordida](https://lamanzanamordida.net/noticias/instalar-macos-ipad-virtualmac/), [すまほん!!](https://smhn.info/202608-apple-ipad-virtual-mac-macos-jailbreak-hypervisor), [鵺間飛行 (video)](https://www.bilibili.com/video/BV1Nfue6PExJ/), [IT Home](https://www.ithome.com/0/985/545.htm), [ezone](https://ezone.hk/article/20104816/ipad%E7%B5%82%E6%96%BC%E5%8F%AF%E4%BB%A5%E8%B7%91macos-%E6%B0%91%E9%96%93%E7%A5%9E%E4%BA%BA%E9%87%8B%E5%87%BA%E9%96%8B%E6%BA%90%E5%B7%A5%E5%85%B7-%E6%94%AF%E6%8F%B4gpu%E5%8A%A0%E9%80%9F-%E5%AF%ABcode-%E5%8D%B3%E7%9D%87%E6%94%AF%E6%8F%B4%E6%A9%9F%E5%9E%8B%E8%88%87%E7%B3%BB%E7%B5%B1), [KOCPC](https://www.kocpc.com.tw/archives/664343), and [Bilibili (video)](https://www.bilibili.com/video/BV1PfuR69EoC/). Virtual Mac on iPad is a community project and is not affiliated with Dopamine, UTM, VirtualBuddy, or Apple. Contributions are welcome!
 
-## Installation
+## Beta4 installation
+
+Download the complete deb from [Releases](https://github.com/liukaixiang817/VirtualMacOniPad/releases), shut down the guest and close VirtualMac, then install through the existing Dopamine package manager. This upgrades Beta3, preserves disks/settings and does not require 1.2.3. Beta4 currently opens existing VM bundles; fresh guest installation from an IPSW is deferred. Other device/OS combinations are experimental and should report failures through Settings → Export Diagnostics.
+
+## Installation (upstream 1.x)
 
 1. Jailbreak a compatible iPad Pro (M1, M2) or iPad Air (M1). [View instructions for iPadOS 15 up to 16.3.1](https://ios.cfw.guide/installing-dopamine-trollstore/), or [instructions for iPadOS 14 up to 14.8.1](https://ios.cfw.guide/installing-taurine/). If jailbreak fails, switch to a different exploit in Dopamine or Taurine settings.
 2. Add the [https://nfzerox.github.io/cydia/](https://nfzerox.github.io/cydia/) repository in Sileo, then search and install Virtual Mac.
