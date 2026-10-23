@@ -1,0 +1,139 @@
+{
+  "schema": "VirtualMac sanitized final package validation v1",
+  "version": "2.0.0beta6",
+  "build": 1006,
+  "dateUTC": "2026-10-23T10:10:31.537755+00:00",
+  "artifacts": [
+    {
+      "name": "VirtualMac_2.0.0beta6_1006.deb",
+      "bytes": 26161672,
+      "sha256": "766c5514553957cb9f499b80e286f640b967237fb7cb2d19856947a8d900b628"
+    },
+    {
+      "name": "VirtualMac_2.0.0beta6_network-source-and-relink.tar.xz",
+      "bytes": 15419488,
+      "sha256": "5e532d95f10d70f09e67055e49d7809b6c72050dc48573f18248156b6b06a882"
+    }
+  ],
+  "components": {
+    "App": 281,
+    "Runtime": 181,
+    "CPU": 99,
+    "GPU": 24,
+    "MetalDeviceAdapter": 39,
+    "full13Changed": false
+  },
+  "physicalTestHost": {
+    "chip": "M2",
+    "deviceClass": "iPad14,6",
+    "os": "iPadOS16.1.1",
+    "build": "20B101",
+    "jailbreak": "Dopamine2.4.8 rootless"
+  },
+  "guest": {
+    "os": "macOS26.6.2",
+    "build": "25G83",
+    "backend": "complete macOS27"
+  },
+  "results": {
+    "dpkgState": "install ok installed 1006",
+    "installedFilesVerified": true,
+    "nativeTrustRegistrationPassed": true,
+    "sameAppSettingsOnlyReentryCycles": 2,
+    "full27ColdBoot": true,
+    "guestAuthenticatedSSHPort": 22222,
+    "guestHTTPSStatus": 200,
+    "nativeScreenshotDesktopWallpaperDockVisible": true,
+    "nativeScreenshotTranslucentAppleMenuColoredCorruptionObserved": false,
+    "hibernateSaveBytes": 2684358656,
+    "hibernateStopAndCommit": true,
+    "hibernateNewVMMRestoreAfterReentry": true,
+    "originalGuestBootSessionRetained": true,
+    "originalWindowServerAndDockRetained": true,
+    "guestHTTPSAfterRestore": 200,
+    "finalPackageAppDeathTested": false,
+    "networkRelinkExecuted": true
+  },
+  "hostInstallerFixtures": {
+    "results": [
+      {
+        "name": "canonical-root-idempotence",
+        "exit": 0,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "info127-native-add-succeeds",
+        "exit": 0,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "info127-add127-must-fail",
+        "exit": 127,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "tampered-file-must-fail",
+        "exit": 1,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "wrong-hash-file-binding-must-fail",
+        "exit": 1,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      }
+    ],
+    "deviceOperations": 0
+  },
+  "evidenceHashes": {
+    "packageInstall": {
+      "receiptSHA256": "a7dbbde5e191cecb1ac03ba7bf6f8f86b7b263eed00180c17439f367a66f1c98",
+      "stdoutSHA256": "249c91079228262f9d0a22080c200ba7c63da0226b176862564b92ef3b5e55b5",
+      "completedUTC": "2026-10-23T09:57:28.829855+00:00"
+    },
+    "settingsOnlyReentryAndColdBoot": {
+      "receiptSHA256": "8522afdef2f06b5b00fc88e00fa61ec705a2742a1909cab60f6c09892c62fae0",
+      "stdoutSHA256": "ea25d3afc6fc1c810f2117e2b5d5b97b56b9aa66f152d5e0c3a2a6c35f4a99c2",
+      "completedUTC": "2026-10-23T09:59:00.798532+00:00"
+    },
+    "guestSSHAndHTTPS": {
+      "receiptSHA256": "d73e9c27e4b92012b6a5ec1465a67429ea0c89621b34e853e7e859fac490b3ef",
+      "stdoutSHA256": "bc8a5999ae582bbcd2c2cced6369672f421792519dc6f369d72ac0b4c143487a",
+      "completedUTC": "2026-10-23T10:01:04.178808+00:00"
+    },
+    "hibernateSave": {
+      "receiptSHA256": "4f9c57d99f6bef25bfa841268c63b6702d525d6b27a91587926cebc11bc9fa5f",
+      "stdoutSHA256": "a884df28f599a033093ddaad110c6a96b823ffd9c8bf149793632ab6386f021a",
+      "completedUTC": "2026-10-23T10:08:19.952405+00:00"
+    },
+    "postSaveReentryAndRestore": {
+      "receiptSHA256": "285d78ddeff1622e4fc0c476fc645571bc89094c3e62426a46abea8665152e14",
+      "stdoutSHA256": "c647fbd233b3662caeb443d0e54c85942c3b0beffeef9b060d133ed6cdc9c758",
+      "completedUTC": "2026-10-23T10:08:57.662731+00:00"
+    },
+    "restoredGuestContinuityAndNetwork": {
+      "receiptSHA256": "3c44625c7224815c479bd642c07166b582f8f36e11e9c94ee0a8ef4bd22c99e4",
+      "stdoutSHA256": "0d50d4003f7d1fa22beb1e30f301dad957208c5b18f1256c4411ce0500156a38",
+      "completedUTC": "2026-10-23T10:09:23.278960+00:00"
+    }
+  },
+  "nativeMenuScreenshotSHA256": "ef3cf1788494985b58e48ba8ed15238f933df0a8e6c0c351298697926cdaeff8",
+  "coverageLimits": [
+    "Reporter M1 was not physically retested; the false Apple8-only framebuffer capability was corrected using the native getter or actual minimum Apple2 family query.",
+    "Forcing the old false capability on M2 produced a black screen also observed during display wake; exact M1 colored-corruption reproduction remains inconclusive.",
+    "No broad frame-rate, all-icon, all-GPU-feature or all-device acceptance is claimed.",
+    "Full13 is unchanged and was not rerun in this final package cycle.",
+    "Persistent App-death and anonymous-RAM continuity were previously accepted in Beta5; this final cycle validates same-App save/re-entry/new-VMM restore and guest session continuity.",
+    "Physical USB passthrough is deferred to the next release."
+  ],
+  "privacy": "Original diagnostics, device identifiers, guest boot identifiers, credentials and screenshots are not included in public assets."
+}
