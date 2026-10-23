@@ -335,3 +335,5 @@
 "The virtual machine is paused. Resume when you are ready." = "The virtual machine is paused. Resume when you are ready.";
 
 "Resuming virtual machine…" = "Resuming virtual machine…";
+
+"Virtual Mac Paused" = "Virtual Mac Paused";

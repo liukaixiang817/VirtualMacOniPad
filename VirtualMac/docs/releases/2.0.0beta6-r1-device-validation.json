@@ -3,17 +3,17 @@
   "version": "2.0.0beta6-r1",
   "build": "1006.1",
   "packageVersion": "1006-1",
-  "dateUTC": "2026-10-23T10:56:56.598630+00:00",
+  "dateUTC": "2026-10-23T11:05:49.001728+00:00",
   "artifacts": [
     {
       "name": "VirtualMac_2.0.0beta6-r1_1006-1.deb",
-      "bytes": 26179808,
-      "sha256": "b6559563b1aefb72390f97327dc48f00ecbc1a4d9523d4f286672a943a71a2db"
+      "bytes": 27310700,
+      "sha256": "34c4cd5bab4e93347eb35e2966532559a1c127ebe4c52c3b2d1bdc45057a0f62"
     },
     {
       "name": "VirtualMac_2.0.0beta6-r1_network-source-and-relink.tar.xz",
-      "bytes": 15424688,
-      "sha256": "b9e41a8b7d5220b3be7b0ebe48e23c40f5d53b59fa4d4a910937fedd307b102b"
+      "bytes": 16564712,
+      "sha256": "8cbd77abb281df83c483218ab816fea9c68a045ebad9611549beb8ea8a591e72"
     }
   ],
   "components": {
@@ -56,15 +56,17 @@
     "guestHTTPSAfterRestore": 200,
     "legacyFilterRestoredOnDisk": true,
     "networkRelinkExecuted": true,
-    "finalPackageAppDeathTested": false
+    "finalPackageAppDeathTested": true,
+    "finalAppCodeSectionsUnchangedFromPauseTest": true,
+    "finalAppOnlyResourcesAndSignatureUpdated": true,
+    "libraryArtworkCount": 8,
+    "nativeLibraryArtworkScreenshot": true,
+    "finalPackageRestoredAfterAppReplacement": true,
+    "finalRestoreRetainsOriginalGuestBootAndDesktopProcesses": true,
+    "finalGuestHTTPSStatus": 200,
+    "finalHibernateSaveBytes": 2818576384
   },
   "evidenceHashes": {
-    "install": {
-      "exit": 0,
-      "receiptSHA256": "fee690f0576e3e94509d0b32e508dd6eb19257b787a04c40ae750856ba317ded",
-      "stdoutSHA256": "a6c2293a952c9ca5eb4e07ba36581764d551ea7044030ffe6d5d1cafa0cea1bf",
-      "completedUTC": "2026-10-23T10:45:04.773856+00:00"
-    },
     "isolatedCompanionLoad": {
       "exit": 0,
       "receiptSHA256": "ed5f5198b5a04d155fe06aa81bc35c8601e8747defa5a0da5aebb66ce8410780",
@@ -106,6 +108,36 @@
       "receiptSHA256": "450664ec7a9e2d5a619ae75b764bd5de0250854637b640fadb876c182bfbb4eb",
       "stdoutSHA256": "7f06080983ed6dc653190b5b9628af1f57d3f8ed0f9ef77ab7fbfa51f94daa29",
       "completedUTC": "2026-10-23T10:56:04.032995+00:00"
+    },
+    "initialRevisionInstall": {
+      "exit": 0,
+      "receiptSHA256": "fee690f0576e3e94509d0b32e508dd6eb19257b787a04c40ae750856ba317ded",
+      "stdoutSHA256": "a6c2293a952c9ca5eb4e07ba36581764d551ea7044030ffe6d5d1cafa0cea1bf",
+      "completedUTC": "2026-10-23T10:45:04.773856+00:00"
+    },
+    "finalInstall": {
+      "exit": 0,
+      "receiptSHA256": "6cb5e23f582f7e608c5c369a2e2dbc0729b8e894b77b61daa4e4bdec4a406c7a",
+      "stdoutSHA256": "87b277c8aa3931e30c670be1e7ba608a85e45addcdebd2559e121f1879543568",
+      "completedUTC": "2026-10-23T11:02:36.328736+00:00"
+    },
+    "finalArtworkFilesAndAppLaunch": {
+      "exit": 0,
+      "receiptSHA256": "1e5a6ca207434427ced947f00d178ce4098df6f0c13db50d3983ef3dfa73869f",
+      "stdoutSHA256": "7ab47e2c8a959ef02b4ca899acc4747e7bf8723fd8c2c732882efb25b76cf1f4",
+      "completedUTC": "2026-10-23T11:02:49.792844+00:00"
+    },
+    "finalLibraryUI": {
+      "exit": 0,
+      "receiptSHA256": "e6d01e91a66e8188ab236867b7c6a6e20f2e0bcc7dfdb472c20e862a5cdb673b",
+      "stdoutSHA256": "b669ac34f35911bf47cb853be753ebd69d862d34a68d8b201230a465e68198ed",
+      "completedUTC": "2026-10-23T11:04:05.697810+00:00"
+    },
+    "finalGuest": {
+      "exit": 0,
+      "receiptSHA256": "b473c71584d95063d6974d981a59958299ee4a228989d8a7124da3f8c63d5666",
+      "stdoutSHA256": "7f06080983ed6dc653190b5b9628af1f57d3f8ed0f9ef77ab7fbfa51f94daa29",
+      "completedUTC": "2026-10-23T11:05:09.210523+00:00"
     }
   },
   "hostInstallerFixtures": {
@@ -162,8 +194,12 @@
     "Guard policy tests use host fixtures. They do not synthesize physical Magic Keyboard contacts.",
     "Native screenshots establish pause and save presentation; they do not establish animation latency or physical touch acceptance.",
     "Full13 code and runtime unchanged; no new full13 cold-boot test in this revision.",
-    "Prior Beta6 GPU/performance/audio and other device/OS coverage limits remain. USB deferred."
+    "Prior Beta6 GPU/performance/audio and other device/OS coverage limits remain. USB deferred.",
+    "The final resource-only package was installed after a committed save and termination of the prior App. It restored that same session. Native pause UI execution and isolated injection evidence originate from the preceding r1 build with identical code sections; final resource display has its own native screenshot."
   ],
   "pausedScreenshotSHA256": "7678cf5a71fa3f96b15014b7f8af3fcdbf76a94abf82c2ffcc705ffc33fbb20e",
-  "savingScreenshotSHA256": "e8783f04d751199a9b02e457a31118f526218a1377894fba9439b85eea6556f7"
+  "savingScreenshotSHA256": "e8783f04d751199a9b02e457a31118f526218a1377894fba9439b85eea6556f7",
+  "priorUIExecutionArtifactSHA256": "b6559563b1aefb72390f97327dc48f00ecbc1a4d9523d4f286672a943a71a2db",
+  "priorUIExecutionScope": "Native pause/resume, saving overlay and isolated companion injection were tested before the final artwork-only resource delta. Final App code sections and all backend components are identical.",
+  "libraryArtworkScreenshotSHA256": "837ea15f0a356c60a4db432e0a4337e0b637376fdc5e6ac3ca6b5a1e108e64bc"
 }

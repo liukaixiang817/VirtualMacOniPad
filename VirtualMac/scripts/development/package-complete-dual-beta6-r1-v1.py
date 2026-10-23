@@ -118,6 +118,23 @@ def main():
     # The durable guest SSH executable is shipped as a private resource;
     # the guest installer gives its installed copy executable permissions.
     (app_path / "GuestTools/vm27-guest-vsock-ssh-signed-v1").chmod(0o600)
+    # Match the upstream 1.2.3 App builder: machine cards select these bundled
+    # images through VZRestoreCatalog. A nil path otherwise leaves empty art.
+    artwork = REPO / "assets/wallpapers"
+    artwork_names = {"golden-gate.jpg", "monterey.jpg", "new.png", "sequoia.jpg",
+                     "sonoma.jpg", "tahoe.jpg", "tiger.jpg", "ventura.jpg"}
+    (app_path / "Wallpapers").mkdir(exist_ok=True)
+    for name in sorted(artwork_names):
+        source=artwork/name
+        assert source.is_file() and not source.is_symlink()
+        target=app_path/"Wallpapers"/name
+        shutil.copyfile(source,target);target.chmod(0o644)
+    # This label existed in the old pause card but lacked a translation.
+    for language,value in (("en","Virtual Mac Paused"),("zh_CN","虚拟机已暂停")):
+        path=app_path/(language+".lproj/Localizable.strings")
+        text=path.read_text()
+        if '"Virtual Mac Paused" =' not in text:
+            path.write_text(text+'\n"Virtual Mac Paused" = "'+value+'";\n')
     runtime_path.mkdir(parents=True)
     metadata.mkdir(parents=True)
     for row in manifest["files"]:
@@ -239,7 +256,7 @@ def main():
                    macOS27DeviceTestedBuilds=["20B101"], experimentalDopamineOSRange="15.0-16.3.1", nativeContextVersionRequired="0x206879700000000e", diagnosticExportIncludesOwnCrashes=True, targetDeviceFamilies=["M1 iPad", "M2 iPad", "iPhone14Pro", "iPhone14ProMax"], hostDeviceMatrixAcceptanceComplete=False,
                    package=info["CFBundleIdentifier"], backend="complete macOS 13 or complete independent macOS 27 CPU/VMM/Virtualization/PVG",
                    complete13ManifestSHA256=full13["manifestSHA256"],complete13Files=106,
-                   backendChoices=["13.2.1","27"],persistentHibernate=True,hibernateBackgroundSave=True,hibernateRestoreAfterAppDeath=True,framebufferNativeMinimumAppleFamily=2,appForegroundReentryFixed=True,cpuCrossWakeReadOptimization=True,physicalUSBPassthrough=False,independentGestureCompanion=True,fullScreenPauseBlur=True,gestureCompanionRequiresSpringBoardRestart=True,portableCacheAdmission=True,dopamineCanonicalTool=True,nativeTrustAddFallback=True,perVMProMotion=True,foregroundLockPause=True,unlockAutoResumeOptIn=True,sshLiveSettings=True,sshCustomPort=True,sshHostIPv4IPv6=True,sshScopes=["loopback","LAN","Internet"],
+                   backendChoices=["13.2.1","27"],persistentHibernate=True,hibernateBackgroundSave=True,hibernateRestoreAfterAppDeath=True,framebufferNativeMinimumAppleFamily=2,appForegroundReentryFixed=True,cpuCrossWakeReadOptimization=True,physicalUSBPassthrough=False,independentGestureCompanion=True,fullScreenPauseBlur=True,librarySystemArtworkBundled=True,librarySystemArtworkFiles=sorted(artwork_names),gestureCompanionRequiresSpringBoardRestart=True,portableCacheAdmission=True,dopamineCanonicalTool=True,nativeTrustAddFallback=True,perVMProMotion=True,foregroundLockPause=True,unlockAutoResumeOptIn=True,sshLiveSettings=True,sshCustomPort=True,sshHostIPv4IPv6=True,sshScopes=["loopback","LAN","Internet"],
                    appCDHash=app_hash, files=pins, nativeNetworkTest=proof,
                    limitations=["Experimental admission covers target M1/M2 iPads and A16 iPhone 14 Pro/Pro Max on Dopamine iOS/iPadOS 15 through 16.3.1. App sources compile for iOS15 and runtime loader floors are adjusted; only M2 iPadOS16.1.1 has device acceptance. Other builds may fail a genuine CPU ABI check, lack a host symbol, or crash. Export Diagnostics locally and report the exact build and reproduction steps.","Occasional GUI stutter and icon-service crashes remain under investigation for beta6-r1.",
                                 "Persistent Hibernate has actual same-build background save, process death, relaunch and anonymous-RAM continuity acceptance on M2 for App274/Runtime174. Runtime179 adds accepted settings-only and post-Hibernate re-entry; final Beta6 package results are tracked separately; locked devices pause without writing a locked Keychain snapshot.",

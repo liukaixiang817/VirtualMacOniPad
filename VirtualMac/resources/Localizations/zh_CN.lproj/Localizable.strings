@@ -335,3 +335,5 @@
 "The virtual machine is paused. Resume when you are ready." = "虚拟机已暂停，可随时继续。";
 
 "Resuming virtual machine…" = "正在继续虚拟机…";
+
+"Virtual Mac Paused" = "虚拟机已暂停";
