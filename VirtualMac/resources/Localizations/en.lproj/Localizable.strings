@@ -331,3 +331,7 @@
 "The saved VM configuration, disk or runtime has changed. The hibernation file was retained." = "The saved VM configuration, disk or runtime has changed. The hibernation file was retained.";
 "The saved state was not committed. The partial file has been retained." = "The saved state was not committed. The partial file has been retained.";
 "Save memory and device state to disk, then stop this Virtual Mac. The next start restores the saved session." = "Save memory and device state to disk, then stop this Virtual Mac. The next start restores the saved session.";
+
+"The virtual machine is paused. Resume when you are ready." = "The virtual machine is paused. Resume when you are ready.";
+
+"Resuming virtual machine…" = "Resuming virtual machine…";

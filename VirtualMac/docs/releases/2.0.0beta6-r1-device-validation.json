@@ -1,0 +1,169 @@
+{
+  "schema": "VirtualMac sanitized final package validation v1",
+  "version": "2.0.0beta6-r1",
+  "build": "1006.1",
+  "packageVersion": "1006-1",
+  "dateUTC": "2026-10-23T10:56:56.598630+00:00",
+  "artifacts": [
+    {
+      "name": "VirtualMac_2.0.0beta6-r1_1006-1.deb",
+      "bytes": 26179808,
+      "sha256": "b6559563b1aefb72390f97327dc48f00ecbc1a4d9523d4f286672a943a71a2db"
+    },
+    {
+      "name": "VirtualMac_2.0.0beta6-r1_network-source-and-relink.tar.xz",
+      "bytes": 15424688,
+      "sha256": "b9e41a8b7d5220b3be7b0ebe48e23c40f5d53b59fa4d4a910937fedd307b102b"
+    }
+  ],
+  "components": {
+    "App": 282,
+    "Runtime": 181,
+    "CPU": 99,
+    "GPU": 24,
+    "MetalDeviceAdapter": 39,
+    "full13Changed": false
+  },
+  "physicalTestHost": {
+    "chip": "M2",
+    "deviceClass": "iPad14,6",
+    "os": "iPadOS16.1.1",
+    "build": "20B101",
+    "jailbreak": "Dopamine2.4.8 rootless"
+  },
+  "results": {
+    "dpkgState": "install ok installed 1006-1",
+    "installedFilesVerified": true,
+    "nativeTrustRegistrationPassed": true,
+    "independentCompanionPackaged": true,
+    "legacyCompanionDisabledBeforeTestShellLaunch": true,
+    "allFourGestureHooksInstalled": true,
+    "postLaunchGuardArmed": true,
+    "liveIndependentAppMarkerVerified": true,
+    "full27ColdBootDesktop": true,
+    "nativePauseCompletionVerified": true,
+    "nativeResumeCompletionVerified": true,
+    "nativeFullScreenBlurScreenshot": true,
+    "nativeSavingBlurAndDisabledResumeScreenshot": true,
+    "overlayRemovedOnResume": true,
+    "guestSSHPort": 22222,
+    "guestHTTPSStatus": 200,
+    "hibernateSaveBytes": 2751467520,
+    "hibernateStopAndCommit": true,
+    "backgroundReentry": true,
+    "newVMMRestore": true,
+    "originalGuestBootSessionAndWindowServerAndDockRetained": true,
+    "guestHTTPSAfterRestore": 200,
+    "legacyFilterRestoredOnDisk": true,
+    "networkRelinkExecuted": true,
+    "finalPackageAppDeathTested": false
+  },
+  "evidenceHashes": {
+    "install": {
+      "exit": 0,
+      "receiptSHA256": "fee690f0576e3e94509d0b32e508dd6eb19257b787a04c40ae750856ba317ded",
+      "stdoutSHA256": "a6c2293a952c9ca5eb4e07ba36581764d551ea7044030ffe6d5d1cafa0cea1bf",
+      "completedUTC": "2026-10-23T10:45:04.773856+00:00"
+    },
+    "isolatedCompanionLoad": {
+      "exit": 0,
+      "receiptSHA256": "ed5f5198b5a04d155fe06aa81bc35c8601e8747defa5a0da5aebb66ce8410780",
+      "stdoutSHA256": "184f890fbdd8d9f1b8e658867f7439e47dd444c45a9fae2214841f0713b82418",
+      "completedUTC": "2026-10-23T10:46:34.297255+00:00"
+    },
+    "coldBoot": {
+      "exit": 0,
+      "receiptSHA256": "18171f8bf4484131bf83311a836af161bbf2b0b042fad9a3dedf190a7efd3643",
+      "stdoutSHA256": "8e179847f7339f2a70a0b21f32c087426519f81104ab408d0febc6d4b01a009c",
+      "completedUTC": "2026-10-23T10:51:03.262015+00:00"
+    },
+    "pause": {
+      "exit": 0,
+      "receiptSHA256": "664100e1580297c1f11996389dab15ad1413f2d4bee67facf7ff84c4785c55ec",
+      "stdoutSHA256": "de65d54af685551d7dd8ba9fd2921aa270f6a4dc4f77deb046adccc13b4254e5",
+      "completedUTC": "2026-10-23T10:52:24.259928+00:00"
+    },
+    "resume": {
+      "exit": 0,
+      "receiptSHA256": "d45093a720e728820377f010e284eb8fc086bc34bd799fbd3cdb4abc22cfcb51",
+      "stdoutSHA256": "2a799334b3e54d69d5860b81aa466cdf55b319037b7960d3bdadd18f2083c185",
+      "completedUTC": "2026-10-23T10:53:35.290705+00:00"
+    },
+    "saveRestoreReentry": {
+      "exit": 0,
+      "receiptSHA256": "3a2452d090875fe2b4587d8b0ef58737ba6c115d6987a48f7505451457134167",
+      "stdoutSHA256": "2d6f764b172f0e9fbdf8a9e8175375f0c5954188809eaae1687cbb640d0781e2",
+      "completedUTC": "2026-10-23T10:55:25.775821+00:00"
+    },
+    "guestAfterResume": {
+      "exit": 0,
+      "receiptSHA256": "bce2e79bb1a570907dcf3ac0abd1e9e72b2cd11af3c90b7719b3cf55e0e47833",
+      "stdoutSHA256": "7f06080983ed6dc653190b5b9628af1f57d3f8ed0f9ef77ab7fbfa51f94daa29",
+      "completedUTC": "2026-10-23T10:53:41.867851+00:00"
+    },
+    "guestAfterRestore": {
+      "exit": 0,
+      "receiptSHA256": "450664ec7a9e2d5a619ae75b764bd5de0250854637b640fadb876c182bfbb4eb",
+      "stdoutSHA256": "7f06080983ed6dc653190b5b9628af1f57d3f8ed0f9ef77ab7fbfa51f94daa29",
+      "completedUTC": "2026-10-23T10:56:04.032995+00:00"
+    }
+  },
+  "hostInstallerFixtures": {
+    "results": [
+      {
+        "name": "canonical-root-idempotence",
+        "exit": 0,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "info127-native-add-succeeds",
+        "exit": 0,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "info127-add127-must-fail",
+        "exit": 127,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "tampered-file-must-fail",
+        "exit": 1,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      },
+      {
+        "name": "wrong-hash-file-binding-must-fail",
+        "exit": 1,
+        "passed": true,
+        "nativeAPIExplicitMock": true,
+        "filesystemActuallyVerified": true
+      }
+    ],
+    "deviceOperations": 0
+  },
+  "gesturePolicyHostFixtures": [
+    "native fallback",
+    "foreground App identity",
+    "lockscreen bypass",
+    "startup guard",
+    "independent switches",
+    "marker lifetime"
+  ],
+  "coverageLimits": [
+    "M1 physical gesture retest remains pending. Available hardware is M2; prior user-confirmed three-finger operation is historical, not a physical delivery test of this exact revision.",
+    "Companion injection was isolated from the legacy filter, but the old package was not uninstalled from the development device.",
+    "Guard policy tests use host fixtures. They do not synthesize physical Magic Keyboard contacts.",
+    "Native screenshots establish pause and save presentation; they do not establish animation latency or physical touch acceptance.",
+    "Full13 code and runtime unchanged; no new full13 cold-boot test in this revision.",
+    "Prior Beta6 GPU/performance/audio and other device/OS coverage limits remain. USB deferred."
+  ],
+  "pausedScreenshotSHA256": "7678cf5a71fa3f96b15014b7f8af3fcdbf76a94abf82c2ffcc705ffc33fbb20e",
+  "savingScreenshotSHA256": "e8783f04d751199a9b02e457a31118f526218a1377894fba9439b85eea6556f7"
+}

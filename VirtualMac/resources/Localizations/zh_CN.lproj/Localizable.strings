@@ -331,3 +331,7 @@
 "The saved VM configuration, disk or runtime has changed. The hibernation file was retained." = "已保存会话的配置、磁盘或运行库发生变化。休眠文件已保留。";
 "The saved state was not committed. The partial file has been retained." = "会话保存未完成，临时文件已保留。";
 "Save memory and device state to disk, then stop this Virtual Mac. The next start restores the saved session." = "将内存和设备状态保存到磁盘，然后停止虚拟机。下次启动将恢复已保存会话。";
+
+"The virtual machine is paused. Resume when you are ready." = "虚拟机已暂停，可随时继续。";
+
+"Resuming virtual machine…" = "正在继续虚拟机…";
