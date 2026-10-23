@@ -9,7 +9,7 @@ need_command xcrun
 need_command codesign
 
 OUT="${VZ_OPENGL_GUEST_BUILD:-$VZ_BUILD_ROOT/guest-opengl}"
-SOURCE="$VZ_REPO_ROOT/vz/guest/OpenGLPVGCompat.m"
+SOURCE="$VZ_REPO_ROOT/vz/guest/OpenGLPVGCompat_v2_scoped.m"
 PROBE_SOURCE="$VZ_REPO_ROOT/vz/development/probes/opengl-renderer.c"
 mkdir -p "$OUT"
 

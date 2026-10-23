@@ -317,3 +317,17 @@
 "You can assign between %llu and %llu processor cores to this Virtual Mac, with %lu processor cores as the recommendation.\n\nMaxing out processor core assignment does not guarantee improved performance in Virtual Mac, as iPadOS also needs processor power to coordinate underlying tasks." = "You can assign between %llu and %llu processor cores to this Virtual Mac, with %lu processor cores as the recommendation.\n\nMaxing out processor core assignment does not guarantee improved performance in Virtual Mac, as iPadOS also needs processor power to coordinate underlying tasks.";
 "Your changes to this Virtual Mac will not be saved." = "Your changes to this Virtual Mac will not be saved.";
 "“%@” and all files stored in it will be permanently deleted." = "“%@” and all files stored in it will be permanently deleted.";
+"Hibernate" = "Hibernate";
+"Hibernate on Background" = "Hibernate on Background";
+"Saved Session" = "Saved Session";
+"Discard Saved Session" = "Discard Saved Session";
+"Discard Saved Session?" = "Discard Saved Session?";
+"Unsaved work in the saved memory will be lost. The virtual disk is kept. The next start will boot macOS normally." = "Unsaved work in the saved memory will be lost. The virtual disk is kept. The next start will boot macOS normally.";
+"The saved session could not be discarded." = "The saved session could not be discarded.";
+"With macOS 27, save memory and devices to disk after switching to another app. Reopening Virtual Mac resumes a completed save. Locking still pauses. Keep the device unlocked until saving finishes. A forced close before completion cannot save the latest state. Device changes require discarding the saved session." = "With macOS 27, save memory and devices to disk after switching to another app. Reopening Virtual Mac resumes a completed save. Locking still pauses. Keep the device unlocked until saving finishes. A forced close before completion cannot save the latest state. Device changes require discarding the saved session.";
+"Saving virtual machine state…" = "Saving virtual machine state…";
+"Restoring virtual machine state…" = "Restoring virtual machine state…";
+"The consumed state marker could not be flushed." = "The consumed state marker could not be flushed.";
+"The saved VM configuration, disk or runtime has changed. The hibernation file was retained." = "The saved VM configuration, disk or runtime has changed. The hibernation file was retained.";
+"The saved state was not committed. The partial file has been retained." = "The saved state was not committed. The partial file has been retained.";
+"Save memory and device state to disk, then stop this Virtual Mac. The next start restores the saved session." = "Save memory and device state to disk, then stop this Virtual Mac. The next start restores the saved session.";

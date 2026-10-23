@@ -317,3 +317,17 @@
 "You can assign between %llu and %llu processor cores to this Virtual Mac, with %lu processor cores as the recommendation.\n\nMaxing out processor core assignment does not guarantee improved performance in Virtual Mac, as iPadOS also needs processor power to coordinate underlying tasks." = "你可以为此虚拟Mac分配%llu至%llu个处理器核心，建议分配%lu个。\n\n将处理器核心数设为上限并不一定能提升虚拟Mac的性能，因为iPadOS也需要处理器资源来处理系统任务。";
 "Your changes to this Virtual Mac will not be saved." = "你对此虚拟Mac所做的更改不会被保存。";
 "“%@” and all files stored in it will be permanently deleted." = "“%@”及其中存储的所有文件将被永久删除。";
+"Hibernate" = "休眠并保存会话";
+"Hibernate on Background" = "进入后台时休眠";
+"Saved Session" = "已保存会话";
+"Discard Saved Session" = "丢弃已保存会话";
+"Discard Saved Session?" = "丢弃已保存会话？";
+"Unsaved work in the saved memory will be lost. The virtual disk is kept. The next start will boot macOS normally." = "保存于内存中的未存盘工作将会丢失。虚拟磁盘会保留，下次启动将正常开机。";
+"The saved session could not be discarded." = "无法丢弃已保存的会话。";
+"With macOS 27, save memory and devices to disk after switching to another app. Reopening Virtual Mac resumes a completed save. Locking still pauses. Keep the device unlocked until saving finishes. A forced close before completion cannot save the latest state. Device changes require discarding the saved session." = "使用 macOS 27 后端时，切换到其他 App 会将内存及设备状态保存到磁盘；重新打开 Virtual Mac 后恢复已完成保存的会话。锁屏仍使用暂停。保存完成前请保持设备解锁，提前强制关闭无法保存最新状态。修改设备配置前需丢弃已保存会话。";
+"Saving virtual machine state…" = "正在保存虚拟机会话…";
+"Restoring virtual machine state…" = "正在恢复虚拟机会话…";
+"The consumed state marker could not be flushed." = "无法刷新已恢复会话的状态标记。";
+"The saved VM configuration, disk or runtime has changed. The hibernation file was retained." = "已保存会话的配置、磁盘或运行库发生变化。休眠文件已保留。";
+"The saved state was not committed. The partial file has been retained." = "会话保存未完成，临时文件已保留。";
+"Save memory and device state to disk, then stop this Virtual Mac. The next start restores the saved session." = "将内存和设备状态保存到磁盘，然后停止虚拟机。下次启动将恢复已保存会话。";

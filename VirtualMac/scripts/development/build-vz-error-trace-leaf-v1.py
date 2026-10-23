@@ -1,0 +1,13 @@
+from pathlib import Path
+import json,subprocess,importlib.util,hashlib
+r=Path(__file__).resolve().parents[3];n=r/'DeviceDiagnostics/2026-10-08-full-macos27-cpu-vmm';o=n/'vz-start-failure-stack-v2-attempt2';o.mkdir(mode=0o700);b=r/'VirtualMac/scripts/development';s=r/'VirtualMac/vz/host';spec=importlib.util.spec_from_file_location('base',b/'build-owned-vz-start-compat-parent-v4.py');base=importlib.util.module_from_spec(spec);spec.loader.exec_module(base)
+cache=json.loads(base.CACHE.read_bytes());sdk=subprocess.check_output(['xcrun','--sdk','iphoneos','--show-sdk-path'],text=True).strip();obj=o/'localizer-trace.o';source=s/'vm27_owned_vz_localization_v2_trace.m';flags=['-target','arm64e-apple-ios16.1','-isysroot',sdk,'-O2','-fobjc-arc','-fblocks','-fvisibility=hidden','-Wall','-Wextra','-Werror','-I',str(s)];steps=[]
+def run(label,cmd):
+ p=subprocess.run(list(map(str,cmd)),capture_output=True);(o/(label+'.stdout')).write_bytes(p.stdout);(o/(label+'.stderr')).write_bytes(p.stderr);steps.append(dict(label=label,argv=list(map(str,cmd)),exit=p.returncode));(o/'commands.json').write_text(json.dumps(steps,indent=2));assert p.returncode==0,p.stderr.decode()
+run('compile',['xcrun','clang',*flags,'-c',source,'-o',obj]);dll=o/'VM27OwnedVZStartCompat.dylib';run('link',['xcrun','clang',*flags,'-dynamiclib','-Wl,-no_adhoc_codesign','-Wl,-install_name,@loader_path/VM27OwnedVZStartCompat.dylib','-Wl,-exported_symbol,_VM27OwnedVZCacheConfstrV1','-Wl,-exported_symbol,_VM27OwnedVZLocalizedStringOrEnglishKeyV1',cache['actualIOSObject']['path'],obj,'-framework','Foundation','-lobjc','-o',dll]);run('validate',['xcrun','dyld_info','-validate_only',dll]);im=base.module(base.READER,'x').MachO(dll.read_bytes());index=json.loads(base.NATIVE.read_bytes());routes=[]
+for imp in im.imports:
+ assert imp['ordinal']>0 and not imp['weak'];dependency=next(x['path']for x in im.loads if x['ordinal']==imp['ordinal']);got=base.native_routes(index,dependency,imp['name']);assert got,imp;routes.append(dict(importRecord=imp,dependency=dependency,actualNativeRoutes=got))
+assert set(im.exports)=={'_VM27OwnedVZCacheConfstrV1','_VM27OwnedVZLocalizedStringOrEnglishKeyV1'},im.exports
+pin=lambda p:dict(path=str(Path(p).resolve()),bytes=Path(p).stat().st_size,sha256=hashlib.sha256(Path(p).read_bytes()).hexdigest())
+result=dict(schema='Bounded own native VZ start-error stack; return semantics unchanged',provider=pin(dll),source=pin(source),sourceBaseline=pin(s/'vm27_owned_vz_localization_v1.m'),cacheObject=cache['actualIOSObject'],routes=routes,exports=im.exports,imports=im.imports,loads=im.loads,deviceOperations=0)
+(o/'candidate.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(pin(o/'candidate.json')))

@@ -1,0 +1,86 @@
+{
+  "version": "2.0.0beta5",
+  "build": 1005,
+  "packageVersion": "1005",
+  "appCandidate": 275,
+  "runtime": 175,
+  "packageSHA256": "d12dec892a95ed480b911561342a4d2724d57b59c3335fe21747379d90f92601",
+  "actualDevice": {
+    "model": "iPad14,6",
+    "chip": "M2",
+    "OS": "16.1.1",
+    "build": "20B101",
+    "jailbreak": "Dopamine2.4.8 rootless",
+    "fullDebInstalled": true,
+    "packageStatus": "install ok installed",
+    "cacheDirectoryAbsentBeforeInstall": true,
+    "cacheCreatedMobile501Mode0700": true,
+    "realPortableCacheFallbackExecuted": true,
+    "fullMacOS27GuestBoot": true,
+    "guestOS": "macOS26.6.2/25G83",
+    "SSHViaIPad22222": true,
+    "appleHTTPSStatus": 200,
+    "nativeScreen": "macOS login page, wallpaper and black guest pointer after transient guest display wake",
+    "persistentHibernate": {
+      "nativeSaveCompleted": true,
+      "savedStateBytes": 2751467520,
+      "nativeStopCompleted": true,
+      "appKilledOnlyAfterCommit": true,
+      "reopenedWithoutStartURL": true,
+      "automaticNativeRestore": true,
+      "nativeRestoreState": 2,
+      "anonymousRAMNonceMatched": true,
+      "originalProcessMatched": true,
+      "bootSessionMatched": true,
+      "oldStateConsumedBeforeResume": true,
+      "ownCanaryCleaned": true,
+      "guestLeftRunning": true
+    }
+  },
+  "hostRegressionTests": {
+    "portablePathAndCacheCoreNormalAndSanitized": true,
+    "configureCanonicalPathAndIdempotence": true,
+    "enumeration127NativeAddFallback": true,
+    "nativeAdd127Rejected": true,
+    "tamperedFileRejected": true,
+    "explicitMockForHostDopamineAPI": true,
+    "networkRelinkActuallyExecuted": true
+  },
+  "reportedDevice": {
+    "model": "iPad13,8",
+    "chip": "M1",
+    "OS": "16.1.1",
+    "jailbreak": "Dopamine3.0.10 rootless",
+    "physicallyRetested": false,
+    "confirmedFailure": "Cache admission compared against a developer-device canonical preboot path",
+    "configureFailure": "trust-cache enumeration exit127; underlying original stderr was not included, so exact cause is unproven"
+  },
+  "inheritedAcceptance": {
+    "full13RuntimeWhole": true,
+    "full13NewBeta5Boot": false,
+    "backgroundHibernateSameImplementationAcceptedOnApp274Runtime174": true,
+    "physicalThreeFingerGestureUserAccepted": true,
+    "ProMotionCallbackMedianMS": 8.34,
+    "physical120FPSProven": false,
+    "microphoneNonzeroSamples": 777600,
+    "physicalSpeakerAudibilityVerified": false
+  },
+  "dependencies": {
+    "standardRootlessDopamineRequired": true,
+    "complete13Included": true,
+    "complete27Included": true,
+    "networkLibrariesStaticIncluded": true,
+    "guestHelpersIncluded": true,
+    "old123Required": false,
+    "extraLDIDRequired": false,
+    "jailbreakCoreReplaced": false
+  },
+  "limitations": [
+    "Only M2/iPadOS16.1.1 has physical acceptance. M1/M2/A16 and Dopamine15–16.3.1 remain experimental.",
+    "Settings/Dock icon-service crashes and occasional animation stutter remain open.",
+    "Clean IPSW install, full guest IPv6/bridging, non-text clipboard and advanced GPU/video features remain incomplete.",
+    "Locked devices pause; native Hibernate snapshot writing requires unlock. A kill before completed save cannot preserve newer RAM.",
+    "The trust-enumeration127 fallback was exercised with explicit host protocol mocks, not on the reporter M1/Dopamine3 device."
+  ],
+  "rawUserDiagnosticsPublished": false
+}
