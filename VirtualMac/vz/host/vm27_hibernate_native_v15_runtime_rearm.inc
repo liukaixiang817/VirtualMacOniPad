@@ -24,6 +24,7 @@ static NSDictionary *VM27HibernateComparableOptionsV5(NSDictionary *options) {
     if(![options isKindOfClass:NSDictionary.class])return nil;
     NSMutableDictionary *value=[[options mutableCopy]autorelease];
     [value removeObjectForKey:@"HibernateOnBackgroundEnabled"];
+    [value removeObjectsForKeys:@[@"NextBootAudioOutputEnabled", @"NextBootNativeMicrophoneEnabled27"]];
     return value;
 }
 static BOOL VM27HibernateOperationPendingV4(void) {return VM27HibernateBusyV4;}

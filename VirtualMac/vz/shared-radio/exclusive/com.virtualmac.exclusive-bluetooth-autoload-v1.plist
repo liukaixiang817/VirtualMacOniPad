@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.virtualmac.exclusive-bluetooth-autoload-v1</string>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Library/PrivilegedHelperTools/VirtualMacSharedBluetoothClassicV1/exclusive-early-autoload-v2</string>
+		<string>--check-once</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Library/PrivilegedHelperTools/VirtualMacSharedBluetoothClassicV1/exclusive-autoload-v1.error.log</string>
+	<key>StartInterval</key>
+	<integer>10</integer>
+</dict>
+</plist>

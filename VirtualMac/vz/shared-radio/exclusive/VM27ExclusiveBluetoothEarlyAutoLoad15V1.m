@@ -1,0 +1,7 @@
+#define VM27_EARLY_NATIVE_BUILD "24G90"
+#define VM27_EARLY_NATIVE_SHA "11d5628b36848a947af2b165264f521758928e5c21cf54ffa9548e7651fde7a9"
+#define VM27_EARLY_MODULE_FILENAME "VM27ExclusiveBluetoothGuest15V1.dylib"
+#define VM27_EARLY_PRIVATE_FILENAME "native-bluetoothd-exclusive-15-v1.plist"
+#define VM27_EARLY_NATIVE_LABEL "com.virtualmac.exclusive-bluetooth-native-15-v1"
+#define VM27_EARLY_CONSTRUCTOR_FILENAME "exclusive-before-main-15-v1.json"
+#include "VM27ExclusiveBluetoothEarlyAutoLoadV2.m"

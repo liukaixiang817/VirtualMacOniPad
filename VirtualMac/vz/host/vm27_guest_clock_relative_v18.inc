@@ -5,7 +5,7 @@ static double VM27ClockMonotonicV18(void) {
     if(clock_gettime(CLOCK_MONOTONIC,&value))return -1;
     return (double)value.tv_sec+(double)value.tv_nsec/1000000000.0;
 }
-typedef void (^VM27ClockReadCompletionV18)(BOOL,VM27ClockEstimateV18);
+typedef void (^VM27ClockReadCompletionV18)(BOOL,BOOL,VM27ClockEstimateV18);
 static void VM27ClockReadActualV18(VM27OwnedQGAOperationV5 *owner,
                                  VM27ClockReadCompletionV18 completion) {
     double wallStart=NSDate.date.timeIntervalSince1970;
@@ -20,7 +20,7 @@ static void VM27ClockReadActualV18(VM27OwnedQGAOperationV5 *owner,
             [[text substringFromIndex:scanner.scanLocation]
                 stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].length==0;
         VM27ClockEstimateV18 estimate=VM27ClockEstimateSampleV18(epoch,wallStart,wallEnd,monoStart,monoEnd);
-        completion(success && parsed && estimate.decision!=VM27ClockInvalidV18,estimate);
+        completion(success && parsed && estimate.decision!=VM27ClockInvalidV18,success,estimate);
     });
 }
 /* One real socket/epoch/generation lease covers sample, optional correction,
@@ -40,15 +40,19 @@ static void VM27GuestSyncHostClockV18(id info,uint64_t generation,void (^continu
     }
     VM27OwnedQGAOperationV5 *owner=BeginQGAOperationV3(^(BOOL success,NSData *output){
         (void)output;
-        VZGuestToolsLog(@"clock18 operation finished success=%u originalQGA45sLeaseWhole=1",success);
+        VZGuestToolsLog(@"clock18 operation finished transportHealthy=%u clockResultLoggedSeparately=1 originalQGA45sLeaseWhole=1",success);
         finish();
     });
     if(!owner)return;
-    VM27ClockReadActualV18(owner,^(BOOL valid,VM27ClockEstimateV18 sample){
+    VM27ClockReadActualV18(owner,^(BOOL valid,BOOL commandSucceeded,VM27ClockEstimateV18 sample){
         if(![owner isLive])return;
         if(!valid) {
             VZGuestToolsLog(@"clock18 uncertain sample; no clock change submitted");
-            [owner finish:NO output:[NSData data]];return;
+            // Startup scheduling or a wall-clock change can invalidate a
+            // sample even though the actual guest command and stream worked.
+            // Optional time sync must not tear down that healthy connection
+            // and restart all first-boot provisioning on every sample.
+            [owner finish:commandSucceeded output:[NSData data]];return;
         }
         BOOL adjust=sample.decision==VM27ClockAdjustV18;
         VZGuestToolsLog(@"clock18 actual sample offsetEstimate=%.3f uncertainty=%.3f rtt=%.3f correctionRequired=%u delta=%lld",
@@ -77,13 +81,13 @@ static void VM27GuestSyncHostClockV18(id info,uint64_t generation,void (^continu
                 after>=target && after-target<=5;
             VZGuestToolsLog(@"clock18 actual relative correction applied=%u delta=%lld before=%lld after=%lld queuedAbsoluteTarget=0",
                 applied,delta,before,after);
-            if(!applied){[owner finish:NO output:[NSData data]];return;}
-            VM27ClockReadActualV18(owner,^(BOOL read,VM27ClockEstimateV18 verified){
+            if(!applied){[owner finish:success output:[NSData data]];return;}
+            VM27ClockReadActualV18(owner,^(BOOL read,BOOL verifyCommandSucceeded,VM27ClockEstimateV18 verified){
                 if(![owner isLive])return;
                 BOOL close=read && verified.decision==VM27ClockNoChangeV18;
                 VZGuestToolsLog(@"clock18 actual epoch verified=%u offsetEstimate=%.3f uncertainty=%.3f rtt=%.3f noSecondClockWrite=1",
                     close,verified.offsetSeconds,verified.uncertaintySeconds,verified.roundTripSeconds);
-                [owner finish:close output:[NSData data]];
+                [owner finish:verifyCommandSucceeded output:[NSData data]];
             });
         });
     });

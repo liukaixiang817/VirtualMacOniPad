@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "verifiedHost": {
+    "model": "iPad14,6",
+    "iPadOS": "16.1.1",
+    "build": "20B101"
+  },
+  "guestBuilds": {
+    "24G90": {
+      "macOSMajor": 15,
+      "officialBlankInstall": true,
+      "normalColdBootAndAutomaticWiFiReconnect": true,
+      "nativeWiFiBothTestNetworks": true,
+      "iPadAndGuestIndependentConcurrentHTTPS": true,
+      "bluetoothNearbyDeviceDiscovery": true,
+      "switchedCameraProfiles": [
+        480,
+        720,
+        1080,
+        480
+      ],
+      "actualSpeakerAndMicrophone": true,
+      "earlyProbeFailedBeforeRepeatedHTTPS": true,
+      "recordSHA256": "4b85068f3547414604c038facf3bab95f6ad54c976495056d490bb1bc1210e0d"
+    },
+    "25G83": {
+      "macOSMajor": 26,
+      "officialBlankInstall": true,
+      "normalColdBootAndAutomaticWiFiReconnect": true,
+      "nativeWiFiBothTestNetworks": true,
+      "iPadAndGuestIndependentConcurrentHTTPS": true,
+      "bluetoothNearbyDeviceDiscovery": true,
+      "switchedCameraProfiles": [
+        480,
+        720,
+        1080,
+        480
+      ],
+      "actualSpeakerAndMicrophone": true,
+      "earlyProbeFailedBeforeRepeatedHTTPS": true,
+      "recordSHA256": "80411249021b08effcbc323ff08ffe2ddad8d4995d7f59890bad4afbf6af657b"
+    },
+    "26A5416b": {
+      "macOSMajor": 27,
+      "officialBlankInstall": true,
+      "normalColdBootAndAutomaticWiFiReconnect": true,
+      "nativeWiFiBothTestNetworks": true,
+      "iPadAndGuestIndependentConcurrentHTTPS": true,
+      "bluetoothNearbyDeviceDiscovery": true,
+      "switchedCameraProfiles": [
+        480,
+        720,
+        1080,
+        480
+      ],
+      "actualSpeakerAndMicrophone": true,
+      "earlyProbeFailedBeforeRepeatedHTTPS": true,
+      "recordSHA256": "e9428b9af3a312459053059eedef7544de00d0ca3a66262dd524209d6caf1d19"
+    }
+  },
+  "onDeviceAppExecutableSHA256": "06821aac23738f66ec1636ad3cde2a46f737e8504be102aba464891f0819375d",
+  "publicAppChange": "Removed development entry points and updated the app version and signature",
+  "onDeviceTestsUseFeatureCandidate": true,
+  "releasePackageVerifiedLocally": true,
+  "unchangedGuestPackagesAndHostRadioServices": true,
+  "cleanMacOS27RetryPassed": true
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>com.virtualmac.exclusive-bluetooth-v1</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/var/jb/usr/local/libexec/virtualmac-exclusive-bluetooth-v1</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/var/root/VM27ExclusiveBluetooth-v1/broker.error.log</string>
+	<key>StandardOutPath</key>
+	<string>/var/root/VM27ExclusiveBluetooth-v1/broker.log</string>
+	<key>ThrottleInterval</key>
+	<integer>5</integer>
+	<key>UserName</key>
+	<string>root</string>
+</dict>
+</plist>

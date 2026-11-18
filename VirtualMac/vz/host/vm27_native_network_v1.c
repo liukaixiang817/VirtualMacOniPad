@@ -1,7 +1,10 @@
 #include "vm27_native_network_v1.h"
+#include "vm27_native_network_isolation_v1.h"
+#include "../shared-radio/common/vm27_shared_radio_paths_v1.h"
 #include <libslirp.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <limits.h>
 #include <poll.h>
 #include <pthread.h>
@@ -33,6 +36,8 @@ struct VM27NativeNetworkV1 {
     struct pollfd descriptors[VM27NetworkPollLimit + 2];
     unsigned descriptorCount;
     bool pollOverflow;
+    bool sharedBluetooth;
+    bool sharedWiFi;
     uint64_t received, transmitted, dropped;
 };
 
@@ -150,17 +155,36 @@ static void RunTimers(VM27NativeNetworkV1 *network) {
         callback(argument); /* It may remove or rearm any timer. */
     }
 }
+static bool GuestFrameAllowed(VM27NativeNetworkV1 *network,const uint8_t *packet,size_t length) {
+    uint32_t subnet=network->sharedWiFi?UINT32_C(0x0a000300):UINT32_C(0x0a000200);
+    int policy=VM27NatFramePolicyV1(packet,length,subnet,network->sharedBluetooth,NULL,0,false);
+    if(policy!=VM27_NAT_FRAME_NEEDS_HOST_ADDRESSES)return policy==VM27_NAT_FRAME_ALLOW;
+    // Read the current addresses when an external packet needs classification;
+    // a Wi-Fi/cellular address change must not expose a newly local service.
+    struct ifaddrs *interfaces=NULL;uint32_t addresses[256];size_t count=0;
+    bool valid=getifaddrs(&interfaces)==0;
+    if(valid)for(struct ifaddrs *item=interfaces;item;item=item->ifa_next) {
+        if(!item->ifa_addr||item->ifa_addr->sa_family!=AF_INET)continue;
+        if(count==sizeof(addresses)/sizeof(addresses[0])){valid=false;break;}
+        const struct sockaddr_in *address=(const void *)item->ifa_addr;
+        addresses[count++]=ntohl(address->sin_addr.s_addr);
+    }
+    if(interfaces)freeifaddrs(interfaces);
+    return VM27NatFramePolicyV1(packet,length,subnet,network->sharedBluetooth,
+                               addresses,count,valid)==VM27_NAT_FRAME_ALLOW;
+}
 static void *NetworkWorker(void *context) {
     VM27NativeNetworkV1 *network = context;
     pthread_setname_np("VirtualMac.independent27.network");
     SlirpConfig configuration = {0};
     configuration.version = SLIRP_CONFIG_VERSION_MAX;
     configuration.in_enabled = true;
-    configuration.vnetwork.s_addr = htonl(UINT32_C(0x0a000200));
+    uint32_t subnet = network->sharedWiFi ? UINT32_C(0x0a000300) : UINT32_C(0x0a000200);
+    configuration.vnetwork.s_addr = htonl(subnet);
     configuration.vnetmask.s_addr = htonl(UINT32_C(0xffffff00));
-    configuration.vhost.s_addr = htonl(UINT32_C(0x0a000202));
-    configuration.vdhcp_start.s_addr = htonl(UINT32_C(0x0a00020f));
-    configuration.vnameserver.s_addr = htonl(UINT32_C(0x0a000203));
+    configuration.vhost.s_addr = htonl(subnet | 2);
+    configuration.vdhcp_start.s_addr = htonl(subnet | 15);
+    configuration.vnameserver.s_addr = htonl(subnet | 3);
     configuration.vhostname = "VirtualMac";
     configuration.if_mtu = configuration.if_mru = 1500;
     configuration.disable_host_loopback = true;
@@ -176,6 +200,17 @@ static void *NetworkWorker(void *context) {
     callbacks.unregister_poll_socket = PollRegistration;
     network->slirp = slirp_new(&configuration, &callbacks, network);
     if (network->slirp) {
+        if (network->sharedBluetooth) {
+            struct in_addr bluetoothAddress={htonl(UINT32_C(0x0a000204))};
+            int registered=slirp_add_unix(network->slirp,
+                VM27_SHARED_RADIO_BLE_SOCKET_V1,
+                &bluetoothAddress,39028);
+            fprintf(stderr,"[SharedBluetooth] private guest-port registration status=%d\n",registered);
+            int classic=slirp_add_unix(network->slirp,
+                VM27_SHARED_RADIO_CLASSIC_SOCKET_V1,
+                &bluetoothAddress,39029);
+            fprintf(stderr,"[SharedBluetoothClassic] private guest-port registration status=%d\n",classic);
+        }
         fprintf(stderr, "[Independent27Network] actual IPv4 NAT library ready version=%s mtu=1500 nativeDatagram=1\n", slirp_version_string());
         uint8_t packet[VM27NetworkPacketLimit];
         while (!atomic_load_explicit(&network->stopping, memory_order_acquire)) {
@@ -213,6 +248,7 @@ static void *NetworkWorker(void *context) {
                     if (length < 0) break;
                     if (length < 14 || (message.msg_flags & MSG_TRUNC)) { ++network->dropped; continue; }
                     ++network->received;
+                    if(!GuestFrameAllowed(network,packet,(size_t)length)){++network->dropped;continue;}
                     slirp_input(network->slirp, packet, (int)length);
                 }
             }
@@ -227,7 +263,7 @@ static void *NetworkWorker(void *context) {
     ReleaseNetwork(network);
     return NULL;
 }
-int VM27NativeNetworkStartV1(VM27NativeNetworkV1 **out, int *guestDescriptor) {
+static int NetworkStart(VM27NativeNetworkV1 **out, int *guestDescriptor, bool sharedBluetooth, bool sharedWiFi) {
     if (!out || !guestDescriptor) return EINVAL;
     int pair[2] = {-1, -1}, cancellation[2] = {-1, -1};
     int error = 0;
@@ -248,6 +284,8 @@ int VM27NativeNetworkStartV1(VM27NativeNetworkV1 **out, int *guestDescriptor) {
     atomic_init(&network->references, 2);
     atomic_init(&network->stopping, false);
     network->peer = pair[1];
+    network->sharedBluetooth = sharedBluetooth;
+    network->sharedWiFi = sharedWiFi;
     network->cancellation[0] = cancellation[0];
     network->cancellation[1] = cancellation[1];
     pthread_attr_t attributes;
@@ -269,6 +307,18 @@ fail:
         if (cancellation[i] >= 0) close(cancellation[i]);
     }
     return error;
+}
+int VM27NativeNetworkStartV1(VM27NativeNetworkV1 **out, int *guestDescriptor) {
+    return NetworkStart(out,guestDescriptor,false,false);
+}
+int VM27NativeNetworkStartForRadioDevV1(VM27NativeNetworkV1 **out, int *guestDescriptor) {
+    return NetworkStart(out,guestDescriptor,true,false);
+}
+int VM27NativeNetworkStartWithSharedRadiosV1(VM27NativeNetworkV1 **out, int *guestDescriptor) {
+    return NetworkStart(out,guestDescriptor,true,false);
+}
+int VM27NativeNetworkStartSharedWiFiV1(VM27NativeNetworkV1 **out, int *guestDescriptor) {
+    return NetworkStart(out,guestDescriptor,false,true);
 }
 void VM27NativeNetworkStopV1(VM27NativeNetworkV1 *network) {
     if (!network) return;

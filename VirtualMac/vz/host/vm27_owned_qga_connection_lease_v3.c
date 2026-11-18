@@ -25,6 +25,10 @@ static bool now_ns(uint64_t *out) {
 static bool same_socket(int fd,const VM27OwnedQGALeaseV3 *o) {
     struct stat st;return fd>=0 && fstat(fd,&st)==0 && S_ISSOCK(st.st_mode) && st.st_dev==o->device && st.st_ino==o->inode;
 }
+bool VM27OwnedQGALeaseSocketMatchesV3(const VM27OwnedQGALeaseV3 *o,int fd) {
+    return o && o->active && o->pid==getpid() && fd==o->originalFD &&
+        same_socket(fd,o) && same_socket(o->ownedFD,o);
+}
 VM27QGAResultV3 VM27OwnedQGALeaseCreateV3(VM27OwnedQGALeaseV3 *o,int fd,uint64_t epoch,uint64_t generation) {
     if(!o)return VM27QGAInvalidV3;
     memset(o,0,sizeof(*o));o->ownedFD=-1;o->originalFD=-1;
@@ -78,9 +82,11 @@ VM27QGAResultV3 VM27OwnedQGALeaseCloseV3(VM27OwnedQGALeaseV3 *o,bool stop) {
     /* Darwin may block a stream send even with MSG_DONTWAIT. Use actual
      * O_NONBLOCK during this serialized lease; restore only this same socket. */
     if(!stop && o->statusChanged) {
-        int current=fcntl(o->originalFD,F_GETFL);
-        if(!same_socket(o->originalFD,o) || current!=(o->originalStatusFlags|O_NONBLOCK) ||
-           fcntl(o->originalFD,F_SETFL,o->originalStatusFlags))result=VM27QGANativeFailureV3;
+        // dup shares the file description. The retained descriptor remains
+        // ours even after the SDK closes or reuses its original FD number.
+        int current=fcntl(o->ownedFD,F_GETFL);
+        if(current!=(o->originalStatusFlags|O_NONBLOCK) ||
+           fcntl(o->ownedFD,F_SETFL,o->originalStatusFlags))result=VM27QGANativeFailureV3;
     }
     if(stop && shutdown(o->ownedFD,SHUT_RDWR) && errno!=ENOTCONN)result=VM27QGANativeFailureV3;
     if(close(o->ownedFD))result=VM27QGANativeFailureV3;

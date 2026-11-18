@@ -1,0 +1,24 @@
+{
+  "source": "https://github.com/watchthelight-labs/WTLWifiMenu",
+  "commit": "1665d948cd8094c9324eca1e689cfb2735bdcbd0",
+  "license": "ISC with BSD-3-Clause-Clear notices",
+  "files": {
+    "LICENSE": "40aa0ca43bd58dfa5b0444782cb73c90e272f011e76edf24a8aa62558d4129bd",
+    "NOTICE.md": "603c5317606b8737bea56104627826ec6c6eabbc8a0ee471065e1e23f6526584",
+    "LICENSES/BSD-3-Clause-Clear-itlmt7925.txt": "18ea8e404a91378ceb54eaa1514626b83d2c25a0aa6f6da3dbd2d4264e869304",
+    "src/MtkWlanNative.cpp": "b09874b484f0d1edf72743a186f9938938cf1d91ff999b04f9263c143dcac867",
+    "src/corecapture_min.h": "458eab321d671a254abd0f9bf6bc382d7124ebef891dfd88df6b5cb28826664d",
+    "src/MtkWlanNativeReq.cpp": "b034ba1193a8aff2053c37bd226ad79d0df44cdd3a92da345b1bb4d8012cfa6b",
+    "src/MtkWlanNativeIf.cpp": "f74343bf7f47d647e8ba95cffa8e3e91836ce02067bb91933afa6abd6fa19535",
+    "src/MtkCoreApi.h": "602c07db774484a2f3ea6f89c2b9f774c7a7bbdd3a57a4f3aa386d010d6e52e8",
+    "src/MtkNativeTrace.cpp": "37148e46cffba046dd8456751e54cff7cdec6049e26c7c819ff584ab2377165f",
+    "src/MtkUserApi.h": "503a09aa73cc6b059292f4e6a9a181d443121ea6ebfd2968f1147986c62360c4",
+    "src/skywalk_min.h": "817cc4f249489a2b859029f6d9514f49f6182458028f2dcb868a626da5dd1467",
+    "src/MtkNativeTrace.hpp": "422063904c21af127f648fa9b828fecd87fa7bdb578b65030905d0de69714caa",
+    "src/kmod_info.c": "d9746e06b3f1097726e4ed37ad74237cd6750dcfd180228475e6f8893867b606",
+    "src/MtkChanspec.h": "78563fc5a732825e0a5d7ae3728f254fa8797d32087666d0c31d597eec442b56",
+    "src/MtkWlanNative.hpp": "1267222c734ffd78de88066ee3bc46933d999e95191216e7e7f98f30fa6155eb",
+    "src/MtkNativeAbi.hpp": "42a9fd329aa34a65061731df4d4e979565efee96990c12cc1404825c990feef4",
+    "src/MtkWlanNativeIf.hpp": "5661eba72e0ad7e6bc55133d8b9b07ba3651e242f9230e1babe292d304fcb920"
+  }
+}

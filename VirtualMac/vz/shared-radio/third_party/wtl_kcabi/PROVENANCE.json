@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/watchthelight-labs/WTLWifiMenu",
+  "commit": "1665d948cd8094c9324eca1e689cfb2735bdcbd0",
+  "purpose": "Unmodified offline Mach-O reader and header generator reference. ARM64e pointer and constructor audit is implemented separately; no x86 layout is used as an ARM layout.",
+  "files": {
+    "kcfile.py": "dbfc0b335a97ce3e8c08dc5908759ed484b302e319f066e14717ee31874273e1",
+    "genhdr.py": "708ebcb135820ac8024b0262df25de0649307623031c1f9022ffb746e4c8c0e8"
+  }
+}

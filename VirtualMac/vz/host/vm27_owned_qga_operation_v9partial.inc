@@ -55,6 +55,9 @@ static BOOL OwnedQGAReadGateV3(void) {return !gGuestOwnedOperationV3 || [gGuestO
         _lease.ownedFD=-1;_lease.originalFD=-1;
         if(dispatch_get_specific(&gGuestQGAQueueKeyV3)!=&gGuestQGAQueueKeyV3 ||
            !gGuestSocketConnection || !gGuestCallbacks || gGuestReadDescriptor!=gGuestWriteDescriptor ||
+#ifdef VM27_QGA_HAS_RETAINED_SOCKET_V1
+           !VM27OwnedQGALeaseSocketMatchesV3(&gGuestSocketRetirementLeaseV1,gGuestWriteDescriptor) ||
+#endif
            VM27OwnedQGALeaseCreateV3(&_lease,gGuestWriteDescriptor,gGuestConnectionEpochV3,
                 __atomic_load_n(&gGuestProvisioningGeneration,__ATOMIC_ACQUIRE))!=VM27QGAValidV3) {
             if(_lease.active)VM27OwnedQGALeaseCloseV3(&_lease,false);[self release];return nil;

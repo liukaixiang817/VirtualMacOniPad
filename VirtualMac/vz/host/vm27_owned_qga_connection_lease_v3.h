@@ -21,6 +21,9 @@ typedef struct {
 extern "C" {
 #endif
 __attribute__((visibility("hidden"))) VM27QGAResultV3 VM27OwnedQGALeaseCreateV3(VM27OwnedQGALeaseV3 *,int actualFD,uint64_t actualEpoch,uint64_t actualGeneration);
+/* Identity only for a connection-lifetime hold; operation deadlines remain
+ * enforced separately by LeaseCheck on each bounded command. */
+__attribute__((visibility("hidden"))) bool VM27OwnedQGALeaseSocketMatchesV3(const VM27OwnedQGALeaseV3 *,int actualFD);
 __attribute__((visibility("hidden"))) VM27QGAResultV3 VM27OwnedQGALeaseCheckV3(const VM27OwnedQGALeaseV3 *,int actualFD,uint64_t actualEpoch,uint64_t actualGeneration);
 __attribute__((visibility("hidden"))) VM27QGAResultV3 VM27OwnedQGALeaseSendV3(VM27OwnedQGALeaseV3 *,int actualFD,uint64_t actualEpoch,uint64_t actualGeneration,const void *,size_t);
 __attribute__((visibility("hidden"))) VM27QGAResultV3 VM27OwnedQGALeaseCloseV3(VM27OwnedQGALeaseV3 *,bool shutdownActualOldSocket);

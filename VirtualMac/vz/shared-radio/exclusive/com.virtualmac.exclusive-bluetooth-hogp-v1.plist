@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>com.virtualmac.exclusive-bluetooth-hogp-v1</string>
+<key>ProgramArguments</key><array><string>/Library/PrivilegedHelperTools/VirtualMacSharedBluetoothClassicV1/exclusive-hogp-service-v1</string></array>
+<key>RunAtLoad</key><true/>
+<key>KeepAlive</key><true/>
+<key>ThrottleInterval</key><integer>10</integer>
+<key>StandardOutPath</key><string>/Library/PrivilegedHelperTools/VirtualMacSharedBluetoothClassicV1/exclusive-hogp-output-v1.log</string>
+<key>StandardErrorPath</key><string>/Library/PrivilegedHelperTools/VirtualMacSharedBluetoothClassicV1/exclusive-hogp-error-v1.log</string>
+</dict></plist>
