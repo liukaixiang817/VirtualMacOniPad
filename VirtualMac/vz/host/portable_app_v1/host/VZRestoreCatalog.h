@@ -3,6 +3,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface VZRestoreCatalog : NSObject
++ (nullable NSArray<NSDictionary *> *)imagesFromData:(nullable NSData *)data error:(NSError *_Nullable *_Nullable)error;
++ (nullable NSArray<NSDictionary *> *)imagesFromAppleCatalogData:(nullable NSData *)data error:(NSError *_Nullable *_Nullable)error;
 + (NSArray<NSDictionary *> *)bundledImages;
 + (NSArray<NSDictionary *> *)imagesByMergingImages:(NSArray<NSDictionary *> *)images
                                 withBundledImages:(NSArray<NSDictionary *> *)bundled;

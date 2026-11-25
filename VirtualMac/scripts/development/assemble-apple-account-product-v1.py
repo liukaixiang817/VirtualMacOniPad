@@ -21,7 +21,7 @@ parser.add_argument('--cpu', type=Path, required=True)
 parser.add_argument('--installer', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--release', action='store_true',
-    help='Build Beta 9 from the verified Beta 7 production App')
+    help='Build Beta 9 RC2 from the verified Beta 7 production App')
 args = parser.parse_args()
 O = args.output.resolve()
 O.mkdir(parents=True, exist_ok=False)
@@ -180,8 +180,8 @@ run('link-app', link)
 if args.release:
     info_path = app / 'Info.plist'
     info = plistlib.loads(info_path.read_bytes())
-    info.update(CFBundleShortVersionString='2.0.0beta9', CFBundleVersion='1009',
-        CFBundleDisplayName='VirtualMac 2 beta9', VirtualMacPackageRevision='1009')
+    info.update(CFBundleShortVersionString='2.0.0beta9rc2', CFBundleVersion='1009.2',
+        CFBundleDisplayName='VirtualMac 2 beta9', VirtualMacPackageRevision='1009-2')
     info.pop('VM27SharedRadioDevelopmentRevision', None)
     info_path.write_bytes(plistlib.dumps(info, sort_keys=False))
 for lang, translation in [('en', 'This Mac keeps a fixed network address for Apple Account.'), ('zh_CN', '此虚拟 Mac 使用固定网络地址，以保持 Apple 账户身份一致。')]:
@@ -224,10 +224,13 @@ for name in app_files:
     app=str(app), appCDHash=appproof['cdhash'], guestWrites=True, deviceAcceptancePending=True,
     release=args.release, newGuestAppleAccountEnabledByDefault=True,
     appleAccountAvailableDuringSetupAssistant=True,
-    auditedGuestBuilds=['24G90', '25G83', '26A5416b', '26B123'],
+    auditedGuestBuilds=['24G90', '25G83', '26A5416b', '26B123', '26B131'],
     installVersionRecommendations=['24G90', '25G83', '26B123'],
     allVersionsAndLocalIPSWChoices=True,
     nativeTouchScreenForCompatible27Guests=True,
     softwareKeyboardManualDismissalRespected=True,
+    newGuestIdentityGeneratedForAllRestoreBuilds=True,
+    liveAppleRestoreCatalog=True,
+    futureVersionsNotHiddenByMajorVersion=True,
     expectedBaselineAppSHA256=baseline_app_hash), indent=2) + '\n')
 print(O / 'candidate.json')

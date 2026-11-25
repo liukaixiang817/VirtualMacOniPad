@@ -36,6 +36,9 @@ static const AccountKernelV1 Kernels[] = {
      0x34c0e7f, 0xfffffe000a501a1c, 0xfffffe0009e4c490, 0xfffffe0009e44000, 0x98c000, 0x5bc},
     {"26B123", "Darwin Kernel Version 27.2.0: Wed Oct 14 23:44:09 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_VMAPPLE",
      0x354895f, 0xfffffe000a58961c, 0xfffffe0009ed0490, 0xfffffe0009ec8000, 0x990000, 0x5bc},
+    // The actual 26B131 VM kernel's complete __text is byte-identical to 26B123.
+    {"26B131", "Darwin Kernel Version 27.2.0: Wed Oct 14 23:44:09 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_VMAPPLE",
+     0x354895f, 0xfffffe000a58961c, 0xfffffe0009ed0490, 0xfffffe0009ec8000, 0x990000, 0x5bc},
 };
 static VMAppleAccountHandoffV1 Identity;
 static const AccountKernelV1 *Kernel;
@@ -109,12 +112,12 @@ static void initialize(void) {
          strncmp(candidate.bundlePath, "/private/var/mobile/Media/VirtualMac/", sizeof("/private/var/mobile/Media/VirtualMac/") - 1))) return;
     for (size_t i = 0; i < sizeof(Kernels) / sizeof(Kernels[0]); ++i)
         if (!strcmp(Kernels[i].build, candidate.build)) Kernel = &Kernels[i];
-    if (!Kernel) return;
     Identity = candidate;
     if (!verifyNativeFile("MachineIdentifier", Identity.machineSHA256) ||
         !verifyNativeFile("HardwareModel", Identity.hardwareSHA256)) return;
     Enabled = true;
-    dprintf(2, "[AppleAccountV1] bound software identity accepted build=%s identifiersLogged=0\n", Identity.build);
+    dprintf(2, "[AppleAccountV1] bound software identity accepted build=%s kernelPolicyAudited=%u identifiersLogged=0\n",
+        Identity.build, Kernel != NULL);
 }
 bool VMAppleAccountBeforeRunV1(void) {
     pthread_once(&InitializeOnce, initialize);
@@ -136,7 +139,7 @@ void VMAppleAccountCPUResetV1(uint64_t cpu, uint64_t pc) {
     dprintf(2, "[AppleAccountV1] primary guest reset rearmed the same identity\n");
 }
 bool VMAppleAccountKernelPendingV1(void) {
-    return (VM_APPLE_ACCOUNT_OBSERVE_ONLY || VMAppleAccountBeforeRunV1()) &&
+    return (VM_APPLE_ACCOUNT_OBSERVE_ONLY || (VMAppleAccountBeforeRunV1() && Kernel != NULL)) &&
         !__atomic_load_n(&KernelFinished, __ATOMIC_ACQUIRE);
 }
 // Reflect successful native map operations, including the teardown/remap used

@@ -38,7 +38,9 @@ NSDictionary *VMAppleAccountPrepareInstallationV1(NSURL *image, NSString *attemp
     NSDictionary *options, BOOL native27, NSError **error) {
     NSString *build = VMAppleAccountRestoreBuildV1(image, error);
     if (!build) return nil;
-    if (!native27 || !VMAppleAccountSupportsBuildV1(build)) return options;
+    // Always prepare an independent identity. Runtime/backend validation is a
+    // separate boot decision and must never silently omit this restore state.
+    (void)native27;
     if (!VMAppleAccountInstallationLauncherV1()) {
         Failure(error, @"The Apple Account installation components are unavailable. Reinstall this version of Virtual Mac.");
         return nil;

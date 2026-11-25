@@ -31,7 +31,7 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
     return scaled;
 }
 
-@interface VZNewVMViewController ()
+@interface VZNewVMViewController () <UISearchResultsUpdating>
 @property(nonatomic, retain) NSArray<NSDictionary *> *catalog;
 @property(nonatomic, retain) UIActivityIndicatorView *activity;
 @property(nonatomic, assign) BOOL showMinorReleases;
@@ -40,6 +40,10 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 @property(nonatomic, assign) BOOL versionDetailsBeforeDeveloperBetas;
 @property(nonatomic, assign) CGFloat lastLayoutWidth;
 @property(nonatomic, assign) BOOL browsingAllVersions;
+@property(nonatomic, assign) BOOL catalogLoading;
+@property(nonatomic, assign) BOOL catalogOffline;
+@property(nonatomic, copy) NSString *versionQuery;
+@property(nonatomic, retain) UISearchController *versionSearch;
 @end
 
 @implementation VZNewVMViewController
@@ -63,20 +67,63 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
     self.activity = [[[UIActivityIndicatorView alloc]
         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium]
         autorelease];
+    self.refreshControl = [[[UIRefreshControl alloc] init] autorelease];
+    [self.refreshControl addTarget:self action:@selector(reloadCatalog:)
+        forControlEvents:UIControlEventValueChanged];
+    if (self.browsingAllVersions) {
+        self.versionSearch = [[[UISearchController alloc] initWithSearchResultsController:nil] autorelease];
+        self.versionSearch.searchResultsUpdater = self;
+        self.versionSearch.obscuresBackgroundDuringPresentation = NO;
+        self.versionSearch.searchBar.placeholder = VZL(@"Search macOS version or build");
+        self.navigationItem.searchController = self.versionSearch;
+        self.navigationItem.hidesSearchBarWhenScrolling = NO;
+        self.definesPresentationContext = YES;
+    }
+    [self reloadCatalog:nil];
+}
+
+- (void)updateCatalogButtons
+{
+    UIBarButtonItem *refresh = [[[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self
+        action:@selector(reloadCatalog:)] autorelease];
+    refresh.enabled = !self.catalogLoading;
+    refresh.accessibilityLabel = VZL(@"Refresh macOS Versions");
+    if (self.browsingAllVersions) {
+        UIBarButtonItem *filters = [[[UIBarButtonItem alloc]
+            initWithImage:[UIImage systemImageNamed:@"ellipsis.circle"]
+            menu:[self filterMenu]] autorelease];
+        self.navigationItem.rightBarButtonItems = @[filters, refresh];
+    } else self.navigationItem.rightBarButtonItems = @[refresh];
+}
+
+- (void)reloadCatalog:(id)sender
+{
+    (void)sender;
+    if (self.catalogLoading) return;
+    self.catalogLoading = YES;
     [self.activity startAnimating];
-    self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
-        initWithCustomView:self.activity] autorelease];
+    [self.refreshControl beginRefreshing];
+    [self updateCatalogButtons];
     [VZRestoreCatalog loadWithCompletion:^(NSArray<NSDictionary *> *images,
                                             NSError *error) {
         self.catalog = images;
+        self.catalogLoading = NO;
+        self.catalogOffline = error != nil;
         [self.activity stopAnimating];
-        self.navigationItem.rightBarButtonItem = self.browsingAllVersions ? [[[UIBarButtonItem alloc]
-            initWithImage:[UIImage systemImageNamed:@"ellipsis.circle"]
-            menu:[self filterMenu]] autorelease] : nil;
+        [self.refreshControl endRefreshing];
+        [self updateCatalogButtons];
         [self.tableView reloadData];
         if (error)
             NSLog(@"Virtual Mac restore catalog fallback failed: %@", error);
     }];
+}
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController
+{
+    self.versionQuery = [searchController.searchBar.text
+        stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    [self.tableView reloadData];
 }
 
 - (void)cancel:(id)sender
@@ -159,6 +206,14 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
         NSMutableArray *releases = [NSMutableArray array];
         NSMutableArray *betas = [NSMutableArray array];
         for (NSDictionary *image in sorted) {
+            if (self.versionQuery.length) {
+                NSString *searchable = [NSString stringWithFormat:@"%@ %@ %@",
+                    VZCatalogString(image[@"version"]), VZCatalogString(image[@"build"]),
+                    VZCatalogString(image[@"name"])];
+                if ([searchable rangeOfString:self.versionQuery
+                    options:NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound)
+                    continue;
+            }
             if (!showsAdvancedVersions &&
                 [VZRestoreCatalog isUnsupportedImage:image])
                 continue;
@@ -167,11 +222,11 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
             else
                 [releases addObject:image];
         }
-        if (self.showMinorReleases)
+        if (self.showMinorReleases || self.versionQuery.length)
             [result addObjectsFromArray:releases];
         else if (releases.count)
             [result addObject:releases.firstObject];
-        if (self.showDeveloperBetas)
+        if (self.showDeveloperBetas || self.versionQuery.length)
             [result addObjectsFromArray:betas];
         else if (!releases.count && betas.count)
             [result addObject:betas.firstObject];
@@ -217,8 +272,12 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
  titleForFooterInSection:(NSInteger)section
 {
     (void)tableView;
-    if (section == 0)
-        return VZL(@"Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below.");
+    if (section == 0) {
+        NSString *detail = VZL(@"Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below.");
+        if (self.catalogOffline) return [NSString stringWithFormat:@"%@\n%@", detail,
+            VZL(@"The online catalog is unavailable. Showing offline versions; pull to refresh.")];
+        return detail;
+    }
     return section == (self.browsingAllVersions ? 1 : 2)
         ? VZL(@"Select an IPSW file downloaded from Apple.") : nil;
 }
@@ -398,6 +457,8 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 {
     [_catalog release];
     [_activity release];
+    [_versionQuery release];
+    [_versionSearch release];
     [super dealloc];
 }
 

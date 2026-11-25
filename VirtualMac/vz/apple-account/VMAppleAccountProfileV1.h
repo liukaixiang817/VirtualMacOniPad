@@ -3,6 +3,8 @@
 
 FOUNDATION_EXPORT NSString *const VMAppleAccountProfileFileV1;
 FOUNDATION_EXPORT NSString *const VMAppleAccountProfileOptionV1;
+// Whether an actual manifest build can receive a persistent identity. This does
+// not claim that its kernel policy or Apple services have passed validation.
 BOOL VMAppleAccountSupportsBuildV1(NSString *build);
 NSString *VMAppleAccountRestoreBuildV1(NSURL *ipswURL, NSError **error);
 NSDictionary *VMAppleAccountMakeProfileV1(NSString *build, NSError **error);

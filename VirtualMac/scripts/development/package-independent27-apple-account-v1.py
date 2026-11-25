@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--candidate', required=True, type=Path)
     parser.add_argument('--installer', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='1009')
+    parser.add_argument('--version', default='1009-2')
     args = parser.parse_args()
     candidate = json.loads((args.candidate / 'candidate.json').read_text())
     assert prior.sha(args.tested_deb) == (RELEASE_BASE_SHA if candidate['release'] else BASE_SHA)
@@ -36,12 +36,12 @@ def main():
     assert candidate['newGuestAppleAccountEnabledByDefault']
     assert candidate['appleAccountAvailableDuringSetupAssistant']
     supported_builds = candidate['auditedGuestBuilds']
-    assert supported_builds == ['24G90', '25G83', '26A5416b', '26B123']
+    assert supported_builds == ['24G90', '25G83', '26A5416b', '26B123', '26B131']
     if candidate['release']:
-        prior.run('dpkg', '--compare-versions', '1008-2', 'lt', args.version)
+        prior.run('dpkg', '--compare-versions', '1009', 'lt', args.version)
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    filename = ('VirtualMac_2.0.0beta9_' if candidate['release'] else 'VirtualMac_AppleAccount_')
+    filename = ('VirtualMac_2.0.0beta9rc2_' if candidate['release'] else 'VirtualMac_AppleAccount_')
     destination = output / (filename + args.version + '.deb')
     assert not destination.exists()
     with tempfile.TemporaryDirectory(prefix='virtualmac-account-package-') as temp:
@@ -121,8 +121,9 @@ def main():
         size = sum(p.stat().st_size for p in paths if p.is_file() and not p.is_symlink())
         old_size = next(line for line in body.splitlines() if line.startswith('Installed-Size: '))
         body = prior.replace_once(body, old_size + '\n', f'Installed-Size: {(size + 1023)//1024}\n')
-        body += (' Apple Account is enabled by default during Setup Assistant for new audited macOS 15, 26 and 27 guests.\n'
-                 ' Each new guest receives a persistent identity before restore and its first boot.\n')
+        body += (' Each new restore receives a persistent Apple Account identity before its first boot.\n'
+                 ' Setup Assistant sign-in is validated for audited macOS 15, 26 and 27 builds.\n'
+                 ' Live Apple restore versions can be refreshed and searched by version or build.\n')
         (controls / 'control').write_text(body)
 
         for name in ['preinst', 'postinst', 'prerm']:
@@ -182,6 +183,9 @@ def main():
         allVersionsAndLocalIPSWChoices=True,
         nativeTouchScreenForCompatible27Guests=candidate['nativeTouchScreenForCompatible27Guests'],
         softwareKeyboardManualDismissalRespected=candidate['softwareKeyboardManualDismissalRespected'],
+        newGuestIdentityGeneratedForAllRestoreBuilds=candidate['newGuestIdentityGeneratedForAllRestoreBuilds'],
+        liveAppleRestoreCatalog=candidate['liveAppleRestoreCatalog'],
+        futureVersionsNotHiddenByMajorVersion=candidate['futureVersionsNotHiddenByMajorVersion'],
         perGuestIdentityCreatedBeforeRestore=True,
         existingGuestIdentitiesNotReplaced=True,
         guestDataIncluded=False, cloudAcceptanceClaimed=False), indent=2) + '\n')

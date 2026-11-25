@@ -369,3 +369,9 @@
 "Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below." = "Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below.";
 
 "Select an IPSW file downloaded from Apple." = "Select an IPSW file downloaded from Apple.";
+
+"Refresh macOS Versions" = "Refresh macOS Versions";
+
+"Search macOS version or build" = "Search macOS version or build";
+
+"The online catalog is unavailable. Showing offline versions; pull to refresh." = "The online catalog is unavailable. Showing offline versions; pull to refresh.";

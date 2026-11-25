@@ -2,6 +2,8 @@
 
 static NSString * const VZCatalogURL =
     @"https://api.virtualbuddy.app/v2/restore/mac?apiKey=15A25D48-4A34-4EE4-A293-C22B0DE1B54E";
+static NSString * const VZAppleCatalogURL =
+    @"https://mesu.apple.com/assets/macos/com_apple_macOSIPSW/com_apple_macOSIPSW.xml";
 
 static NSArray<NSDictionary *> *VZVerifiedRestoreImages(void)
 {
@@ -104,7 +106,7 @@ static NSInteger VZRestoreMajorVersionFromText(NSString *text)
     NSString *version = VZRestoreVersionFromText(text);
     NSScanner *scanner = [NSScanner scannerWithString:version];
     NSInteger major = 0;
-    if (![scanner scanInteger:&major] || major < 10 || major > 99)
+    if (![scanner scanInteger:&major] || major < 10)
         return 0;
     return major;
 }
@@ -178,20 +180,83 @@ static NSDictionary *VZMacOSIdentityForImage(NSDictionary *image)
     return normalized;
 }
 
++ (NSArray<NSDictionary *> *)imagesFromAppleCatalogData:(NSData *)data error:(NSError **)error
+{
+    if (!data.length || data.length > 16 * 1024 * 1024) return nil;
+    id plist = [NSPropertyListSerialization propertyListWithData:data
+        options:NSPropertyListImmutable format:NULL error:error];
+    if (![plist isKindOfClass:NSDictionary.class]) return nil;
+    NSDictionary *versions = plist[@"MobileDeviceSoftwareVersionsByVersion"];
+    if (![versions isKindOfClass:NSDictionary.class]) return nil;
+    NSMutableArray *rows = [NSMutableArray array];
+    for (id version in versions.allValues) {
+        if (![version isKindOfClass:NSDictionary.class]) continue;
+        NSDictionary *devices = version[@"MobileDeviceSoftwareVersions"];
+        if (![devices isKindOfClass:NSDictionary.class]) continue;
+        for (NSString *product in devices) {
+            if (![product isKindOfClass:NSString.class] || ![product hasPrefix:@"VirtualMac"] ||
+                ![devices[product] isKindOfClass:NSDictionary.class]) continue;
+            for (id build in [devices[product] allValues]) {
+                if (![build isKindOfClass:NSDictionary.class]) continue;
+                id restore = build[@"Restore"];
+                if (![restore isKindOfClass:NSDictionary.class]) continue;
+                NSURL *url = [NSURL URLWithString:VZRestoreString(restore[@"FirmwareURL"])];
+                NSString *host = url.host.lowercaseString;
+                NSString *os = VZRestoreString(restore[@"ProductVersion"]);
+                NSString *number = VZRestoreString(restore[@"BuildVersion"]);
+                if (![url.scheme.lowercaseString isEqualToString:@"https"] ||
+                    !([host hasSuffix:@".apple.com"] || [host hasSuffix:@".cdn-apple.com"]) ||
+                    ![url.path.pathExtension.lowercaseString isEqualToString:@"ipsw"] ||
+                    !os.length || !number.length) continue;
+                [rows addObject:@{ @"name":[@"macOS " stringByAppendingString:os],
+                    @"version":os, @"build":number, @"url":url.absoluteString,
+                    @"channel":@"regular", @"catalogSource":@"apple" }];
+            }
+        }
+    }
+    NSData *normalized = [NSJSONSerialization dataWithJSONObject:@{ @"restoreImages":rows }
+        options:0 error:error];
+    return normalized ? [self imagesFromData:normalized error:error] : nil;
+}
+
 + (void)loadWithCompletion:(void (^)(NSArray<NSDictionary *> *, NSError *))completion
 {
-    NSURL *url = [NSURL URLWithString:VZCatalogURL];
-    [[[NSURLSession sharedSession] dataTaskWithURL:url
-        completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        (void)response;
-        NSError *parseError = nil;
-        NSArray *images = [self imagesFromData:data error:&parseError];
-        NSArray *result = [self imagesByMergingImages:images ?: @[]
-                                  withBundledImages:self.bundledImages];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(result, result.count ? nil : (error ?: parseError));
-        });
-    }] resume];
+    dispatch_group_t group = dispatch_group_create();
+    NSMutableDictionary *responses = [NSMutableDictionary dictionary];
+    NSMutableArray *errors = [NSMutableArray array];
+    NSArray *sources = @[VZCatalogURL, VZAppleCatalogURL];
+    for (NSUInteger index = 0; index < sources.count; ++index) {
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:
+            [NSURL URLWithString:sources[index]]
+            cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:30];
+        [request setValue:@"no-cache" forHTTPHeaderField:@"Cache-Control"];
+        dispatch_group_enter(group);
+        [[[NSURLSession sharedSession] dataTaskWithRequest:request
+            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            NSError *parseError = nil;
+            NSInteger status = [response isKindOfClass:NSHTTPURLResponse.class]
+                ? [(NSHTTPURLResponse *)response statusCode] : 0;
+            NSArray *images = nil;
+            if (!error && status == 200 && data.length <= 16 * 1024 * 1024)
+                images = index == 1 ? [self imagesFromAppleCatalogData:data error:&parseError]
+                                    : [self imagesFromData:data error:&parseError];
+            @synchronized (responses) {
+                if (images.count) responses[@(index)] = images;
+                else [errors addObject:error ?: parseError ?: [NSError
+                    errorWithDomain:@"VZRestoreCatalog" code:status
+                    userInfo:@{NSLocalizedDescriptionKey:@"The online restore catalog is unavailable."}]];
+            }
+            dispatch_group_leave(group);
+        }] resume];
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        NSMutableArray *online = [NSMutableArray array];
+        [online addObjectsFromArray:responses[@0] ?: @[]];
+        [online addObjectsFromArray:responses[@1] ?: @[]];
+        NSArray *result = [self imagesByMergingImages:online withBundledImages:self.bundledImages];
+        completion(result, online.count ? nil : errors.firstObject);
+        dispatch_release(group);
+    });
 }
 
 + (NSArray<NSDictionary *> *)bundledImages
@@ -282,11 +347,20 @@ static NSDictionary *VZMacOSIdentityForImage(NSDictionary *image)
             [present addObject:group];
     }
     for (NSString *group in preferred) if ([present containsObject:group]) [result addObject:group];
-    NSArray *unknown = [[present allObjects]
-        sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-    for (NSString *group in unknown)
+    for (NSString *group in present)
         if (![result containsObject:group]) [result addObject:group];
-    return result;
+    // A new Apple release belongs above older known marketing-name groups.
+    NSMutableDictionary *majors = [NSMutableDictionary dictionary];
+    for (NSDictionary *image in images) {
+        NSString *group = VZRestoreString(image[@"group"]);
+        NSInteger major = [self majorVersionForImage:image];
+        if (major > [majors[group] integerValue]) majors[group] = @(major);
+    }
+    return [result sortedArrayUsingComparator:^NSComparisonResult(NSString *a, NSString *b) {
+        NSInteger left = [majors[a] integerValue], right = [majors[b] integerValue];
+        if (left != right) return left > right ? NSOrderedAscending : NSOrderedDescending;
+        return [a localizedCaseInsensitiveCompare:b];
+    }];
 }
 
 + (BOOL)isExperimentalImage:(NSDictionary *)image
@@ -296,7 +370,9 @@ static NSDictionary *VZMacOSIdentityForImage(NSDictionary *image)
 
 + (BOOL)isUnsupportedImage:(NSDictionary *)image
 {
-    return [self majorVersionForImage:image] >= 28;
+    (void)image;
+    // Catalog visibility is independent of this App's last tested OS version.
+    return NO;
 }
 
 + (BOOL)enablesOpenGLByDefaultForImage:(NSDictionary *)image

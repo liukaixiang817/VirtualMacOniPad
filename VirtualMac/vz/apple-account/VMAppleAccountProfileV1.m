@@ -29,7 +29,12 @@ static NSData *Digest(NSData *data) {
     return [NSData dataWithBytes:bytes length:sizeof(bytes)];
 }
 BOOL VMAppleAccountSupportsBuildV1(NSString *build) {
-    return [@[@"24G90", @"25G83", @"26A5416b", @"26B123"] containsObject:build];
+    // Identity preparation is independent of the kernel compatibility table.
+    // The actual restore manifest supplies this bounded Apple build identifier.
+    if (![build isKindOfClass:NSString.class] || build.length < 4 || build.length >= 16) return NO;
+    NSRegularExpression *pattern = [NSRegularExpression
+        regularExpressionWithPattern:@"\\A[0-9]{2,3}[A-Z][0-9]{1,6}[a-z]?\\z" options:0 error:nil];
+    return [pattern numberOfMatchesInString:build options:0 range:NSMakeRange(0, build.length)] == 1;
 }
 static BOOL ValidMLB(NSString *value) {
     if (![value isKindOfClass:NSString.class] || value.length != 17) return NO;
@@ -91,7 +96,7 @@ BOOL VMAppleAccountProfileValidV1(NSDictionary *profile) {
 }
 NSDictionary *VMAppleAccountMakeProfileV1(NSString *build, NSError **error) {
     if (!VMAppleAccountSupportsBuildV1(build)) {
-        Fail(error, @"This macOS restore build has not been audited for Apple Account support."); return nil;
+        Fail(error, @"The macOS restore build identifier is invalid."); return nil;
     }
     NSString *alphabet = @"0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", *years = @"CDFGHJKLMNPQRSTVWXYZ";
     NSString *weeks = @"0123456789CDFGHJKLMNPQRTVWX123456789CDFGHJKLMNPQRTVWXY";

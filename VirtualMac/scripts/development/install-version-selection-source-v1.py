@@ -35,6 +35,8 @@ def rebuild(root, out, app, link, run):
         'Apple Account sign-in verified', 'Apple Account sign-in not verified', 'Recommended',
         'Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below.',
         'Select an IPSW file downloaded from Apple.',
+        'Search macOS version or build', 'Refresh macOS Versions',
+        'The online catalog is unavailable. Showing offline versions; pull to refresh.',
     )
     for language in ('en', 'zh_CN'):
         relative = language + '.lproj/Localizable.strings'

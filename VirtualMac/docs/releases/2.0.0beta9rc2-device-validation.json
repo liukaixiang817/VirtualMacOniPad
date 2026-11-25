@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "displayVersion": "2.0.0beta9rc2",
+  "packageVersion": "1009-2",
+  "packageSHA256": "9af7d9e7597d7ddc948e1598acaaa3d954ed27b5c2e983d6e54908ad6f785fb4",
+  "observedUTC": "2026-11-25T15:25:34.028470+00:00",
+  "host": {
+    "model": "iPad14,6",
+    "chip": "M2",
+    "OSVersion": "16.1.1",
+    "OSBuild": "20B101"
+  },
+  "finalPackageInstallation": {
+    "packageVersion": "1009-2",
+    "packageSHA256": "9af7d9e7597d7ddc948e1598acaaa3d954ed27b5c2e983d6e54908ad6f785fb4",
+    "installedOnPhysicalIPad": true,
+    "installedChangedComponentsVerified": 15,
+    "allChangedComponentHashesMatch": true,
+    "allFourGuestMetadataPreserved": true,
+    "normalGuestShutdownBeforeInstallation": true,
+    "temporaryPackageCopyRemoved": true,
+    "noGuestBootOrAppleAccountLoginRetest": true,
+    "noActiveVMMAtCompletion": true
+  },
+  "inheritedFunctionalCandidateChecks": {
+    "testedPackageVersion": "1009-1",
+    "actualPreparationCatalogAndTouchObjectsIdenticalInRC2": true,
+    "realAppleRestoreCatalogBuild": "26B131",
+    "physicalIPadVersionSearchAndRefreshPassed": true,
+    "allRestoreIdentityPreparation": {
+      "actualProductAPIUsed": true,
+      "syntheticMetadataFixtureBuild": "99Z123",
+      "bothBackendSelectionFlagsPreparedIdentity": true,
+      "futureGuestExecutionOrCloudLoginClaimed": false
+    },
+    "hostRegressionTestsPassed": true,
+    "existing26B131GuestIdentityBindingAndColdBootKernelPolicyPassed": true
+  },
+  "macOS27_2_1AccountAuthentication": {
+    "completed": false,
+    "furtherTestingSkippedAtUserRequest": true,
+    "noNewAppleAccountPasswordSubmitted": true
+  },
+  "cleanup": {
+    "observedUTC": "2026-11-25T15:22:19.946539+00:00",
+    "exactOwnedHelperAndCheckpointRemoved": true,
+    "completedRestoreTemporaryDirectoryRemoved": true,
+    "retainedVirtualMachines": 4,
+    "retainedVMAndMediaMetadataUnchanged": true,
+    "TDirectoryExcluded": true,
+    "noActiveGuestOrRestoreBeforeDeletion": true,
+    "availableSpaceBeforeGB": 323.6,
+    "availableSpaceAfterGB": 332.09,
+    "observedAvailableSpaceIncreaseGB": 8.5
+  },
+  "newVirtualMachinesCreated": 0,
+  "existingVirtualMachinesPreserved": true,
+  "credentialsAndGuestDisksIncluded": false,
+  "limitations": [
+    "Future catalog visibility and identity generation do not establish future OS or Apple service compatibility.",
+    "macOS 27.2.1 account authentication was not completed; further testing was skipped at the user request.",
+    "Native touchscreen and keyboard behavior retain Beta 9 validation and known limits."
+  ]
+}

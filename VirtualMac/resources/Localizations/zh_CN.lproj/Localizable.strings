@@ -369,3 +369,9 @@
 "Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below." = "推荐版本已验证 Apple ID 登录。你也可以选择其他版本，并查看各版本的兼容情况。";
 
 "Select an IPSW file downloaded from Apple." = "选择从 Apple 下载的 IPSW 文件，也可安装列表以外的版本。";
+
+"Refresh macOS Versions" = "刷新 macOS 版本";
+
+"Search macOS version or build" = "搜索 macOS 版本号或构建号";
+
+"The online catalog is unavailable. Showing offline versions; pull to refresh." = "在线目录暂不可用，当前显示离线版本。下拉可刷新。";
