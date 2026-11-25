@@ -39,6 +39,7 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 @property(nonatomic, assign) BOOL showVersionDetails;
 @property(nonatomic, assign) BOOL versionDetailsBeforeDeveloperBetas;
 @property(nonatomic, assign) CGFloat lastLayoutWidth;
+@property(nonatomic, assign) BOOL browsingAllVersions;
 @end
 
 @implementation VZNewVMViewController
@@ -48,14 +49,17 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.title = VZL(@"New Virtual Mac");
+    self.title = VZL(self.browsingAllVersions ? @"Choose macOS Version" : @"New Virtual Mac");
     self.tableView.rowHeight = 54.0;
     self.tableView.estimatedRowHeight = 54.0;
     self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 24, 0);
     self.tableView.verticalScrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 24, 0);
-    self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self
-        action:@selector(cancel:)] autorelease];
+    if (!self.browsingAllVersions)
+        self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc]
+            initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self
+            action:@selector(cancel:)] autorelease];
+    // Show the bundled, verified choices immediately while the online list loads.
+    if (!self.catalog.count) self.catalog = VZRestoreCatalog.bundledImages;
     self.activity = [[[UIActivityIndicatorView alloc]
         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium]
         autorelease];
@@ -66,9 +70,9 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
                                             NSError *error) {
         self.catalog = images;
         [self.activity stopAnimating];
-        self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
+        self.navigationItem.rightBarButtonItem = self.browsingAllVersions ? [[[UIBarButtonItem alloc]
             initWithImage:[UIImage systemImageNamed:@"ellipsis.circle"]
-            menu:[self filterMenu]] autorelease];
+            menu:[self filterMenu]] autorelease] : nil;
         [self.tableView reloadData];
         if (error)
             NSLog(@"Virtual Mac restore catalog fallback failed: %@", error);
@@ -175,26 +179,18 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
     return result;
 }
 
-- (NSDictionary *)recommendedImage
+- (NSArray<NSDictionary *> *)recommendedImages
 {
-    BOOL showsAdvancedVersions = self.showMinorReleases ||
-        self.showDeveloperBetas || self.showVersionDetails;
-    NSArray *eligible = self.catalog;
-    if (!showsAdvancedVersions) {
-        eligible = [self.catalog filteredArrayUsingPredicate:
-            [NSPredicate predicateWithBlock:^BOOL(NSDictionary *image,
-                                                   NSDictionary *bindings) {
-            (void)bindings;
-            return ![VZRestoreCatalog isUnsupportedImage:image];
-        }]];
-    }
-    return [VZRestoreCatalog recommendedImageFromImages:eligible];
+    NSArray *verified = [VZRestoreCatalog recommendedImagesFromImages:self.catalog];
+    if (verified.count) return verified;
+    NSDictionary *fallback = [VZRestoreCatalog recommendedImageFromImages:self.catalog];
+    return fallback ? @[fallback] : @[];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     (void)tableView;
-    return 3;
+    return self.browsingAllVersions ? 2 : 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView
@@ -202,9 +198,7 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 {
     (void)tableView;
     if (section == 0)
-        return self.recommendedImage ? 1 : 0;
-    if (section == 1)
-        return self.versionImages.count;
+        return self.browsingAllVersions ? self.versionImages.count : self.recommendedImages.count;
     return 1;
 }
 
@@ -213,28 +207,28 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 {
     (void)tableView;
     if (section == 0)
-        return VZL(@"Recommended macOS Release");
-    if (section == 1)
-        return VZL(@"Available macOS Releases");
-    return VZL(@"Advanced");
+        return VZL(self.browsingAllVersions ? @"Available macOS Releases" : @"Recommended macOS Release");
+    if (!self.browsingAllVersions && section == 1)
+        return VZL(@"Other macOS Versions");
+    return VZL(@"Local Restore Image");
 }
 
 - (NSString *)tableView:(UITableView *)tableView
  titleForFooterInSection:(NSInteger)section
 {
     (void)tableView;
-    return section == 2
-        ? VZL(@"You can also copy an existing Virtual Mac bundle to /var/mobile/Media/VirtualMac using an app such as iMazing or Filza.")
-        : nil;
+    if (section == 0)
+        return VZL(@"Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below.");
+    return section == (self.browsingAllVersions ? 1 : 2)
+        ? VZL(@"Select an IPSW file downloaded from Apple.") : nil;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView
  heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     (void)tableView;
-    if (indexPath.section == 2)
-        return self.showVersionDetails ? 68.0 : 54.0;
-    return self.showVersionDetails ? 68.0 : 54.0;
+    (void)indexPath;
+    return 76.0;
 }
 
 - (void)setAccessoryForImage:(NSDictionary *)image
@@ -266,10 +260,10 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 
 - (NSDictionary *)imageAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 0)
-        return self.recommendedImage;
-    if (indexPath.section == 1 && indexPath.row < self.versionImages.count)
-        return self.versionImages[indexPath.row];
+    if (indexPath.section == 0) {
+        NSArray *images = self.browsingAllVersions ? self.versionImages : self.recommendedImages;
+        if (indexPath.row < images.count) return images[indexPath.row];
+    }
     return nil;
 }
 
@@ -288,22 +282,14 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
 - (void)fitTitleForImage:(NSDictionary *)image
                     cell:(UITableViewCell *)cell
 {
-    BOOL compactName = !self.showMinorReleases &&
-        !self.showDeveloperBetas && !self.showVersionDetails;
     NSString *displayName = [VZRestoreCatalog displayNameForImage:image
-                                                           compact:compactName];
-    NSString *title = compactName
-        ? [NSString stringWithFormat:VZL(@"Install %@"), displayName]
-        : displayName;
+                                                           compact:NO];
+    NSString *title = displayName;
     cell.textLabel.text = title;
     [self setAccessoryForImage:image cell:cell];
-    if (![self title:title fitsCell:cell] && compactName) {
-        NSString *marketing = [VZRestoreCatalog marketingNameForImage:image];
-        if (marketing.length) {
-            displayName = [NSString stringWithFormat:@"macOS %@", marketing];
-            title = [NSString stringWithFormat:VZL(@"Install %@"), displayName];
-            cell.textLabel.text = title;
-        }
+    if (![self title:title fitsCell:cell]) {
+        NSString *version = [VZRestoreCatalog versionForImage:image];
+        if (version.length) cell.textLabel.text = [@"macOS " stringByAppendingString:version];
     }
     // The warning is supplementary: preserve the complete actionable title
     // on narrow windows and retain the normal disclosure chevron.
@@ -328,11 +314,18 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
     cell.imageView.layer.cornerCurve = kCACornerCurveContinuous;
     cell.imageView.layer.masksToBounds = YES;
     cell.imageView.contentMode = UIViewContentModeScaleAspectFill;
-    if (indexPath.section == 2) {
+    cell.detailTextLabel.numberOfLines = 2;
+    if (!self.browsingAllVersions && indexPath.section == 1) {
+        cell.textLabel.text = VZL(@"Choose Another macOS Version");
+        cell.detailTextLabel.text = VZL(@"Browse available releases and developer betas");
+        cell.imageView.image = [UIImage systemImageNamed:@"list.bullet"];
+        cell.imageView.tintColor = UIColor.systemBlueColor;
+        return cell;
+    }
+    if (indexPath.section == (self.browsingAllVersions ? 1 : 2)) {
         cell.textLabel.text = VZL(@"Choose Custom IPSW");
-        cell.detailTextLabel.text = self.showVersionDetails
-            ? VZDeviceString(VZL(@"Use an IPSW on your iPad"),
-                             VZL(@"Use an IPSW on your iPhone")) : nil;
+        cell.detailTextLabel.text = VZDeviceString(VZL(@"Use an IPSW on your iPad"),
+                                                   VZL(@"Use an IPSW on your iPhone"));
         cell.imageView.layer.cornerRadius = 9.0;
         cell.imageView.contentMode = UIViewContentModeScaleAspectFill;
         cell.imageView.tintColor = nil;
@@ -342,6 +335,10 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
     NSDictionary *image = [self imageAtIndexPath:indexPath];
     cell.imageView.image = VZCatalogIcon(image);
     NSMutableArray *details = [NSMutableArray array];
+    if (!self.browsingAllVersions && indexPath.row == 0)
+        [details addObject:VZL(@"Recommended")];
+    [details addObject:VZL([VZRestoreCatalog isVerifiedAppleAccountImage:image]
+        ? @"Apple Account sign-in verified" : @"Apple Account sign-in not verified")];
     if (self.showVersionDetails) {
         NSString *build = VZCatalogString(image[@"build"]);
         if (build.length)
@@ -359,8 +356,7 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
             [details addObject:[formatter stringFromByteCount:size]];
         }
     }
-    cell.detailTextLabel.text = self.showVersionDetails
-        ? [details componentsJoinedByString:@" · "] : nil;
+    cell.detailTextLabel.text = [details componentsJoinedByString:@" · "];
     [self fitTitleForImage:image cell:cell];
     return cell;
 }
@@ -379,13 +375,21 @@ static UIImage *VZCatalogIcon(NSDictionary *image)
  didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    if (indexPath.section == 2) {
+    if (!self.browsingAllVersions && indexPath.section == 1) {
+        VZNewVMViewController *versions = [[[VZNewVMViewController alloc] init] autorelease];
+        versions.browsingAllVersions = YES;
+        versions.showMinorReleases = YES;
+        versions.showVersionDetails = YES;
+        versions.catalog = self.catalog;
+        versions.delegate = self.delegate;
+        [self.navigationController pushViewController:versions animated:YES];
+        return;
+    }
+    if (indexPath.section == (self.browsingAllVersions ? 1 : 2)) {
         [self.delegate newVMControllerChooseLocalRestoreImage:self];
         return;
     }
-    NSDictionary *image = indexPath.section == 0
-        ? self.recommendedImage
-        : self.versionImages[indexPath.row];
+    NSDictionary *image = [self imageAtIndexPath:indexPath];
     if (image)
         [self.delegate newVMController:self downloadRestoreImage:image];
 }

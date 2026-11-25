@@ -349,3 +349,23 @@
 "Resuming virtual machine…" = "Resuming virtual machine…";
 
 "Virtual Mac Paused" = "Virtual Mac Paused";
+
+"Choose macOS Version" = "Choose macOS Version";
+
+"Other macOS Versions" = "Other macOS Versions";
+
+"Local Restore Image" = "Local Restore Image";
+
+"Choose Another macOS Version" = "Choose Another macOS Version";
+
+"Browse available releases and developer betas" = "Browse available releases and developer betas";
+
+"Apple Account sign-in verified" = "Apple Account sign-in verified";
+
+"Apple Account sign-in not verified" = "Apple Account sign-in not verified";
+
+"Recommended" = "Recommended";
+
+"Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below." = "Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below.";
+
+"Select an IPSW file downloaded from Apple." = "Select an IPSW file downloaded from Apple.";

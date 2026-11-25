@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "version": "1008-1",
+  "displayVersion": "2.0.0beta8-r1",
+  "verifiedHost": {
+    "model": "iPad14,6",
+    "iPadOS": "16.1.1",
+    "build": "20B101"
+  },
+  "observedUTC": "2026-11-25T08:26:51.004551+00:00",
+  "recommendations": [
+    "15.6.1",
+    "26.6.2",
+    "27.2"
+  ],
+  "nativeRecommendedAndAllVersionsUIValidated": true,
+  "online27_2_1SelectableAndAppleAccountUnverified": true,
+  "offlineRecommendationsAndCatalogMergeTestsPassed": true,
+  "recommendedAppleCDNDownloadURLsValidated": [
+    {
+      "build": "24G90",
+      "status": 200,
+      "bytes": 16814137790,
+      "expectedSizeMatches": true,
+      "appleCDN": true
+    },
+    {
+      "build": "25G83",
+      "status": 200,
+      "bytes": 19772231540,
+      "expectedSizeMatches": true,
+      "appleCDN": true
+    },
+    {
+      "build": "26B123",
+      "status": 200,
+      "bytes": 25595669503,
+      "expectedSizeMatches": true,
+      "appleCDN": true
+    }
+  ],
+  "installedChangedComponentsVerified": 15,
+  "freshRestoreAndFirstBootTests": [
+    {
+      "version": "15.6.1",
+      "build": "24G90",
+      "selectionRoute": "recommended",
+      "freshDisk": true,
+      "guestDataCopied": false,
+      "restoreComplete": true,
+      "firstBootHelloObserved": true,
+      "appleAccountIdentityCreatedBeforeRestore": true,
+      "appleAccountBuildSavedBeforeFirstBoot": true,
+      "machineIdentifierBindingMatches": true,
+      "diskGiB": 64,
+      "cpuCount": 4,
+      "memoryGiB": 8,
+      "installSeconds": 312.0,
+      "newAppleAccountAuthenticationTested": false,
+      "temporaryGuestAndAttemptDeleted": true,
+      "originalGuestsPreserved": true,
+      "disposableGuestStopMethod": "native App Force Shut Down before deletion"
+    },
+    {
+      "version": "27.2",
+      "build": "26B123",
+      "selectionRoute": "allVersionsManualSelection",
+      "freshDisk": true,
+      "guestDataCopied": false,
+      "restoreComplete": true,
+      "firstBootHelloObserved": true,
+      "appleAccountIdentityCreatedBeforeRestore": true,
+      "appleAccountBuildSavedBeforeFirstBoot": true,
+      "machineIdentifierBindingMatches": true,
+      "diskGiB": 64,
+      "cpuCount": 4,
+      "memoryGiB": 8,
+      "installSeconds": 1526.0,
+      "newAppleAccountAuthenticationTested": false,
+      "temporaryGuestAndAttemptDeleted": true,
+      "originalGuestsPreserved": true,
+      "disposableGuestStopMethod": "native App Force Shut Down before deletion"
+    }
+  ],
+  "priorAppleAccountEvidenceRelease": "2.0.0beta8",
+  "priorAppleAccountVerifiedBuilds": [
+    "24G90",
+    "25G83",
+    "26B123"
+  ],
+  "appleAccountCompatibilityExpanded": false,
+  "newSMSOrMessageServiceTestsPerformed": false,
+  "guestDisksOrAccountCredentialsIncluded": false,
+  "publicValidationContainsNoAccountIdentifiers": true,
+  "originalRadioGuestsIdentityUnchanged": true,
+  "ownTwoTestGuestsAndInstallationAttemptsDeleted": true,
+  "temporaryVNCServersAndProxiesCleanedUp": true
+}

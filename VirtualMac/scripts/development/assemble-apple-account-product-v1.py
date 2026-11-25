@@ -21,7 +21,7 @@ parser.add_argument('--cpu', type=Path, required=True)
 parser.add_argument('--installer', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--release', action='store_true',
-    help='Build Beta 8 from the verified Beta 7 production App')
+    help='Build Beta 8 revision 1 from the verified Beta 7 production App')
 args = parser.parse_args()
 O = args.output.resolve()
 O.mkdir(parents=True, exist_ok=False)
@@ -168,12 +168,16 @@ assert link.count(oldmain) == 1
 link[link.index(oldmain)] = O / 'main.o'
 link += account.compile_objects(R, O, args.installer.resolve(strict=True), run)
 account.replace_library(R, O, link, run)
+spec = importlib.util.spec_from_file_location('install_version_selection',
+    R / 'VirtualMac/scripts/development/install-version-selection-source-v1.py')
+selection = importlib.util.module_from_spec(spec); spec.loader.exec_module(selection)
+selection_resources = selection.rebuild(R, O, app, link, run)
 run('link-app', link)
 if args.release:
     info_path = app / 'Info.plist'
     info = plistlib.loads(info_path.read_bytes())
-    info.update(CFBundleShortVersionString='2.0.0beta8', CFBundleVersion='1008',
-        CFBundleDisplayName='VirtualMac 2 beta8', VirtualMacPackageRevision='1008')
+    info.update(CFBundleShortVersionString='2.0.0beta8-r1', CFBundleVersion='1008.1',
+        CFBundleDisplayName='VirtualMac 2 beta8', VirtualMacPackageRevision='1008-1')
     info.pop('VM27SharedRadioDevelopmentRevision', None)
     info_path.write_bytes(plistlib.dumps(info, sort_keys=False))
 for lang, translation in [('en', 'This Mac keeps a fixed network address for Apple Account.'), ('zh_CN', '此虚拟 Mac 使用固定网络地址，以保持 Apple 账户身份一致。')]:
@@ -200,6 +204,7 @@ for identity in changes:
                       new=pin(runtime / row['path']), cdhash=row.get('cdhash')))
 files.append(dict(relativePath='runtime/' + manifest_name, old=pin(baseline / manifest_name), new=pin(runtime / manifest_name)))
 app_files = ['VirtualMacIndependent27', '_CodeSignature/CodeResources', 'en.lproj/Localizable.strings', 'zh_CN.lproj/Localizable.strings']
+app_files += selection_resources
 if args.release:
     app_files.append('Info.plist')
     for action in ('radio-guest-unlock', 'radio-guest-click', 'radio-review-install',
@@ -208,12 +213,15 @@ if args.release:
         'guest-gui-diagnostic', 'frame-timing', 'display-native-iosurface'):
         assert action.encode() + b'\0' not in appimage.data, action
 for name in app_files:
-    files.append(dict(relativePath='app/' + name, old=pin(appbaseline / app.name / name),
+    original = appbaseline / app.name / name
+    files.append(dict(relativePath='app/' + name, old=pin(original) if original.exists() else None,
                       new=pin(app / name), cdhash=appproof['cdhash'] if name == 'VirtualMacIndependent27' else None))
 (O / 'candidate.json').write_text(json.dumps(dict(files=files, runtimeRoot=str(runtime),
     app=str(app), appCDHash=appproof['cdhash'], guestWrites=True, deviceAcceptancePending=True,
     release=args.release, newGuestAppleAccountEnabledByDefault=True,
     appleAccountAvailableDuringSetupAssistant=True,
     auditedGuestBuilds=['24G90', '25G83', '26A5416b', '26B123'],
+    installVersionRecommendations=['24G90', '25G83', '26B123'],
+    allVersionsAndLocalIPSWChoices=True,
     expectedBaselineAppSHA256=baseline_app_hash), indent=2) + '\n')
 print(O / 'candidate.json')

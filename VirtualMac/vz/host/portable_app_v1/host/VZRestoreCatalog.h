@@ -3,6 +3,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface VZRestoreCatalog : NSObject
++ (NSArray<NSDictionary *> *)bundledImages;
++ (NSArray<NSDictionary *> *)imagesByMergingImages:(NSArray<NSDictionary *> *)images
+                                withBundledImages:(NSArray<NSDictionary *> *)bundled;
++ (NSArray<NSDictionary *> *)recommendedImagesFromImages:(NSArray<NSDictionary *> *)images;
++ (BOOL)isVerifiedAppleAccountImage:(NSDictionary *)image;
 + (void)loadWithCompletion:(void (^)(NSArray<NSDictionary *> *images,
                                      NSError *_Nullable error))completion;
 + (nullable NSDictionary *)recommendedImageFromImages:(NSArray<NSDictionary *> *)images;

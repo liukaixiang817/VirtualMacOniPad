@@ -3,6 +3,19 @@
 static NSString * const VZCatalogURL =
     @"https://api.virtualbuddy.app/v2/restore/mac?apiKey=15A25D48-4A34-4EE4-A293-C22B0DE1B54E";
 
+static NSArray<NSDictionary *> *VZVerifiedRestoreImages(void)
+{
+    static NSArray *images;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSString *path = [NSBundle.mainBundle pathForResource:@"RecommendedRestoreImages" ofType:@"plist"];
+        NSDictionary *catalog = path ? [NSDictionary dictionaryWithContentsOfFile:path] : nil;
+        NSArray *rows = [catalog[@"Images"] isKindOfClass:NSArray.class] ? catalog[@"Images"] : @[];
+        images = [rows copy];
+    });
+    return images;
+}
+
 static NSString *VZRestoreString(id value)
 {
     return [value isKindOfClass:NSString.class] ? value : @"";
@@ -170,22 +183,71 @@ static NSDictionary *VZMacOSIdentityForImage(NSDictionary *image)
     NSURL *url = [NSURL URLWithString:VZCatalogURL];
     [[[NSURLSession sharedSession] dataTaskWithURL:url
         completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        (void)response;
         NSError *parseError = nil;
         NSArray *images = [self imagesFromData:data error:&parseError];
-        if (!images.count) {
-            NSString *fallback = [NSBundle.mainBundle pathForResource:@"ipsws_v2" ofType:@"json"];
-            NSData *fallbackData = [NSData dataWithContentsOfFile:fallback];
-            images = [self imagesFromData:fallbackData error:&parseError];
-        }
-        NSArray *result = images ?: @[];
+        NSArray *result = [self imagesByMergingImages:images ?: @[]
+                                  withBundledImages:self.bundledImages];
         dispatch_async(dispatch_get_main_queue(), ^{
             completion(result, result.count ? nil : (error ?: parseError));
         });
     }] resume];
 }
 
++ (NSArray<NSDictionary *> *)bundledImages
+{
+    NSString *path = [NSBundle.mainBundle pathForResource:@"ipsws_v2" ofType:@"json"];
+    NSArray *images = path ? [self imagesFromData:[NSData dataWithContentsOfFile:path] error:NULL] : nil;
+    return [self imagesByMergingImages:@[] withBundledImages:images ?: @[]];
+}
+
++ (NSArray<NSDictionary *> *)imagesByMergingImages:(NSArray<NSDictionary *> *)images
+                                withBundledImages:(NSArray<NSDictionary *> *)bundled
+{
+    NSMutableArray *order = [NSMutableArray array];
+    NSMutableDictionary *records = [NSMutableDictionary dictionary];
+    // The signed recommendations remain available offline and retain their
+    // verified download URLs even if the online catalog omits older builds.
+    for (NSArray *source in @[bundled, images, VZVerifiedRestoreImages()]) {
+        for (NSDictionary *image in source) {
+            NSString *key = VZRestoreString(image[@"build"]);
+            if (!key.length) key = VZRestoreString(image[@"url"]);
+            if (!key.length) continue;
+            if (!records[key]) [order addObject:key];
+            records[key] = image;
+        }
+    }
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:order.count];
+    for (NSString *key in order) [result addObject:records[key]];
+    return result;
+}
+
++ (NSArray<NSDictionary *> *)recommendedImagesFromImages:(NSArray<NSDictionary *> *)images
+{
+    NSMutableArray *result = [NSMutableArray array];
+    for (NSDictionary *verified in VZVerifiedRestoreImages()) {
+        for (NSDictionary *image in images) {
+            if ([VZRestoreString(image[@"build"]) isEqualToString:verified[@"build"]]) {
+                [result addObject:image];
+                break;
+            }
+        }
+    }
+    return result;
+}
+
++ (BOOL)isVerifiedAppleAccountImage:(NSDictionary *)image
+{
+    NSString *build = VZRestoreString(image[@"build"]);
+    for (NSDictionary *verified in VZVerifiedRestoreImages())
+        if ([build isEqualToString:verified[@"build"]]) return YES;
+    return NO;
+}
+
 + (NSDictionary *)recommendedImageFromImages:(NSArray<NSDictionary *> *)images
 {
+    NSDictionary *verified = [self recommendedImagesFromImages:images].firstObject;
+    if (verified) return verified;
     NSArray *matches = [images filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:
         ^BOOL(NSDictionary *image, NSDictionary *bindings) {
             (void)bindings;

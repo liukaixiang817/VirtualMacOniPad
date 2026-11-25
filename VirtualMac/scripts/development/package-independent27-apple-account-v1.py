@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--candidate', required=True, type=Path)
     parser.add_argument('--installer', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='1008')
+    parser.add_argument('--version', default='1008-1')
     args = parser.parse_args()
     candidate = json.loads((args.candidate / 'candidate.json').read_text())
     assert prior.sha(args.tested_deb) == (RELEASE_BASE_SHA if candidate['release'] else BASE_SHA)
@@ -38,10 +38,10 @@ def main():
     supported_builds = candidate['auditedGuestBuilds']
     assert supported_builds == ['24G90', '25G83', '26A5416b', '26B123']
     if candidate['release']:
-        prior.run('dpkg', '--compare-versions', '1007', 'lt', args.version)
+        prior.run('dpkg', '--compare-versions', '1008', 'lt', args.version)
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    filename = ('VirtualMac_2.0.0beta8_' if candidate['release'] else 'VirtualMac_AppleAccount_')
+    filename = ('VirtualMac_2.0.0beta8-r1_' if candidate['release'] else 'VirtualMac_AppleAccount_')
     destination = output / (filename + args.version + '.deb')
     assert not destination.exists()
     with tempfile.TemporaryDirectory(prefix='virtualmac-account-package-') as temp:
@@ -57,8 +57,12 @@ def main():
             root = prior.APP if prefix == 'app' else prior.RUNTIME27
             target = stage / root / relative
             source = Path(row['new']['path'])
-            assert target.is_file() and not target.is_symlink()
-            assert prior.sha(target) == row['old']['sha256'], row['relativePath']
+            if row['old'] is None:
+                assert prefix == 'app' and relative == 'RecommendedRestoreImages.plist'
+                assert not target.exists()
+            else:
+                assert target.is_file() and not target.is_symlink()
+                assert prior.sha(target) == row['old']['sha256'], row['relativePath']
             assert prior.sha(source) == row['new']['sha256']
             shutil.copyfile(source, target)
             changed.add('/' + target.relative_to(stage).as_posix())
@@ -134,7 +138,7 @@ def main():
             if name == 'postinst':
                 text = text.replace('1006-2+radio100', args.version)
                 if candidate['release']:
-                    text = text.replace('beta6-r2', 'beta8').replace('beta7', 'beta8')
+                    text = text.replace('beta6-r2', 'beta8-r1').replace('beta7', 'beta8-r1')
                     text = text.replace('revision=1007', 'revision=' + args.version)
                 marker = '/var/jb/usr/lib/TweakInject/VM27GestureGuard.dylib|'
                 text = prior.replace_once(text, marker, marker + '|'.join(sorted(new_executables)) + '|')
@@ -174,6 +178,8 @@ def main():
         newGuestAppleAccountEnabledByDefault=True,
         appleAccountAvailableDuringSetupAssistant=True,
         auditedGuestBuilds=supported_builds,
+        installVersionRecommendations=candidate['installVersionRecommendations'],
+        allVersionsAndLocalIPSWChoices=True,
         perGuestIdentityCreatedBeforeRestore=True,
         existingGuestIdentitiesNotReplaced=True,
         guestDataIncluded=False, cloudAcceptanceClaimed=False), indent=2) + '\n')

@@ -349,3 +349,23 @@
 "Resuming virtual machine…" = "正在继续虚拟机…";
 
 "Virtual Mac Paused" = "虚拟机已暂停";
+
+"Choose macOS Version" = "选择 macOS 版本";
+
+"Other macOS Versions" = "其他 macOS 版本";
+
+"Local Restore Image" = "本地恢复镜像";
+
+"Choose Another macOS Version" = "选择其他 macOS 版本";
+
+"Browse available releases and developer betas" = "浏览正式版本和开发者测试版";
+
+"Apple Account sign-in verified" = "Apple ID 登录已验证";
+
+"Apple Account sign-in not verified" = "Apple ID 登录尚未验证";
+
+"Recommended" = "推荐";
+
+"Recommended versions have passed Apple Account sign-in checks. You can also install other versions, with compatibility shown below." = "推荐版本已验证 Apple ID 登录。你也可以选择其他版本，并查看各版本的兼容情况。";
+
+"Select an IPSW file downloaded from Apple." = "选择从 Apple 下载的 IPSW 文件，也可安装列表以外的版本。";

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Schema</key>
+	<integer>1</integer>
+	<key>Images</key>
+	<array>
+		<dict>
+			<key>build</key>
+			<string>24G90</string>
+			<key>channel</key>
+			<string>regular</string>
+			<key>downloadSize</key>
+			<integer>16814137790</integer>
+			<key>group</key>
+			<string>sequoia</string>
+			<key>id</key>
+			<string>24G90</string>
+			<key>mobileDeviceMinVersion</key>
+			<string>1774.0.0</string>
+			<key>name</key>
+			<string>macOS 15.6.1</string>
+			<key>requirements</key>
+			<string>min_host_13</string>
+			<key>url</key>
+			<string>https://updates.cdn-apple.com/2025SummerFCS/fullrestores/093-10809/CFD6DD38-DAF0-40DA-854F-31AAD1294C6F/UniversalMac_15.6.1_24G90_Restore.ipsw</string>
+			<key>version</key>
+			<string>15.6.1</string>
+		</dict>
+		<dict>
+			<key>build</key>
+			<string>25G83</string>
+			<key>channel</key>
+			<string>regular</string>
+			<key>downloadSize</key>
+			<integer>19772231540</integer>
+			<key>group</key>
+			<string>tahoe</string>
+			<key>id</key>
+			<string>25G83</string>
+			<key>mobileDeviceMinVersion</key>
+			<string>1827.100.14</string>
+			<key>name</key>
+			<string>macOS 26.6.2</string>
+			<key>requirements</key>
+			<string>min_host_13</string>
+			<key>url</key>
+			<string>https://updates.cdn-apple.com/2026SummerFCS/fullrestores/140-75212/A2A24B94-1FC1-45A3-93F7-C51B02AF1F4D/UniversalMac_26.6.2_25G83_Restore.ipsw</string>
+			<key>version</key>
+			<string>26.6.2</string>
+		</dict>
+		<dict>
+			<key>build</key>
+			<string>26B123</string>
+			<key>channel</key>
+			<string>regular</string>
+			<key>downloadSize</key>
+			<integer>25595669503</integer>
+			<key>group</key>
+			<string>goldengate</string>
+			<key>id</key>
+			<string>26B123</string>
+			<key>mobileDeviceMinVersion</key>
+			<string>1853.0.0</string>
+			<key>name</key>
+			<string>macOS 27.2</string>
+			<key>requirements</key>
+			<string>min_host_26_virtual_installation</string>
+			<key>url</key>
+			<string>https://updates.cdn-apple.com/2026FallFCS/c9671975-52db-4fb5-9af2-00217169ba8d/UniversalMac_27.2_26B123_Restore.ipsw</string>
+			<key>version</key>
+			<string>27.2.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>
