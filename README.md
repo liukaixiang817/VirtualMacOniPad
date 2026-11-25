@@ -2,7 +2,7 @@
 
 People have dreamed of running macOS on iPad for [more](https://www.macstories.net/stories/macpad-how-i-created-the-hybrid-mac-ipad-laptop-and-tablet-that-apple-wont-make/) [than](https://github.com/khanhduytran0/MacWSBootingGuide) [a](https://khronokernel.com/apple/silicon/2021/01/17/QEMU-AS.html) [decade](https://worthdoingbadly.com/macappsios/). Today, that dream comes true. With Virtual Mac, iPad finally breaks free from iPadOS, enabling pro apps like Xcode, Terminal, Final Cut Pro, Logic Pro, and Pixelmator Pro to run directly on device. Requires iPad Pro (M1, M2) or iPad Air (M1) running iPadOS 14 up to 16.3.1.
 
-This personal fork includes **2.0.0beta8-r1 (1008-1)** with the macOS 13 and independent macOS 27 backends. New supported macOS 15, 26 and 27 guests can sign in to Apple Account during Setup Assistant, with a persistent identity created before restore. Native Wi-Fi, Bluetooth discovery, camera, microphone and speakers are retained. The new-VM installer offers verified version recommendations, a full version list and local IPSW import. See the [Beta 8 revision 1 release notes](VirtualMac/docs/releases/2.0.0beta8-r1.md) for details and service limits.
+This personal fork includes **2.0.0beta8-r2 (1008-2)** with the macOS 13 and independent macOS 27 backends. Compatible macOS 27.2+ guests now receive native screen touch. The installer retains version recommendations, a full version list and local IPSW import, with Apple Account sign-in during Setup Assistant for supported builds. See the [Beta 8 revision 2 release notes](VirtualMac/docs/releases/2.0.0beta8-r2.md) for validation and known limits.
 
 ![Screenshot of Virtual Mac on iPad](VirtualMac/screenshots/VirtualMac.png)
 
