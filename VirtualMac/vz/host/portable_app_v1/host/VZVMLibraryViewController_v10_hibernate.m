@@ -913,8 +913,8 @@ void VZRemovePaths(NSArray<NSString *> *paths)
     if(indexPath.section==8) {
         cell.textLabel.text=VZL(@"Hibernate on Background");
         UISwitch *toggle=[[[UISwitch alloc]init]autorelease];
-        toggle.on=[self.options[@"HibernateOnBackgroundEnabled"]boolValue];
-        toggle.enabled=!self.running && [VZBackendSelectedVersion()isEqualToString:@"27"];
+        toggle.on=!self.options[@"AppleAccountIdentityV1"] && [self.options[@"HibernateOnBackgroundEnabled"]boolValue];
+        toggle.enabled=!self.options[@"AppleAccountIdentityV1"] && !self.running && [VZBackendSelectedVersion()isEqualToString:@"27"];
         [toggle addTarget:self action:@selector(hibernateBackgroundChangedV5:) forControlEvents:UIControlEventValueChanged];
         cell.accessoryView=toggle;cell.accessoryType=UITableViewCellAccessoryNone;cell.selectionStyle=UITableViewCellSelectionStyleNone;
     } else if(indexPath.section==7) {
@@ -1175,6 +1175,14 @@ void VZRemovePaths(NSArray<NSString *> *paths)
 
 - (void)editMACAddress
 {
+    if (self.options[@"AppleAccountIdentityV1"]) {
+        UIAlertController *fixed = [UIAlertController alertControllerWithTitle:VZL(@"MAC Address")
+            message:VZL(@"This Mac keeps a fixed network address for Apple Account.")
+            preferredStyle:UIAlertControllerStyleAlert];
+        [fixed addAction:[UIAlertAction actionWithTitle:VZL(@"OK") style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:fixed animated:YES completion:nil];
+        return;
+    }
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:VZL(@"MAC Address")
                          message:VZL(@"Enter six hexadecimal octets separated by colons.")
@@ -1601,7 +1609,7 @@ void VZRemovePaths(NSArray<NSString *> *paths)
     self.options[sender.tag==3?VM27TrackpadThreeFingerGesturesKey:VM27TrackpadFourFingerGesturesKey]=@(sender.on);
 }
 
-- (void)hibernateBackgroundChangedV5:(UISwitch *)sender {self.options[@"HibernateOnBackgroundEnabled"]=@(sender.on);}
+- (void)hibernateBackgroundChangedV5:(UISwitch *)sender {self.options[@"HibernateOnBackgroundEnabled"]=@(sender.on && !self.options[@"AppleAccountIdentityV1"]);}
 
 - (void)unlockResumeChangedV1:(UISwitch *)sender {self.options[@"ResumeAfterUnlockEnabled"]=@(sender.on);}
 

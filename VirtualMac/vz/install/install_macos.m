@@ -10,6 +10,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #import "../host/NSViewShim.h"
+#if VM_APPLE_ACCOUNT_INSTALLER_V1
+#import "../apple-account/VMAppleAccountInstallerV1.h"
+#endif
 
 static id gVirtualMachine;
 static id gInstaller;
@@ -144,6 +147,12 @@ static BOOL PrepareBundleForMobile(NSError **error)
                 0644, error))
             return NO;
     }
+#if VM_APPLE_ACCOUNT_INSTALLER_V1
+    for (NSString *name in @[@"AppleAccountIdentity.plist", @"VirtualMac.plist"]) {
+        if (!SetBundleFileAccess([gStagingBundlePath stringByAppendingPathComponent:name], 0600, error))
+            return NO;
+    }
+#endif
     return YES;
 }
 
@@ -172,6 +181,10 @@ static id CreateConfiguration(id requirements, NSError **error)
     SetObject(platform, "setMachineIdentifier:", machineIdentifier);
     WriteData(hardwareModel, "dataRepresentation", hardwarePath);
     WriteData(machineIdentifier, "dataRepresentation", identifierPath);
+#if VM_APPLE_ACCOUNT_INSTALLER_V1
+    if (!VMAppleAccountInstallerBindV1(gStagingBundlePath.stringByDeletingLastPathComponent,
+            gStagingBundlePath, error)) return nil;
+#endif
 
     uint64_t cpuCount = EnvironmentUInt64(
         "VZ_INSTALL_CPU_COUNT", 4, 2,
@@ -394,6 +407,12 @@ int main(int argc, const char *argv[])
             ^(id restoreImage, NSError *loadError) {
             if (!restoreImage)
                 FinishWithError(@"load-restore-image", loadError);
+#if VM_APPLE_ACCOUNT_INSTALLER_V1
+            NSError *identityError = nil;
+            if (!VMAppleAccountInstallerValidateV1(gStagingBundlePath.stringByDeletingLastPathComponent,
+                    [restoreImage valueForKey:@"buildVersion"], &identityError))
+                FinishWithError(@"verify-account-restore-build", identityError);
+#endif
             printf("RESTORE_LOAD_OK\tbuild=%s\n",
                    [[[restoreImage valueForKey:@"buildVersion"] description]
                        UTF8String]);

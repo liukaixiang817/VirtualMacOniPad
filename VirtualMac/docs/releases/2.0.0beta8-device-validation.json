@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "version": "1008",
+  "verifiedHost": {
+    "model": "iPad14,6",
+    "iPadOS": "16.1.1",
+    "build": "20B101"
+  },
+  "featureCandidateVersion": "1006-4",
+  "candidateAppleAccountAndColdPersistenceTests": [
+    {
+      "major": 15,
+      "build": "24G90",
+      "appleAccountFreshSmsMfaPassed": true,
+      "accountPersistedAcrossNormalColdBoot": true,
+      "appStoreFreeAppDownloadReceiptAndLaunchPassed": true,
+      "iCloudContentUploadAndDownloadHashMatched": true,
+      "newIncomingCloudMetadataNeededNormalDriveReconnect": true,
+      "mailOriginalTestInImapServerSent": true,
+      "mailRecipientReceiptConfirmed": false,
+      "iMessagePassed": false
+    },
+    {
+      "major": 26,
+      "build": "25G83",
+      "appleAccountFreshSmsMfaPassed": true,
+      "accountPersistedAcrossNormalColdBoot": true,
+      "appStoreFreeAppDownloadReceiptAndLaunchPassed": true,
+      "iCloudContentUploadAndDownloadHashMatched": true,
+      "newIncomingCloudMetadataNeededNormalDriveReconnect": true,
+      "mailOriginalTestInImapServerSent": true,
+      "mailRecipientReceiptConfirmed": false,
+      "iMessagePassed": false
+    },
+    {
+      "major": 27,
+      "build": "26B123",
+      "appleAccountFreshSmsMfaPassed": true,
+      "accountPersistedAcrossNormalColdBoot": true,
+      "appStoreFreeAppDownloadReceiptAndLaunchPassed": true,
+      "iCloudContentUploadAndDownloadHashMatched": true,
+      "newIncomingCloudMetadataNeededNormalDriveReconnect": false,
+      "mailOriginalTestInImapServerSent": true,
+      "mailRecipientReceiptConfirmed": false,
+      "iMessagePassed": false
+    }
+  ],
+  "candidate27BFirstSetupSMSLoginAfterBlankRestore": true,
+  "candidate27AStatus": "identity and scoped policy passed, MFA reached; complete login not claimed",
+  "candidate27BAlternateAccountIMessageSingleActualDeliveryConfirmed": true,
+  "primaryAccountIMessageStillUnresolved": true,
+  "faceTimeAccepted": false,
+  "beta8InstalledViaDebOnPhysicalIPad": true,
+  "beta8All14ChangedComponentsHashVerified": true,
+  "beta8ColdBootRegressionPending": false,
+  "accountCPUParentAndChildByteIdenticalToAcceptedCandidate": true,
+  "allFourAccountAppObjectInputsByteIdenticalToAcceptedCandidate": true,
+  "restoreHelpersIdenticalToAcceptedCandidate": true,
+  "existingGuestIdentityAndOptionsUnchangedByInstall": true,
+  "beta8FreshEmptyDiskAccountLoginNotRepeated": true,
+  "accountCredentialsAndMFACodesIncluded": false,
+  "publicValidationContainsNoAccountIdentifiers": true,
+  "beta8NormalColdBoot27IdentityAndSetupAssistantScopePassed": true,
+  "beta8ColdBootGuestBuild": "26B123",
+  "beta8ColdBootNativeIdentityAllMatchesSaved": true,
+  "beta8ColdBootFixedMACMatchesSaved": true,
+  "beta8ScopedVMMPresentReadback": {
+    "unlistedProcess": 1,
+    "setupAssistantProcessName": 0,
+    "systemSysctl": 0
+  },
+  "beta8NewSMSOrMessageTestPerformed": false,
+  "observedUTC": "2026-11-25T05:37:31.568308+00:00",
+  "beta8TestGuestNormallyShutDownAfterRegression": true,
+  "temporaryVNCServersAndProxiesCleanedUp": true,
+  "originalRadioGuestsAndInstallationMediaPreserved": true
+}
