@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "displayVersion": "2.0.0beta9",
+  "packageVersion": "1009",
+  "packageSHA256": "558175bc4aa505ddb4dea662a7b18da532357eb0f85d1a031a437de2f809e840",
+  "observedUTC": "2026-11-25T12:41:42.485429+00:00",
+  "host": {
+    "model": "iPad14,6",
+    "iPadOS": "16.1.1",
+    "build": "20B101"
+  },
+  "inputMethod": "Temporary device-side HID injection through real iPad UIKit; native USB screenshots visually inspected",
+  "keyboardRegression": {
+    "baselineBugReproduced": true,
+    "macOS27": {
+      "guestVersion": "27.2",
+      "guestBuild": "26B123",
+      "manualHideThenGuestTapStaysHidden": true,
+      "oneToolbarTapReopens": true,
+      "visibleKeyboardPreservedAcrossBackground": true,
+      "manualHideAfterBackgroundThenGuestTapStaysHidden": true,
+      "hiddenKeyboardPreservedAcrossBackground": true,
+      "softwareKeyDelivered": true,
+      "hardwareKeyDeliveredAfterGuestFocus": true,
+      "testInputClearedWithoutSubmittingLogin": true,
+      "passed": true
+    },
+    "macOS26": {
+      "scope": "Retained macOS 26 guest login screen; exact guest build not queried during this regression",
+      "manualHideThenGuestTapStaysHidden": true,
+      "oneToolbarTapReopens": true,
+      "repeatedHideAndTapPassed": true,
+      "passed": true
+    }
+  },
+  "beta9NativeTouchSmoke": {
+    "guestVersion": "27.2",
+    "nativePowerMenuInteractionPassed": true,
+    "normalGuestShutdownCompleted": true
+  },
+  "nativeTouchAcceptance": {
+    "testedCandidate": "Unreleased development candidate 1008-2, before the Beta 9 keyboard fix",
+    "nativeTouchEngineObjectByteIdenticalInBeta9": true,
+    "guest": {
+      "version": "27.2",
+      "build": "26B123"
+    },
+    "nativeScreenTouchCapabilities": 1,
+    "requestedContinuousTaps": 72,
+    "observedButtonActions": 72,
+    "maximumSimultaneousNativeContacts": 5,
+    "gestureAndLifecycleChecks": {
+      "scroll": {
+        "passed": true,
+        "actionCallbacks": 98,
+        "activeContactsAfter": 0
+      },
+      "pinch": {
+        "passed": true,
+        "actionCallbacks": 20,
+        "activeContactsAfter": 0
+      },
+      "rotate": {
+        "passed": true,
+        "actionCallbacks": 41,
+        "activeContactsAfter": 0
+      },
+      "pan": {
+        "passed": true,
+        "actionCallbacks": 38,
+        "activeContactsAfter": 0
+      },
+      "hold": {
+        "passed": true,
+        "actionCallbacks": 2,
+        "activeContactsAfter": 0
+      },
+      "five-finger": {
+        "passed": true,
+        "actionCallbacks": 21,
+        "activeContactsAfter": 0
+      },
+      "cancel": {
+        "passed": true,
+        "actionCallbacks": 1,
+        "activeContactsAfter": 0
+      },
+      "background-held": {
+        "passed": true,
+        "actionCallbacks": 1,
+        "activeContactsAfter": 0
+      },
+      "calibrate-tap": {
+        "passed": true,
+        "actionCallbacks": 1,
+        "activeContactsAfter": 0
+      }
+    },
+    "heldContactObservedBeforeBackground": true,
+    "resumedTapPassed": true,
+    "nativeSettingVisibleDefaultsOnAndOffOnPersistencePassed": true
+  },
+  "cleanup": {
+    "exactOwnedDeviceHelperRemoved": true,
+    "noActiveVMMAtCompletion": true,
+    "normalGuestShutdownCompleted": [
+      "27",
+      "26"
+    ],
+    "newVirtualMachinesCreated": 0,
+    "allExistingVirtualMachinesRetained": true,
+    "existingGuestMachineIdentifiersUnchanged": true,
+    "guestProbeInstalledForKeyboardTests": false,
+    "guestAuthenticationPerformedForKeyboardTests": false
+  },
+  "nativeAcceptanceGuestProbeAndDeviceDriverRemoved": true,
+  "accountRuntimeAndRestoreHelpersUnchanged": true,
+  "radioAndMediaPayloadsUnchanged": true,
+  "newAppleAccountOrMessagingTests": false,
+  "guestDisksCredentialsOrAccountIdentifiersIncluded": false,
+  "knownLimitations": {
+    "physicalFingerLatencyNotMeasured": true,
+    "allApplicationTouchBehaviorNotTested": true,
+    "macOS27_2_1NotDeviceTested": true,
+    "guestKernelPanicDuringFinalPreparation": true,
+    "panicKind": "corrupt list around element",
+    "panickedProcess": "com.apple.WebKit.WebContent",
+    "panicBacktraceExtension": "com.apple.kec.pthread",
+    "causeUnresolvedAndTouchCausalityNotEstablished": true,
+    "recoveredBeforeAllFinalAcceptanceTests": true
+  }
+}

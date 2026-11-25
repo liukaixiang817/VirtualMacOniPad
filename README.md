@@ -2,15 +2,15 @@
 
 People have dreamed of running macOS on iPad for [more](https://www.macstories.net/stories/macpad-how-i-created-the-hybrid-mac-ipad-laptop-and-tablet-that-apple-wont-make/) [than](https://github.com/khanhduytran0/MacWSBootingGuide) [a](https://khronokernel.com/apple/silicon/2021/01/17/QEMU-AS.html) [decade](https://worthdoingbadly.com/macappsios/). Today, that dream comes true. With Virtual Mac, iPad finally breaks free from iPadOS, enabling pro apps like Xcode, Terminal, Final Cut Pro, Logic Pro, and Pixelmator Pro to run directly on device. Requires iPad Pro (M1, M2) or iPad Air (M1) running iPadOS 14 up to 16.3.1.
 
-This personal fork includes **2.0.0beta8-r2 (1008-2)** with the macOS 13 and independent macOS 27 backends. Compatible macOS 27.2+ guests now receive native screen touch. The installer retains version recommendations, a full version list and local IPSW import, with Apple Account sign-in during Setup Assistant for supported builds. See the [Beta 8 revision 2 release notes](VirtualMac/docs/releases/2.0.0beta8-r2.md) for validation and known limits.
+This personal fork includes **2.0.0beta9 (1009)** with the macOS 13 and independent macOS 27 backends. The software keyboard now stays hidden after manual dismissal. Compatible macOS 27.2+ guests receive native screen touch. The installer retains version recommendations, a full version list and local IPSW import, with Apple Account sign-in during Setup Assistant for supported builds. See the [Beta 9 release notes](VirtualMac/docs/releases/2.0.0beta9.md) for validation and known limits.
 
 ![Screenshot of Virtual Mac on iPad](VirtualMac/screenshots/VirtualMac.png)
 
 As seen on: [iGeneration](https://www.igen.fr/ipad/2026/08/virtual-mac-fait-tourner-macos-sur-certains-ipad-jailbreakes-157355), [ifun.de](https://www.ifun.de/open-source-projekt-bringt-macos-auf-das-ipad-285132/), [La Manzana Mordida](https://lamanzanamordida.net/noticias/instalar-macos-ipad-virtualmac/), [すまほん!!](https://smhn.info/202608-apple-ipad-virtual-mac-macos-jailbreak-hypervisor), [鵺間飛行 (video)](https://www.bilibili.com/video/BV1Nfue6PExJ/), [IT Home](https://www.ithome.com/0/985/545.htm), [ezone](https://ezone.hk/article/20104816/ipad%E7%B5%82%E6%96%BC%E5%8F%AF%E4%BB%A5%E8%B7%91macos-%E6%B0%91%E9%96%93%E7%A5%9E%E4%BA%BA%E9%87%8B%E5%87%BA%E9%96%8B%E6%BA%90%E5%B7%A5%E5%85%B7-%E6%94%AF%E6%8F%B4gpu%E5%8A%A0%E9%80%9F-%E5%AF%ABcode-%E5%8D%B3%E7%9D%87%E6%94%AF%E6%8F%B4%E6%A9%9F%E5%9E%8B%E8%88%87%E7%B3%BB%E7%B5%B1), [KOCPC](https://www.kocpc.com.tw/archives/664343), and [Bilibili (video)](https://www.bilibili.com/video/BV1PfuR69EoC/). Virtual Mac on iPad is a community project and is not affiliated with Dopamine, UTM, VirtualBuddy, or Apple. Contributions are welcome!
 
-## Beta 8 revision 1 installation
+## Beta 9 installation
 
-Download the rootless DEB from [Beta 8 revision 1](https://github.com/liukaixiang817/VirtualMacOniPad/releases/tag/2.0.0beta8-r1). Normally shut down running guests and close the app before installing. For new guests from Apple restore images, install the [Virtual Mac 1.2.4 installer](https://github.com/nfzerox/VirtualMacOniPad/releases/tag/1.2.4). The host radio services are built for iPad14,6 on iPadOS 16.1.1 (20B101).
+Download the rootless DEB from [Beta 9](https://github.com/liukaixiang817/VirtualMacOniPad/releases/tag/2.0.0beta9). Normally shut down running guests and close the app before installing. For new guests from Apple restore images, install the [Virtual Mac 1.2.4 installer](https://github.com/nfzerox/VirtualMacOniPad/releases/tag/1.2.4). The host radio services are built for iPad14,6 on iPadOS 16.1.1 (20B101).
 
 ## Installation (upstream 1.x)
 
@@ -29,7 +29,7 @@ Virtual Mac on iPad requires an iPad Pro (M1, M2) or iPad Air (M1) running iPadO
 
 Virtual Mac on iPad supports macOS 12 Monterey up to macOS 26 Tahoe, with experimental support for macOS 27 Golden Gate. macOS 15 Sequoia is the recommended version to install. [You can download the latest compatible version of Xcode, Final Cut Pro Trial, Logic Pro Trial, and Pixelmator Pro Trial](https://nfzerox.github.io/virtual-mac/app/).
 
-Metal acceleration is available in all supported macOS versions. Final Cut Pro and OpenGL/OpenCL acceleration require macOS 14 Sonoma or later. Because signing into iCloud or Apple Account is not supported, choose Set Up Later when asked.
+Metal acceleration is available in all supported macOS versions. Final Cut Pro and OpenGL/OpenCL acceleration require macOS 14 Sonoma or later. This fork enables Apple Account sign-in during Setup Assistant for its audited macOS 15/26/27 restore builds; see the release notes for build coverage and service limitations.
 
 ### Do I need a Magic Keyboard?
 

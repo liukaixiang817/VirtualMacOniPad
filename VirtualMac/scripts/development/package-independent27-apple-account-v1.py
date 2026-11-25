@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--candidate', required=True, type=Path)
     parser.add_argument('--installer', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='1008-2')
+    parser.add_argument('--version', default='1009')
     args = parser.parse_args()
     candidate = json.loads((args.candidate / 'candidate.json').read_text())
     assert prior.sha(args.tested_deb) == (RELEASE_BASE_SHA if candidate['release'] else BASE_SHA)
@@ -38,10 +38,10 @@ def main():
     supported_builds = candidate['auditedGuestBuilds']
     assert supported_builds == ['24G90', '25G83', '26A5416b', '26B123']
     if candidate['release']:
-        prior.run('dpkg', '--compare-versions', '1008-1', 'lt', args.version)
+        prior.run('dpkg', '--compare-versions', '1008-2', 'lt', args.version)
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    filename = ('VirtualMac_2.0.0beta8-r2_' if candidate['release'] else 'VirtualMac_AppleAccount_')
+    filename = ('VirtualMac_2.0.0beta9_' if candidate['release'] else 'VirtualMac_AppleAccount_')
     destination = output / (filename + args.version + '.deb')
     assert not destination.exists()
     with tempfile.TemporaryDirectory(prefix='virtualmac-account-package-') as temp:
@@ -138,7 +138,7 @@ def main():
             if name == 'postinst':
                 text = text.replace('1006-2+radio100', args.version)
                 if candidate['release']:
-                    text = text.replace('beta6-r2', 'beta8-r2').replace('beta7', 'beta8-r2')
+                    text = text.replace('beta6-r2', 'beta9').replace('beta7', 'beta9')
                     text = text.replace('revision=1007', 'revision=' + args.version)
                 marker = '/var/jb/usr/lib/TweakInject/VM27GestureGuard.dylib|'
                 text = prior.replace_once(text, marker, marker + '|'.join(sorted(new_executables)) + '|')
@@ -181,6 +181,7 @@ def main():
         installVersionRecommendations=candidate['installVersionRecommendations'],
         allVersionsAndLocalIPSWChoices=True,
         nativeTouchScreenForCompatible27Guests=candidate['nativeTouchScreenForCompatible27Guests'],
+        softwareKeyboardManualDismissalRespected=candidate['softwareKeyboardManualDismissalRespected'],
         perGuestIdentityCreatedBeforeRestore=True,
         existingGuestIdentitiesNotReplaced=True,
         guestDataIncluded=False, cloudAcceptanceClaimed=False), indent=2) + '\n')

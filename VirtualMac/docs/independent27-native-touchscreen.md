@@ -43,3 +43,8 @@ recognizers, not a global event monitor. See
 The physical-device validation record is linked from the release notes.
 Recognition of screen touch does not establish identical display latency,
 touch hardware or every application interaction to a physical MacBook Pro.
+
+Beta 9 also observes the visible software keyboard's dismissal and clears the
+shared toolbar show request. A later guest tap can reacquire input focus without
+requesting the software keyboard again. Backgrounding and geometry transitions
+preserve the current visibility intent; one toolbar tap requests a new keyboard.

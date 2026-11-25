@@ -14,6 +14,20 @@ def once(source, old, new):
 def apply(source):
     source = once(source, '#import "VMAppleAccountInstallationV1.h"',
         '#import "VMAppleAccountInstallationV1.h"\n#import "vm27_native_touchscreen_v1.h"')
+    source = once(source, '    gSoftwareKeyboardRequested = requested;\n',
+        '''    static dispatch_once_t keyboardDismissObserverOnce;
+    dispatch_once(&keyboardDismissObserverOnce, ^{
+        // The notification center owns this app-lifetime observer. Only the
+        // current surface can clear the shared HUD/activation show request.
+        [NSNotificationCenter.defaultCenter addObserverForName:
+            @"com.mac.virtual.input.softwareKeyboardDidDismiss" object:nil queue:nil
+            usingBlock:^(NSNotification *notification) {
+                if (pthread_main_np() && notification.object == gIndependent27InputSurface)
+                    gSoftwareKeyboardRequested = NO;
+            }];
+    });
+    gSoftwareKeyboardRequested = requested;
+''')
     source = once(source, '    setObj(graphics, "setDisplays:", @[display]);',
         '''    if (VZIndependent27SourceRouteSelected() &&
         !VM27ConfigureNativeTouchScreenV1(configuration, display, bundlePath, options, error))

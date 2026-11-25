@@ -166,6 +166,10 @@ VM27_OBSERVED_GESTURE(VM27OwnHoverRecognizerV2, UIHoverGestureRecognizer)
     unsigned _threeFingerLogsV8;
     BOOL _softwareKeyboardRequestedV9;
     UIView *_hiddenSoftwareKeyboardV9;
+    BOOL _softwareKeyboardDeactivatingV22;
+    __weak UIWindow *_softwareKeyboardWindowV22;
+    CGRect _softwareKeyboardBoundsV22;
+    UIInterfaceOrientation _softwareKeyboardOrientationV22;
     BOOL _viewAdmissionInvalidatedV11;
     BOOL _recoveryNoticePendingV11;
     unsigned _physicalReceiptLogsV12, _keyReceiptLogsV12;
@@ -219,6 +223,12 @@ VM27_OBSERVED_GESTURE(VM27OwnHoverRecognizerV2, UIHoverGestureRecognizer)
     [self addGestureRecognizer:pinch]; [self addGestureRecognizer:rotation]; [self addGestureRecognizer:hover];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(resignActive:)
         name:UIApplicationWillResignActiveNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(softwareKeyboardShownV22:)
+        name:UIKeyboardDidShowNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(softwareKeyboardHiddenV22:)
+        name:UIKeyboardDidHideNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(softwareKeyboardAppActiveV22:)
+        name:UIApplicationDidBecomeActiveNotification object:nil];
     return self;
 }
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction
@@ -248,9 +258,59 @@ VM27_OBSERVED_GESTURE(VM27OwnHoverRecognizerV2, UIHoverGestureRecognizer)
 }
 - (void)setSoftwareKeyboardRequestedV9:(BOOL)requested {
     if (_ownerPID != getpid() || !pthread_main_np()) return;
+    if (requested && (!_softwareKeyboardRequestedV9 || self.window != _softwareKeyboardWindowV22))
+        [self recordSoftwareKeyboardContextV22];
     if (_softwareKeyboardRequestedV9 == requested) return;
     _softwareKeyboardRequestedV9 = requested;
     if (self.isFirstResponder) [self reloadInputViews];
+}
+- (void)recordSoftwareKeyboardContextV22 {
+    _softwareKeyboardWindowV22 = self.window;
+    _softwareKeyboardBoundsV22 = self.bounds;
+    _softwareKeyboardOrientationV22 = self.window.windowScene.interfaceOrientation;
+}
+- (void)softwareKeyboardAppActiveV22:(NSNotification *)notification {
+    (void)notification;
+    if (_ownerPID != getpid() || !pthread_main_np()) return;
+    _softwareKeyboardDeactivatingV22 = NO;
+    if (_softwareKeyboardRequestedV9 && self.window && !self.hidden)
+        [self recordSoftwareKeyboardContextV22];
+}
+- (void)softwareKeyboardShownV22:(NSNotification *)notification {
+    if (_ownerPID != getpid() || !pthread_main_np() ||
+        !_softwareKeyboardRequestedV9 || !self.isFirstResponder || self.hidden ||
+        !self.window || _softwareKeyboardDeactivatingV22 ||
+        UIApplication.sharedApplication.applicationState != UIApplicationStateActive ||
+        [notification.userInfo[UIKeyboardIsLocalUserInfoKey] isEqual:@NO]) return;
+    [self recordSoftwareKeyboardContextV22];
+}
+- (void)softwareKeyboardHiddenV22:(NSNotification *)notification {
+    if (_ownerPID != getpid() || !pthread_main_np() ||
+        [notification.userInfo[UIKeyboardIsLocalUserInfoKey] isEqual:@NO]) return;
+    // A real hide for this visible input owner clears the user's show request.
+    // UI intent is independent of packet admission: after foregrounding UIKit
+    // may restore its keyboard before a new input session/DidShow notification.
+    if (!_softwareKeyboardRequestedV9 || _softwareKeyboardDeactivatingV22 ||
+        self.hidden || !self.window ||
+        UIApplication.sharedApplication.applicationState != UIApplicationStateActive) return;
+    if (self.window != _softwareKeyboardWindowV22 ||
+        !CGRectEqualToRect(self.bounds, _softwareKeyboardBoundsV22) ||
+        self.window.windowScene.interfaceOrientation != _softwareKeyboardOrientationV22) {
+        // A geometry transition can temporarily hide the keyboard. Refresh the
+        // final context without turning that transition into a dismiss request.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self->_softwareKeyboardRequestedV9 && !self->_softwareKeyboardDeactivatingV22 &&
+                self.window && !self.hidden &&
+                UIApplication.sharedApplication.applicationState == UIApplicationStateActive)
+                [self recordSoftwareKeyboardContextV22];
+        });
+        return;
+    }
+    // Keep the input owner: switching to its empty input view also preserves
+    // hardware-key delivery when UIKit retained first-responder status.
+    [self setSoftwareKeyboardRequestedV9:NO];
+    [NSNotificationCenter.defaultCenter postNotificationName:
+        @"com.mac.virtual.input.softwareKeyboardDidDismiss" object:self];
 }
 /* UIKeyInput callbacks have no UIEvent timestamp. The timestamp below is the
  * real callback receipt uptime, explicitly not a hardware event time. All
@@ -431,7 +491,9 @@ VM27_OBSERVED_GESTURE(VM27OwnHoverRecognizerV2, UIHoverGestureRecognizer)
     _lastInputResult = result;
     return result;
 }
-- (void)resignActive:(NSNotification *)notification { (void)notification; [self close]; }
+- (void)resignActive:(NSNotification *)notification {
+    (void)notification; _softwareKeyboardDeactivatingV22 = YES; [self close];
+}
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
