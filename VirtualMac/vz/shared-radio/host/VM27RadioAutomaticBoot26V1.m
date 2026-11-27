@@ -120,7 +120,7 @@ NSString *VM27RadioAutomaticBoot26V1(NSString *bundle, NSString *firmware, NSErr
         NSData *tail = [aux subdataWithRange:NSMakeRange(selected,0x200000)]; NSUInteger oldSize=0;
         if (!radioBody(tail,&oldSize)) return fail(error,@"The guest boot image is malformed.");
         NSDictionary *image=radioImage([tail subdataWithRange:NSMakeRange(0,oldSize)]);
-        // Only these three audited public LLB payloads select an automatic
+        // Only these audited public LLB payloads select an automatic
         // boot profile. Other builds retain their original boot path.
         if (!image || !radioString(image[@"parts"][1],"illb")) return nil;
         NSDictionary *profiles=@{
@@ -129,7 +129,9 @@ NSString *VM27RadioAutomaticBoot26V1(NSString *bundle, NSString *firmware, NSErr
             @"26eaa53a9955185e868099847f29d257b834bfb5aee7a3c188aa1cc18e8daef3":
                 @{@"Build":@"25G83",@"Bytes":@638296,@"Offset":@0x6400,@"Before":@0xaa1b03e0},
             @"51471abf25e766fe62180a5c7d69ab8b0e3158e62c9aa6bbb4a87ad919938689":
-                @{@"Build":@"26A5416b",@"Bytes":@691000,@"Offset":@0x6734,@"Before":@0xaa1403e0}};
+                @{@"Build":@"26A5416b",@"Bytes":@691000,@"Offset":@0x6734,@"Before":@0xaa1403e0},
+            @"bd1f08322c8b1c4c2b4d4ea1b127e8c91e929e19c5c598465da5f61f19a4aba5":
+                @{@"Build":@"26B131",@"Bytes":@690952,@"Offset":@0x6734,@"Before":@0xaa1403e0}};
         NSDictionary *profile=profiles[radioSHA(image[@"payload"])];if(!profile)return nil;
         NSMutableData *llb=[image[@"payload"] mutableCopy];
         NSUInteger edit=[profile[@"Offset"]unsignedIntegerValue];

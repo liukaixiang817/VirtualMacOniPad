@@ -38,8 +38,8 @@ def main():
         raise ValueError('unexpected driver identity')
     driver_manifest = json.loads((args.driver.parent / 'manifest.json').read_text())
     facts = driver_manifest['targetKernel']
-    profile_major = {'24G90': 15, '25G83': 26, '26A5416b': 27}.get(facts['build'])
-    if (facts['build'] not in ('24G90', '25G83', '26A5416b') or
+    profile_major = {'24G90': 15, '25G83': 26, '26A5416b': 27, '26B131': 27}.get(facts['build'])
+    if (profile_major is None or
         facts['architecture'] != 'arm64e' or not driver_manifest.get('concreteDriverPointerSignaturesMatch') or
         sha(args.driver / 'Contents/MacOS/VM27SharedRadioNativeV1') != driver_manifest['binarySHA256']):
         raise ValueError('requires an audited build-specific driver')
@@ -56,7 +56,9 @@ def main():
                         26: 'VM27ExclusiveBluetoothGuestV15.dylib',
                         27: 'VM27ExclusiveBluetoothGuest27V1.dylib'}[profile_major]
     prepare_component = 'radio-prepare-boot' + str(profile_major) + '-v1'
-    profile_definition = '-DVM27_RADIO_GUEST_MAJOR=' + str(profile_major)
+    profile_definitions = ['-DVM27_RADIO_GUEST_MAJOR=' + str(profile_major)]
+    if facts['build'] == '26B131':
+        profile_definitions.append('-DVM27_RADIO_GUEST_BUILD_26B131=1')
     preparation_reuse = None
     if args.reuse_boot_preparation_package:
         if not args.exclusive_bluetooth:
@@ -97,7 +99,7 @@ def main():
         activation = package / 'radio-first-boot-v1'
         subprocess.run(['xcrun', '--sdk', 'macosx', 'clang', '-arch', 'arm64',
                         '-mmacosx-version-min=15.0', '-fobjc-arc', '-Wall', '-Wextra',
-                        '-Werror', '-O2', profile_definition, '-framework', 'Foundation', '-framework', 'IOKit',
+                        '-Werror', '-O2', *profile_definitions, '-framework', 'Foundation', '-framework', 'IOKit',
                         str(root / 'VirtualMac/vz/shared-radio/guest/VM27RadioFirstBootV1.m'),
                         '-o', str(activation)], check=True)
         subprocess.run(['codesign', '--force', '--sign', '-', '--timestamp=none',
@@ -111,7 +113,7 @@ def main():
                 subprocess.run(['codesign', '--verify', '--strict', str(package / binary_name)], check=True)
                 continue
             command = ['xcrun', '--sdk', 'macosx', 'clang', '-arch', 'arm64',
-                       '-mmacosx-version-min=15.0', '-fobjc-arc', '-Wall', '-Wextra', '-Werror', '-O2', profile_definition]
+                       '-mmacosx-version-min=15.0', '-fobjc-arc', '-Wall', '-Wextra', '-Werror', '-O2', *profile_definitions]
             for framework in frameworks:
                 command += ['-framework', framework]
             command += ['-lcompression', str(root / 'VirtualMac/vz/shared-radio/guest' / source_name),
@@ -155,7 +157,7 @@ def main():
     source = root / 'VirtualMac/vz/shared-radio/guest/VM27SharedRadioPackageV1.m'
     commands = [
         ['xcrun', '--sdk', 'macosx', 'clang', '-arch', 'arm64', '-mmacosx-version-min=15.0',
-         '-fobjc-arc', '-Wall', '-Wextra', '-Werror', '-O2', profile_definition, '-framework', 'Foundation', str(source), '-o', str(helper)],
+         '-fobjc-arc', '-Wall', '-Wextra', '-Werror', '-O2', *profile_definitions, '-framework', 'Foundation', str(source), '-o', str(helper)],
         ['codesign', '--force', '--sign', '-', '--timestamp=none', str(helper)],
         ['codesign', '--verify', '--strict', str(helper)],
     ]

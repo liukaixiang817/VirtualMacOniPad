@@ -89,10 +89,17 @@ static NSData *candidate(NSData *original,BOOL kernel){
     const NSUInteger bootOffsets[]={0x5d50,0xfce4};
     const uint32_t bootWords[]={0x9401374b,0x94010f66};
 #elif VM27_RADIO_GUEST_MAJOR == 27
+#if defined(VM27_RADIO_GUEST_BUILD_26B131)
+    expected=kernel?@"b9dd1cdf46a499b43fbd2a304ee0da2a2311bfbde5f7bc7bd1cf1e3b9c4b8142":
+        @"888e07656d3ab4384c2c62cc7a0e096b10ee7deae6ff6a9c668a8b010db3fb5b";
+    const NSUInteger kernelOffsets[]={0x18cfea8,0x18d0764};
+    const uint32_t kernelWords[]={0x97fff37e,0x97fff14f};
+#else
     expected=kernel?@"0fe14b0bf2d447b269e74b8f3b2cc8c008275c86c5c8e7fb1ef000bbddcaf4f2":
         @"3842735c0196a45ff5e33b0e060f69259f82e5d4c94ba3559eaba4971b6cdd80";
     const NSUInteger kernelOffsets[]={0x18a29ac,0x18a3260};
     const uint32_t kernelWords[]={0x97fff38e,0x97fff161};
+#endif
     const NSUInteger bootOffsets[]={0x83b0};
     const uint32_t bootWords[]={0xaa1603e0};
 #endif

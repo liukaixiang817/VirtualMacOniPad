@@ -21,7 +21,7 @@ static BOOL ownerDirectoryV2(const char *path) {
     return !lstat(path,&s)&&S_ISDIR(s.st_mode)&&!s.st_uid&&!(s.st_mode&0022)&&
         (s.st_mode&0111)==0111;
 }
-static int ownerPromptGUIV2(const char *path) {
+static int ownerPromptGUIV2(const char *path,BOOL policy) {
     static const char prefix[]="/private/var/run/virtualmac-radio-owner-v2/";
     if(getuid()<500 || geteuid()!=getuid() ||
        strncmp(path,prefix,sizeof(prefix)-1) ||
@@ -34,8 +34,11 @@ static int ownerPromptGUIV2(const char *path) {
     if(connect(fd,(struct sockaddr *)&address,sizeof(address)) || !ownerPeerV2(fd,0,NULL) ||
        !ownerConsoleVisibleV2(getuid())){close(fd);return EAGAIN;}
     [NSApplication sharedApplication];[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
-    NSAlert *alert=[NSAlert new];alert.messageText=@"Complete Virtual Mac Wi-Fi and Bluetooth Setup";
-    alert.informativeText=@"Enter this virtual Mac’s administrator password to authorize its radio drivers. The virtual Mac will restart to finish setup. Your password will not be saved.";
+    NSAlert *alert=[NSAlert new];
+    alert.messageText=policy?@"Allow Virtual Mac Radio Security Changes":@"Complete Virtual Mac Wi-Fi and Bluetooth Setup";
+    alert.informativeText=policy?
+        @"This enables third-party kernel extensions and persistently relaxes kernel-extension, filesystem, debugging and NVRAM protections in this virtual Mac. Authenticated Root is not changed. Your iPad’s security settings are not changed. Enter this virtual Mac’s administrator password to continue. It will restart; your password will not be saved.":
+        @"Enter this virtual Mac’s administrator password to approve its bundled radio driver. The virtual Mac will restart to finish setup. Your password will not be saved.";
     NSSecureTextField *field=[[NSSecureTextField alloc]initWithFrame:NSMakeRect(0,0,360,24)];
     alert.accessoryView=field;[alert addButtonWithTitle:@"Continue"];[alert addButtonWithTitle:@"Cancel"];
     [alert.window makeKeyAndOrderFront:nil];[NSApp activateIgnoringOtherApps:YES];
@@ -95,7 +98,7 @@ static NSMutableData *ownerPasswordGUIV2(uid_t uid,NSString *stage,int *failure)
     do {
         if(bind(listener,(struct sockaddr *)&address,sizeof(address)) ||
            chown(path.fileSystemRepresentation,uid,(gid_t)-1) || chmod(path.fileSystemRepresentation,0600) || listen(listener,1))break;
-        NSDictionary *job=@{@"Label":label,@"ProgramArguments":@[@(Self),@"--prompt-gui",path],
+        NSDictionary *job=@{@"Label":label,@"ProgramArguments":@[@(Self),@"--prompt-gui",stage,path],
             @"LimitLoadToSessionType":@"Aqua",@"ProcessType":@"Interactive",@"RunAtLoad":@YES,
             @"KeepAlive":@NO,@"Umask":@63,@"ExitTimeOut":@5,
             @"StandardOutPath":@"/dev/null",@"StandardErrorPath":@"/dev/null"};

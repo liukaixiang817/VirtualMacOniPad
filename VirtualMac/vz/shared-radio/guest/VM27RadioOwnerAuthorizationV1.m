@@ -112,10 +112,12 @@ static int nativePolicy(const char *program,char *const argv[],const char *owner
 #include "VM27RadioCompletedSetupResumeV1.inc"
 
 int main(int argc,char **argv){@autoreleasepool{
-    if(argc!=2 && !(argc==3&&!strcmp(argv[1],"--prompt-gui")))return EINVAL;
+    BOOL prompt=argc==4&&!strcmp(argv[1],"--prompt-gui")&&
+        (!strcmp(argv[2],"OwnerPolicy")||!strcmp(argv[2],"DriverApproval"));
+    if(argc!=2 && !prompt)return EINVAL;
     NSDictionary *version=[NSDictionary dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"];
     if(![version[@"ProductBuildVersion"]isEqual:@VM27_RADIO_GUEST_BUILD])return ENOTSUP;
-    if(argc==3)return ownerPromptGUIV2(argv[2]);
+    if(prompt)return ownerPromptGUIV2(argv[3],!strcmp(argv[2],"OwnerPolicy"));
     if(!strcmp(argv[1],"--inspect-owner-setup-resume"))return ownerSetupResumeV1(NO);
     if(!strcmp(argv[1],"--apply-owner-setup-resume"))return ownerSetupResumeV1(YES);
     BOOL policy=!strcmp(argv[1],"--policy"),approve=!strcmp(argv[1],"--approve-driver");

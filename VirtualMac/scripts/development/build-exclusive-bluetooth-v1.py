@@ -27,28 +27,41 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--test', action='store_true')
-    parser.add_argument('--guest-build', choices=('24G90', '25G83', '26A5416b'), default='25G83')
+    parser.add_argument('--guest-build', choices=('24G90', '25G83', '26A5416b', '26B131'), default='25G83')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     common = ['-fobjc-arc', '-Wall', '-Wextra', '-Werror', '-O2']
-    modern27 = args.guest_build == '26A5416b'
+    modern27 = args.guest_build in ('26A5416b', '26B131')
+    module_profile = []
+    loader_profile = []
     module_name = 'VM27ExclusiveBluetoothGuest27V1' if modern27 else 'VM27ExclusiveBluetoothGuestV15'
     loader_name = 'VM27ExclusiveBluetoothEarlyAutoLoad27V1' if modern27 else 'VM27ExclusiveBluetoothEarlyAutoLoadV2'
     native_sha = ('a4213ba4bc24a63eea18440b6723e1187650b32e9e6a4f9e503b39ca1b472f1a' if modern27 else
                   '8afb2a8c2d6aa90b1e1e9e22a7c0ec3201ce46b02ccb37775bb0c9698b93575a')
+    if args.guest_build == '26B131':
+        # Audited native arm64e image, Objective-C layouts and native mutex
+        # implementations; do not derive an address from the previous build.
+        native_sha = '1e371a14b14d8fe6e9b7b179d66c4bec5b246e785389c23a7f6a550480b4b141'
+        module_profile = ['-DVM27_EXCLUSIVE_NATIVE_BUILD="26B131"',
+                          '-DVM27_EXCLUSIVE_NATIVE_UUID_BYTES=0x84,0xe8,0xa6,0xad,0x7f,0x7e,0x32,0xc9,0xab,0xd0,0xfd,0x71,0xd4,0xa8,0x2f,0xd8',
+                          '-DVM27_EXCLUSIVE_CORE_LOCK_RVA=0xfa96c',
+                          '-DVM27_EXCLUSIVE_CORE_UNLOCK_RVA=0xfaa7c']
+        loader_profile = ['-DVM27_EARLY_NATIVE_BUILD="26B131"',
+                          '-DVM27_EARLY_NATIVE_SHA="' + native_sha + '"',
+                          '-DVM27_EARLY_NATIVE_MAX_BYTES=64*1024*1024']
     if args.guest_build == '24G90':
         module_name = 'VM27ExclusiveBluetoothGuest15V1'
         loader_name = 'VM27ExclusiveBluetoothEarlyAutoLoad15V1'
         native_sha = '11d5628b36848a947af2b165264f521758928e5c21cf54ffa9548e7651fde7a9'
     module = output / (module_name + '.dylib')
     run('xcrun', '--sdk', 'macosx', 'clang', '-target', 'arm64e-apple-macos15.0',
-        '-dynamiclib', *common, SOURCE / (module_name + '.m'),
+        '-dynamiclib', *common, *module_profile, SOURCE / (module_name + '.m'),
         '-framework', 'Foundation', '-o', module)
     run('codesign', '-f', '-s', '-', module)
     watcher = output / 'exclusive-early-autoload-v2'
     run('xcrun', '--sdk', 'macosx', 'clang', '-target', 'arm64-apple-macos15.0',
-        *common, '-DVM27_EARLY_MODULE_SHA="' + sha(module) + '"',
+        *common, *loader_profile, '-DVM27_EARLY_MODULE_SHA="' + sha(module) + '"',
         SOURCE / (loader_name + '.m'), '-framework', 'Foundation',
         '-o', watcher)
     run('codesign', '-f', '-s', '-', watcher)

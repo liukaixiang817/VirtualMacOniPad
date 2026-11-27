@@ -88,7 +88,7 @@ int main(int argc, char **argv) { @autoreleasepool {
     LAContext *context = [LAContext new];
     context.interactionNotAllowed = YES;
     NSError *error = nil;
-    // Audited native bputil contract on 24G90 and 26A5416b: invoking
+    // Audited native bputil contract on 24G90, 26A5416b and 26B131: invoking
     // administrator UID and its UTF-8 password as credential type -7.
     [context setOptionUserId:@(owner->pw_uid)];
     BOOL credentialSet = [context setCredential:credential type:-7 error:&error];

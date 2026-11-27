@@ -21,7 +21,11 @@
 #define VM27_RADIO_PREPARE_HELPER "com.virtualmac.RadioPrepareBoot26V1"
 #define VM27_RADIO_BOOT_ROOT "/Library/VirtualMac/SharedRadio/Boot26"
 #elif VM27_RADIO_GUEST_MAJOR == 27
+#if defined(VM27_RADIO_GUEST_BUILD_26B131)
+#define VM27_RADIO_GUEST_BUILD "26B131"
+#else
 #define VM27_RADIO_GUEST_BUILD "26A5416b"
+#endif
 #define VM27_RADIO_BLUETOOTH_MODULE "VM27ExclusiveBluetoothGuest27V1.dylib"
 #define VM27_RADIO_BLUETOOTH_CONSTRUCTOR "exclusive-before-main-27-v1.json"
 #define VM27_RADIO_PREPARE_COMPONENT "radio-prepare-boot27-v1"

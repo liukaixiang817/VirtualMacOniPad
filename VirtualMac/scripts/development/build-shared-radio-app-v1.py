@@ -634,7 +634,7 @@ def main():
                 raise ValueError('requires one audited guest build per input package')
             build, entry = next(iter(catalog['Packages'].items()))
             category = 'AutomaticPackages' if automatic else 'Packages'
-            if build not in ('24G90','25G83','26A5416b') or build in merged[category]:
+            if build not in ('24G90','25G83','26A5416b','26B131') or build in merged[category]:
                 raise ValueError('duplicate or unaudited guest build')
             if automatic and not entry.get('CombinedInstallation'):
                 raise ValueError('automatic installation requires a matching combined package')

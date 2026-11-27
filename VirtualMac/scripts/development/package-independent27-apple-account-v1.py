@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import plistlib
 import shutil
+import tarfile
 import tempfile
 
 HERE = Path(__file__).resolve().parent
@@ -19,6 +20,65 @@ spec.loader.exec_module(prior)
 BASE_SHA = '37a44c51c9d691dab281c29086c61ae68fb86384927ab9fe15c4608cf1dc65a9'
 RELEASE_BASE_SHA = 'ae80ea6406fb56e5ab04fd028b866c0c2d6aabd1d9b05852663ee941624d600c'
 INSTALLER_VERSION = '2:1.2.4+617.1f873e57cc'
+OWNED_WIFI_SHA = 'c6b4d56811a71624daec2236c469d95042408bb99588cd559d7510e9c811950e'
+RADIO_RECOVERY = '''
+phase=recover-owned-radio-session
+vm27_wifi_receipt=/var/run/com.virtualmac.wifi-auxiliary-station-lease-v1/identity.json
+if [ -e "$vm27_wifi_receipt" ] || [ -L "$vm27_wifi_receipt" ]; then
+    test -f "$vm27_wifi_receipt" && test ! -L "$vm27_wifi_receipt"
+    for vm27_radio_job in com.virtualmac.owned-wifi-v1 com.virtualmac.exclusive-bluetooth-v1; do
+        if "$vm27_launchctl" print "system/$vm27_radio_job" >/dev/null 2>&1; then
+            echo 'Stop the VirtualMac radio services before recovering their session.' >&2
+            exit 1
+        fi
+    done
+    vm27_wifi_program=/var/jb/usr/local/libexec/virtualmac-owned-wifi-v1
+    test -f "$vm27_wifi_program" && test ! -L "$vm27_wifi_program"
+    vm27_wifi_digest=$(sha256sum "$vm27_wifi_program")
+    test "${vm27_wifi_digest%% *}" = ''' + OWNED_WIFI_SHA + '''
+    # The existing helper validates its root-owned receipt and actual auxiliary
+    # identity before ending its own station link; the primary link is retained.
+    "$vm27_wifi_program" --recover-owned-auxiliary-station
+fi
+phase=register-radio-services
+'''
+
+
+def refresh_radio_preinst(text):
+    # dpkg replaces an executable's inode even when the content hash is equal.
+    # Leaving its old process alive makes proc_pidpath fail with ENOENT and
+    # correctly causes our peer executable checks to reject the radio service.
+    # The existing program/file guards still run for both jobs before bootout.
+    old = '''        if [ "${current%% *}" != "$3" ]; then
+            vm27_radio_reload="$vm27_radio_reload $1"
+        fi'''
+    new = '''        # Stop the verified service before dpkg replaces its executable.
+        vm27_radio_reload="$vm27_radio_reload $1"'''
+    return prior.replace_once(text, old, new)
+
+
+def radio_catalog(app):
+    resources = app / 'SharedRadio'
+    catalog = plistlib.loads((resources / 'Catalog.plist').read_bytes())
+    assert catalog['Schema'] == 1
+    for category in ['Packages', 'AutomaticPackages']:
+        assert set(catalog[category]) in ({'24G90', '25G83', '26A5416b'},
+                                         {'24G90', '25G83', '26A5416b', '26B131'})
+        for build, entry in catalog[category].items():
+            folder = ('Automatic' if category == 'AutomaticPackages' else '') + build
+            assert entry['ResourceDirectory'] == folder
+            assert entry['Archive'] == 'RadioPackage.tar' and entry['Installer'] == 'shared-radio-package-v1'
+            bundle = resources / folder
+            assert prior.sha(bundle / entry['Archive']) == entry['ArchiveSHA256']
+            assert prior.sha(bundle / entry['Installer']) == entry['InstallerSHA256']
+            with tarfile.open(bundle / entry['Archive']) as archive:
+                import hashlib
+                manifest = archive.extractfile('Package/Package.plist').read()
+                assert hashlib.sha256(manifest).hexdigest() == entry['ManifestSHA256']
+                assert plistlib.loads(manifest)['GuestBuild'] == build
+            if category == 'AutomaticPackages':
+                assert entry['CombinedInstallation'] is True
+    return catalog
 
 
 def main():
@@ -41,7 +101,8 @@ def main():
         prior.run('dpkg', '--compare-versions', '1009', 'lt', args.version)
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    filename = ('VirtualMac_2.0.0beta9rc2_' if candidate['release'] else 'VirtualMac_AppleAccount_')
+    info = plistlib.loads((Path(candidate['app']) / 'Info.plist').read_bytes())
+    filename = ('VirtualMac_' + info['CFBundleShortVersionString'] + '_' if candidate['release'] else 'VirtualMac_AppleAccount_')
     destination = output / (filename + args.version + '.deb')
     assert not destination.exists()
     with tempfile.TemporaryDirectory(prefix='virtualmac-account-package-') as temp:
@@ -50,7 +111,19 @@ def main():
         prior.run('dpkg-deb', '--raw-extract', args.tested_deb, stage)
         controls = stage / 'DEBIAN'
         metadata = stage / prior.METADATA
-        old_catalog = prior.radio_catalog(stage / prior.APP)
+        old_catalog = radio_catalog(stage / prior.APP)
+        added_radio = candidate.get('addedRadioBuilds', [])
+        assert added_radio in ([], ['26B131'])
+        expected_catalog = radio_catalog(Path(candidate['app']))
+        if added_radio:
+            # All previously shipped builds and every unrelated resource stay
+            # byte-identical. Only the audited build is appended in each mode.
+            for category in ['Packages', 'AutomaticPackages']:
+                assert set(expected_catalog[category]) == set(old_catalog[category]) | set(added_radio)
+                for build, entry in old_catalog[category].items():
+                    assert expected_catalog[category][build] == entry
+        else:
+            assert expected_catalog == old_catalog
         changed = set()
         for row in candidate['files']:
             prefix, relative = row['relativePath'].split('/', 1)
@@ -58,8 +131,12 @@ def main():
             target = stage / root / relative
             source = Path(row['new']['path'])
             if row['old'] is None:
-                assert prefix == 'app' and relative == 'RecommendedRestoreImages.plist'
+                assert prefix == 'app' and (relative == 'RecommendedRestoreImages.plist' or
+                    (added_radio and relative in {
+                        'SharedRadio/26B131/RadioPackage.tar', 'SharedRadio/26B131/shared-radio-package-v1',
+                        'SharedRadio/Automatic26B131/RadioPackage.tar', 'SharedRadio/Automatic26B131/shared-radio-package-v1'}))
                 assert not target.exists()
+                target.parent.mkdir(parents=True, exist_ok=True)
             else:
                 assert target.is_file() and not target.is_symlink()
                 assert prior.sha(target) == row['old']['sha256'], row['relativePath']
@@ -136,6 +213,8 @@ def main():
                     '*/VirtualMacFull13Runtime-v1/*|*/VirtualMac/install/install-macos|'
                     '*/VirtualMac/install/install-account-v1|*/VirtualMac/payload/VirtualMachine.xpc/*|'
                     '*/VirtualMac/payload/Installation.xpc/*)')
+            if name == 'preinst':
+                text = refresh_radio_preinst(text)
             if name == 'postinst':
                 text = text.replace('1006-2+radio100', args.version)
                 if candidate['release']:
@@ -143,6 +222,8 @@ def main():
                     text = text.replace('revision=1007', 'revision=' + args.version)
                 marker = '/var/jb/usr/lib/TweakInject/VM27GestureGuard.dylib|'
                 text = prior.replace_once(text, marker, marker + '|'.join(sorted(new_executables)) + '|')
+                marker = 'vm27_radio_register com.virtualmac.owned-wifi-v1 '
+                text = prior.replace_once(text, marker, RADIO_RECOVERY + marker)
                 provision = '\nphase=verify-account-installer\n'
                 for row in installer['files']:
                     provision += 'test -f ' + row['remote'] + ' && test ! -L ' + row['remote'] + '\n'
@@ -151,7 +232,7 @@ def main():
             script.write_text(text)
             prior.run('/bin/sh', '-n', script)
         prior.run('codesign', '--verify', '--deep', '--strict', stage / prior.APP)
-        assert prior.radio_catalog(stage / prior.APP) == old_catalog
+        assert radio_catalog(stage / prior.APP) == expected_catalog
         writer = prior.load_helper('build-virtualmac2-deb.py').write_deb
         result = work / destination.name
         writer(result, prior.archive(controls, sorted(controls.iterdir())), prior.archive(stage, paths), prior.EPOCH)
@@ -169,13 +250,14 @@ def main():
         for relative in ('parent-flat/VM27HVVMProduction.dylib',
             'child-flat/VMM.bundle/Contents/XPCServices/com.apple.Virtualization.VirtualMachine.xpc/Contents/MacOS/VM27HVVMProduction.dylib'):
             assert b'Setup Assistant\0' in (verify / prior.RUNTIME27 / relative).read_bytes()
-        assert prior.radio_catalog(verify / prior.APP) == old_catalog
+        assert radio_catalog(verify / prior.APP) == expected_catalog
         shutil.copyfile(result, destination)
     (output / 'SHA256SUMS').write_text(prior.sha(destination) + '  ' + destination.name + '\n')
     (output / 'package-manifest.json').write_text(json.dumps(dict(package=prior.PACKAGE,
         version=args.version, sha256=prior.sha(destination), changedFiles=sorted(changed),
         appCDHash=candidate['appCDHash'], installerDependency=INSTALLER_VERSION,
         release=candidate['release'],
+        addedRadioBuilds=added_radio,
         newGuestAppleAccountEnabledByDefault=True,
         appleAccountAvailableDuringSetupAssistant=True,
         auditedGuestBuilds=supported_builds,

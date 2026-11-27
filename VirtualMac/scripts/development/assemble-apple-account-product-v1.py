@@ -22,6 +22,10 @@ parser.add_argument('--installer', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--release', action='store_true',
     help='Build Beta 9 RC2 from the verified Beta 7 production App')
+parser.add_argument('--radio-package', type=Path,
+    help='Add the audited combined 26B131 radio package without replacing existing packages')
+parser.add_argument('--display-version', default='2.0.0beta9rc2')
+parser.add_argument('--package-version', default='1009-2')
 args = parser.parse_args()
 O = args.output.resolve()
 O.mkdir(parents=True, exist_ok=False)
@@ -159,7 +163,13 @@ text = (appbaseline / 'VirtualMacApp_shared_radio_v1.m').read_text()
 spec = importlib.util.spec_from_file_location('native_touchscreen_app_source',
     R / 'VirtualMac/scripts/development/native-touchscreen-app-source-v1.py')
 touchscreen = importlib.util.module_from_spec(spec); spec.loader.exec_module(touchscreen)
-main.write_text(touchscreen.apply(account.apply(text)))
+text = touchscreen.apply(account.apply(text))
+if args.radio_package:
+    spec = importlib.util.spec_from_file_location('radio_cold_restart',
+        R / 'VirtualMac/scripts/development/radio-cold-restart-source-v1.py')
+    cold = importlib.util.module_from_spec(spec);spec.loader.exec_module(cold)
+    text = cold.apply(text, R / 'VirtualMac/vz/shared-radio')
+main.write_text(text)
 compile = next(c['argv'][:] for c in json.loads((appbaseline / 'commands.json').read_text()) if c['label'] == 'compile-main')
 oldmain = compile[compile.index('-o') + 1]
 compile[compile.index('-c') + 1] = main
@@ -176,12 +186,58 @@ spec = importlib.util.spec_from_file_location('install_version_selection',
 selection = importlib.util.module_from_spec(spec); spec.loader.exec_module(selection)
 selection_resources = selection.rebuild(R, O, app, link, run)
 touchscreen.rebuild(R, O, app, link, run)
+radio_resources = []
+if args.radio_package:
+    package = args.radio_package.resolve(strict=True)
+    catalog = plistlib.loads((package / 'Catalog.plist').read_bytes())
+    assert catalog['Schema'] == 1 and set(catalog['Packages']) == {'26B131'}
+    entry = catalog['Packages']['26B131']
+    assert entry['CombinedInstallation'] is True
+    assert pin(package / 'Package/Package.plist')['sha256'] == entry['ManifestSHA256']
+    assert pin(package / 'RadioPackage.tar')['sha256'] == entry['ArchiveSHA256']
+    assert pin(package / 'shared-radio-package-v1')['sha256'] == entry['InstallerSHA256']
+    destination = app / 'SharedRadio'
+    merged = plistlib.loads((destination / 'Catalog.plist').read_bytes())
+    assert merged['Schema'] == 1
+    for category, folder in [('Packages', '26B131'), ('AutomaticPackages', 'Automatic26B131')]:
+        assert '26B131' not in merged[category]
+        (destination / folder).mkdir()
+        for name in ['RadioPackage.tar', 'shared-radio-package-v1']:
+            shutil.copyfile(package / name, destination / folder / name)
+            radio_resources.append('SharedRadio/' + folder + '/' + name)
+        merged[category]['26B131'] = dict(entry, ResourceDirectory=folder)
+    (destination / 'Catalog.plist').write_bytes(plistlib.dumps(merged))
+    radio_resources.append('SharedRadio/Catalog.plist')
+    # The boot-ROM profile is compiled separately from the App's main source.
+    boot_compile = next(c['argv'][:] for c in json.loads((appbaseline / 'commands.json').read_text())
+        if c['label'] == 'compile-radio-5')
+    assert Path(boot_compile[boot_compile.index('-c') + 1]).name == 'VM27RadioAutomaticBoot26V1.m'
+    boot_object = boot_compile[boot_compile.index('-o') + 1]
+    boot_compile[boot_compile.index('-o') + 1] = O / 'VM27RadioAutomaticBoot26V1.o'
+    run('compile-current-radio-boot', boot_compile)
+    assert link.count(boot_object) == 1
+    link[link.index(boot_object)] = O / 'VM27RadioAutomaticBoot26V1.o'
+    provisioning_compile = next(c['argv'][:] for c in json.loads((appbaseline / 'commands.json').read_text())
+        if c['label'] == 'compile-radio-provisioning')
+    provisioning_object = provisioning_compile[provisioning_compile.index('-o') + 1]
+    provisioning_compile[provisioning_compile.index('-o') + 1] = O / 'guest-tools-radio.o'
+    provisioning_compile[provisioning_compile.index('-MF') + 1] = O / 'guest-tools-radio.d'
+    run('compile-current-radio-provisioning', provisioning_compile)
+    assert link.count(provisioning_object) == 1
+    link[link.index(provisioning_object)] = O / 'guest-tools-radio.o'
+    wifi_compile = next(c['argv'][:] for c in json.loads((appbaseline / 'commands.json').read_text())
+        if c['label'] != 'link-app' and any(a.endswith('/VM27OwnedWiFiHostV1.m') for a in c['argv']))
+    wifi_object = wifi_compile[wifi_compile.index('-o') + 1]
+    wifi_compile[wifi_compile.index('-o') + 1] = O / 'VM27OwnedWiFiHostV1.o'
+    run('compile-current-owned-wifi', wifi_compile)
+    assert link.count(wifi_object) == 1
+    link[link.index(wifi_object)] = O / 'VM27OwnedWiFiHostV1.o'
 run('link-app', link)
 if args.release:
     info_path = app / 'Info.plist'
     info = plistlib.loads(info_path.read_bytes())
-    info.update(CFBundleShortVersionString='2.0.0beta9rc2', CFBundleVersion='1009.2',
-        CFBundleDisplayName='VirtualMac 2 beta9', VirtualMacPackageRevision='1009-2')
+    info.update(CFBundleShortVersionString=args.display_version, CFBundleVersion=args.package_version.replace('-', '.'),
+        CFBundleDisplayName='VirtualMac 2 beta9', VirtualMacPackageRevision=args.package_version)
     info.pop('VM27SharedRadioDevelopmentRevision', None)
     info_path.write_bytes(plistlib.dumps(info, sort_keys=False))
 for lang, translation in [('en', 'This Mac keeps a fixed network address for Apple Account.'), ('zh_CN', '此虚拟 Mac 使用固定网络地址，以保持 Apple 账户身份一致。')]:
@@ -209,6 +265,7 @@ for identity in changes:
 files.append(dict(relativePath='runtime/' + manifest_name, old=pin(baseline / manifest_name), new=pin(runtime / manifest_name)))
 app_files = ['VirtualMacIndependent27', '_CodeSignature/CodeResources', 'en.lproj/Localizable.strings', 'zh_CN.lproj/Localizable.strings']
 app_files += selection_resources
+app_files += radio_resources
 if args.release:
     app_files.append('Info.plist')
     for action in ('radio-guest-unlock', 'radio-guest-click', 'radio-review-install',
@@ -223,6 +280,7 @@ for name in app_files:
 (O / 'candidate.json').write_text(json.dumps(dict(files=files, runtimeRoot=str(runtime),
     app=str(app), appCDHash=appproof['cdhash'], guestWrites=True, deviceAcceptancePending=True,
     release=args.release, newGuestAppleAccountEnabledByDefault=True,
+    addedRadioBuilds=['26B131'] if args.radio_package else [],
     appleAccountAvailableDuringSetupAssistant=True,
     auditedGuestBuilds=['24G90', '25G83', '26A5416b', '26B123', '26B131'],
     installVersionRecommendations=['24G90', '25G83', '26B123'],

@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "displayVersion": "2.0.0beta9rc3",
+  "packageVersion": "1009-3",
+  "packageSHA256": "29d4730eaf1b2b04aa1b7af2d68ec853f905b60218f77d7334758bc455fac3c5",
+  "host": {
+    "model": "iPad14,6",
+    "chip": "M2",
+    "OSVersion": "16.1.1",
+    "OSBuild": "20B101"
+  },
+  "testedGuest": {
+    "version": "27.2.1",
+    "build": "26B131",
+    "existingGuestUsed": true,
+    "otherGuestVersionsTestedThisRound": false
+  },
+  "finalPackageInstallation": {
+    "installedOnPhysicalIPad": true,
+    "allChangedAppComponentHashesMatch": true,
+    "allFourGuestMetadataPreservedDuringInstallation": true,
+    "normalGuestShutdownBeforeInstallation": true,
+    "temporaryPackageCopyRemoved": true,
+    "finalGuestDataAcceptancePending": false
+  },
+  "radioPackage": {
+    "newBuild": "26B131",
+    "driverVersion": "0.3.6",
+    "kernelPointerAuthenticationSlotsMatched": 1733,
+    "newWiFiVirtualSlotAudited": true,
+    "existingRadioArchivesAndCatalogEntriesByteIdentical": [
+      "24G90",
+      "25G83",
+      "26A5416b"
+    ]
+  },
+  "upgrade": {
+    "sameContentExecutableReplacementTested": true,
+    "bothOwnServicesRefreshed": true,
+    "peerPathChecksRetained": true,
+    "existingOwnedStationRecoveryBeforeRegistration": true,
+    "actualOwnedIdentityVerified": true,
+    "primaryWiFiAssociationPreserved": true,
+    "radioServiceBinariesUnchanged": true
+  },
+  "nativeColdRestart": {
+    "normalGuestShutdownAndCompleteBackendTeardownObserved": true,
+    "sameGuestAutomaticallyStarted": true,
+    "newBootSessionVerified": true,
+    "invalidRequestRejectedWithEPERM": true
+  },
+  "graphics": {
+    "complete27BackendUsed": true,
+    "nativeGlassBlurObserved": true,
+    "dynamicDockScreenshotsPassed": true,
+    "GPUColorReadback": {
+      "BGRA8Unorm": true,
+      "RGBA16Float": true
+    },
+    "reportedBlocksReproducedInThisBackend": false,
+    "allApplicationsRenderingClaimed": false
+  },
+  "guestPolicy": {
+    "userAuthorized": true,
+    "CSRRequiredMask": 79,
+    "authenticatedRootRemainsEnabled": true,
+    "hostOrIPadSecuritySettingsChanged": false
+  },
+  "AppleAccountAuthenticationRetested": false,
+  "newVirtualMachinesCreated": 0,
+  "existingVirtualMachinesPreserved": true,
+  "credentialsMachineIdentifiersAndGuestDisksIncluded": false,
+  "hostChecks": {
+    "rootServiceSHA256Unchanged": true,
+    "ownedRecoveryActualRunAndRepeatPassed": true,
+    "primaryWirelessAssociationPreservedDuringRecovery": true
+  },
+  "regressionChecks": {
+    "maintainerShellSyntax": true,
+    "sameAndChangedContentServiceRefresh": true,
+    "unexpectedServiceAndSymlinkRefused": true,
+    "recoveryAbsentReceiptOwnedReceiptActiveServiceChangedBinaryAndHelperFailure": true,
+    "automaticBootSyntheticStorageWithASanAndUBSan": true
+  },
+  "observedUTC": "2026-11-27T16:47:27.978386+00:00",
+  "wifi": {
+    "nativeInterfaceCreated": true,
+    "DHCPAddressObtained": true,
+    "HTTPSBoundToNativeWiFiHTTPStatus": 200,
+    "curlExitCode": 0,
+    "coldStartAutomaticReconnectionPassed": true,
+    "finalFreshRootServicesAutomaticallyAssociated": true,
+    "ethernetFallbackNotUsedForThisCheck": true
+  },
+  "bluetooth": {
+    "nativeTransportLoaded": true,
+    "nativeControllerEnabled": true,
+    "nearbyPhysicalDeviceDiscoveredInNativeSettings": true,
+    "physicalDevicePairingTested": false
+  },
+  "hostProvisioningState": "native-radio-components-ready",
+  "cleanup": {
+    "observedUTC": "2026-11-27T16:46:05.066706+00:00",
+    "availableBytesBefore": 323723034624,
+    "availableBytesAfter": 325718245376,
+    "observedAvailableBytesIncrease": 1995210752,
+    "ownColdCheckpointRemoved": true,
+    "ownAutomaticDiskCheckpointRemoved": true,
+    "allFourGuestIdentityAndConfigurationHashesPreserved": true,
+    "existingGuestDisksRemoved": false,
+    "TDirectoryExcluded": true,
+    "aquaAndColorProbesAndJobsRemoved": true,
+    "ownTemporaryDeviceHelpersRemoved": true
+  },
+  "limitations": [
+    "Physical Bluetooth pairing was not tested.",
+    "Other guest builds were not booted or retested in this round; their existing radio packages are unchanged.",
+    "GPU color readback and native Dock/glass checks do not establish correctness of every application rendering path.",
+    "Future restore catalog visibility does not establish future wireless driver compatibility.",
+    "Apple Account authentication was not retested."
+  ]
+}

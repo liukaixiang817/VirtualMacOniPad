@@ -126,7 +126,12 @@ static NSDictionary *constructorStatus(void) {
 
 int main(int argc, char **argv) { @autoreleasepool {
     BOOL statusOnly = argc == 2 && !strcmp(argv[1], "--status");
-    if (argc != 2 || (!statusOnly && strcmp(argv[1], "--check-once")) || geteuid()) return EPERM;
+    BOOL coldShutdown=NO,requestColdRestart=NO;
+#if defined(VM27_RADIO_GUEST_BUILD_26B131)
+    coldShutdown=argc==3&&!strcmp(argv[1],"--cold-shutdown");
+    requestColdRestart=argc==2&&!strcmp(argv[1],"--request-cold-restart");
+#endif
+    if (((argc != 2 || (!statusOnly && !requestColdRestart && strcmp(argv[1], "--check-once"))) && !coldShutdown) || geteuid()) return EPERM;
     char build[32] = {0}, boot[64] = {0}, args[8192] = {0}; size_t size = sizeof(build);
     if (sysctlbyname("kern.osversion", build, &size, NULL, 0) || strcmp(build, VM27_RADIO_GUEST_BUILD)) return ENOTSUP;
     size = sizeof(boot); if (sysctlbyname("kern.bootsessionuuid", boot, &size, NULL, 0)) return EIO;
@@ -167,6 +172,34 @@ int main(int argc, char **argv) { @autoreleasepool {
     BOOL bootReady = policy.radioActivationAllowed;
     NSString *receiptPath = [Root stringByAppendingPathComponent:@"Activation.plist"];
     NSDictionary *prior = readPlist(receiptPath);
+#if defined(VM27_RADIO_GUEST_BUILD_26B131)
+    BOOL currentColdRequest=[prior[@"BootUUID"] isEqual:@(boot)] &&
+        [prior[@"PackageManifestSHA256"] isEqual:installed[@"PackageManifestSHA256"]] &&
+        [prior[@"ColdRestartRequired"] isEqual:@YES] &&
+        [prior[@"ColdRestartRequestID"] isKindOfClass:NSString.class] &&
+        [[NSUUID alloc]initWithUUIDString:prior[@"ColdRestartRequestID"]];
+    if(coldShutdown) {
+        if(!currentColdRequest || ![prior[@"ColdRestartRequestID"] isEqual:@(argv[2])]){close(lock);return EPERM;}
+        close(lock);return run(@"/sbin/shutdown",@[@"-h",@"now"]);
+    }
+    if(requestColdRestart) {
+        // Explicit root maintenance request, also used to validate the same
+        // normal shutdown/host teardown path after updating the radio tools.
+        if(!driverInstalled || !bootReady){close(lock);return EPERM;}
+        NSMutableDictionary *request=[prior mutableCopy]?:[NSMutableDictionary new];
+        request[@"Schema"]=@1;request[@"GuestBuild"]=@VM27_RADIO_GUEST_BUILD;
+        request[@"BootUUID"]=@(boot);request[@"PackageManifestSHA256"]=installed[@"PackageManifestSHA256"];
+        request[@"State"]=@"native-activation-reboot-required";request[@"ColdRestartRequired"]=@YES;
+        request[@"ColdRestartRequestID"]=NSUUID.UUID.UUIDString;
+        if(!savePlist(request,receiptPath)){close(lock);return EIO;}
+        prior=request;currentColdRequest=YES;
+    }
+    if(currentColdRequest) {
+        NSData *output=[NSJSONSerialization dataWithJSONObject:prior options:NSJSONWritingSortedKeys error:NULL];
+        if(output){fwrite(output.bytes,1,output.length,stdout);putchar('\n');}
+        close(lock);return 0;
+    }
+#endif
     NSString *progressPath = [Root stringByAppendingPathComponent:@"ActivationProgress.plist"];
     NSDictionary *savedProgress = readPlist(progressPath);
     if (!savedProgress && (!lstat(progressPath.fileSystemRepresentation,&st) || errno != ENOENT)) { close(lock); return EPERM; }
@@ -290,10 +323,15 @@ int main(int argc, char **argv) { @autoreleasepool {
         !wifiInterface ? @"native-wifi-interface-disabled" :
         !(btLive && daemon) ? @"starting-radio-services" : @"native-radio-components-ready";
     if (!statusOnly) {
+#if defined(VM27_RADIO_GUEST_BUILD_26B131)
+        if(restart){report[@"ColdRestartRequired"]=@YES;report[@"ColdRestartRequestID"]=NSUUID.UUID.UUIDString;}
+#endif
         if (!savePlist(report,receiptPath)) { close(lock); return EIO; }
     }
     NSData *output = [NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingSortedKeys error:NULL];
     if (output) { fwrite(output.bytes, 1, output.length, stdout); putchar('\n'); }
+#if !defined(VM27_RADIO_GUEST_BUILD_26B131)
     if (restart && !statusOnly) { fflush(stdout); run(@"/sbin/shutdown", @[@"-r", @"now"]); }
+#endif
     close(lock); return 0;
 } }

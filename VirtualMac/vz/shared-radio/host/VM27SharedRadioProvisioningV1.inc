@@ -1,12 +1,49 @@
 // Included by the existing owned QGA implementation after its Run/WriteFile
 // helpers. Uses that same connection, epoch, serial queue and operation bounds.
 // Independent of optional Guest Tools and of the user's account name/password.
+#import "VM27RadioColdRestartV1.h"
+NSString *const VM27RadioColdRestartNotificationV1=@"VM27RadioColdRestartRequestedV1";
 static BOOL VM27RadioProvisionLiveV1(uint64_t generation, NSString *bundle) {
     return generation == __atomic_load_n(&gGuestProvisioningGeneration, __ATOMIC_ACQUIRE) &&
         [bundle isEqual:gGuestBundlePath] && gGuestReadDescriptor >= 0;
 }
 static NSString *VM27RadioShellQuoteV1(NSString *text) {
     return [NSString stringWithFormat:@"'%@'", [text stringByReplacingOccurrencesOfString:@"'" withString:@"'\\''"]];
+}
+void VM27RadioColdShutdownV1(NSString *bundle,NSString *request,void (^completion)(BOOL)) {
+    dispatch_async(QGAQueueV3(),^{
+        uint64_t generation=__atomic_load_n(&gGuestProvisioningGeneration,__ATOMIC_ACQUIRE);
+        if(![[[NSUUID alloc]initWithUUIDString:request] autorelease] || !VM27RadioProvisionLiveV1(generation,bundle)) {
+            dispatch_async(dispatch_get_main_queue(),^{completion(NO);});return;
+        }
+        VZGuestToolsRun(@"/Library/PrivilegedHelperTools/com.virtualmac.RadioFirstBootV1",
+            @[@"--cold-shutdown",request],^(BOOL success,NSData *output){
+            (void)output;dispatch_async(dispatch_get_main_queue(),^{completion(success);});
+        });
+    });
+}
+void VM27RadioRequestColdRestartV1(NSString *bundle,void (^completion)(BOOL)) {
+    dispatch_async(QGAQueueV3(),^{
+        uint64_t generation=__atomic_load_n(&gGuestProvisioningGeneration,__ATOMIC_ACQUIRE);
+        if(!VM27RadioProvisionLiveV1(generation,bundle)) {
+            dispatch_async(dispatch_get_main_queue(),^{completion(NO);});return;
+        }
+        VZGuestToolsRun(@"/Library/PrivilegedHelperTools/com.virtualmac.RadioFirstBootV1",
+            @[@"--request-cold-restart"],^(BOOL success,NSData *output){
+            id status=success && output.length<=16384 ? [NSJSONSerialization JSONObjectWithData:output options:0 error:NULL] : nil;
+            NSString *request=[status isKindOfClass:NSDictionary.class]?status[@"ColdRestartRequestID"]:nil;
+            BOOL valid=VM27RadioProvisionLiveV1(generation,bundle) && [status isKindOfClass:NSDictionary.class] &&
+                [status[@"GuestBuild"] isEqual:@"26B131"] &&
+                [status[@"ColdRestartRequired"] isEqual:@YES] && [request isKindOfClass:NSString.class] &&
+                [[[NSUUID alloc]initWithUUIDString:request] autorelease];
+            dispatch_async(dispatch_get_main_queue(),^{
+                BOOL live=valid && generation==__atomic_load_n(&gGuestProvisioningGeneration,__ATOMIC_ACQUIRE);
+                if(live)[NSNotificationCenter.defaultCenter postNotificationName:VM27RadioColdRestartNotificationV1
+                    object:bundle userInfo:@{@"GuestBuild":@"26B131",@"RequestID":request}];
+                completion(live);
+            });
+        });
+    });
 }
 static BOOL VM27RadioPackageHashV1(NSData *data, id expected) {
     if (![expected isKindOfClass:NSString.class] || [expected length] != 64 || !data.length) return NO;
@@ -36,7 +73,24 @@ static void VM27RadioProvisionActivationStatusV1(uint64_t generation, NSString *
         NSString *state = [status isKindOfClass:NSDictionary.class] ? status[@"State"] : nil;
         if (![states containsObject:state]) state = @"activation-status-unavailable";
         VM27RadioProvisionRecordV1(generation, bundle, state);
-        if (([state isEqual:@"starting-radio-services"] || [state isEqual:@"activation-status-unavailable"]) && attempt < 12) {
+        BOOL modernCold=[status isKindOfClass:NSDictionary.class] && [status[@"GuestBuild"] isEqual:@"26B131"];
+        NSString *request=modernCold?status[@"ColdRestartRequestID"]:nil;
+        if(modernCold && [state isEqual:@"native-activation-reboot-required"] &&
+           [status[@"ColdRestartRequired"] isEqual:@YES] &&
+           [request isKindOfClass:NSString.class] && [[[NSUUID alloc]initWithUUIDString:request] autorelease]) {
+            dispatch_async(dispatch_get_main_queue(),^{
+                if(generation==__atomic_load_n(&gGuestProvisioningGeneration,__ATOMIC_ACQUIRE))
+                    [NSNotificationCenter.defaultCenter postNotificationName:VM27RadioColdRestartNotificationV1
+                        object:bundle userInfo:@{@"GuestBuild":@"26B131",@"RequestID":request}];
+            });completion();return;
+        }
+        BOOL waitingOwner=modernCold && ([state isEqual:@"guest-policy-required"] ||
+            [state isEqual:@"native-driver-activation-required"]);
+        // The new build's first launch can spend over a minute verifying its
+        // native helpers. Keep showing progress until they actually start.
+        NSUInteger serviceAttempts=modernCold?60:12;
+        if ((([state isEqual:@"starting-radio-services"] || [state isEqual:@"activation-status-unavailable"]) && attempt < serviceAttempts) ||
+            (waitingOwner && attempt < 120)) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5*NSEC_PER_SEC), QGAQueueV3(), ^{
                 if (VM27RadioProvisionLiveV1(generation, bundle))
                     VM27RadioProvisionActivationStatusV1(generation, bundle, attempt+1, completion);

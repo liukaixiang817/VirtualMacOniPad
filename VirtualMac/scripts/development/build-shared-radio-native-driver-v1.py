@@ -17,12 +17,17 @@ AUDITED_KERNELS = {
               '268f431e7366409dc798cd8f719a93cf3a30c6f828201d8eeceae889358099c6'),
     '26A5416b': ('BA6D493F-999F-0208-8866-DC4865B06748',
                   '0fe14b0bf2d447b269e74b8f3b2cc8c008275c86c5c8e7fb1ef000bbddcaf4f2'),
+    '26B131': ('270F6AC5-1ADD-9189-68B9-C5F940464907',
+               'b9dd1cdf46a499b43fbd2a304ee0da2a2311bfbde5f7bc7bd1cf1e3b9c4b8142'),
 }
 
 PAYLOAD_LAYOUTS = {
     '24G90': {'beaconHeaderBytes': 0x40, 'extendedRsnOffset': 0xdd, 'extendedBeVersionOffset': 0, 'lqmBytes': 0x150},
     '25G83': {'beaconHeaderBytes': 0x44, 'extendedRsnOffset': 0x113, 'extendedBeVersionOffset': 0, 'lqmBytes': 0x1dc},
     '26A5416b': {'beaconHeaderBytes': 0x44, 'extendedRsnOffset': 0x120, 'extendedBeVersionOffset': 0xdc, 'lqmBytes': 0x250},
+    # The four native payload producers retain the audited 27.0 layout;
+    # 27.2.1 requires newly generated headers for its additional virtual slot.
+    '26B131': {'beaconHeaderBytes': 0x44, 'extendedRsnOffset': 0x120, 'extendedBeVersionOffset': 0xdc, 'lqmBytes': 0x250},
 }
 
 
@@ -76,7 +81,8 @@ def main():
     # 27 can publish en2 after airportd's initial inventory. Such interfaces
     # start unavailable until the native driver-available event arrives.
     # Keep the accepted 15/26 compiled paths unchanged.
-    pins += '#define VM27_NATIVE_DRIVER_AVAILABLE_EVENT_BYTES ' + ('0xf8' if facts['build'] == '26A5416b' else '0') + '\n'
+    availability_event = facts['build'] in ('26A5416b', '26B131')
+    pins += '#define VM27_NATIVE_DRIVER_AVAILABLE_EVENT_BYTES ' + ('0xf8' if availability_event else '0') + '\n'
     stubs = (a.headers/'iface_stubs.inc').read_text()
     pins += '#define VM27_NATIVE_LINK_STATE_UPDATE_PURE '+str(int('setWCL_LINK_STATE_UPDATE(' in stubs))+'\n'
     low_latency = has_low_latency_handler(a.headers)
@@ -185,8 +191,8 @@ def main():
     availability_source = src/'VM27SharedWiFiAvailabilityV1.h'
     manifest['sources'][str(availability_source.relative_to(root))] = hashlib.sha256(availability_source.read_bytes()).hexdigest()
     manifest['nativeDriverAvailabilityEvent'] = {
-        'enabled': facts['build'] == '26A5416b', 'event': 0x37,
-        'bytes': 0xf8 if facts['build'] == '26A5416b' else 0,
+        'enabled': availability_event, 'event': 0x37,
+        'bytes': 0xf8 if availability_event else 0,
         'requiresRealHostTransportAndGuestPower': True,
         'associationClaimedByEvent': False,
     }

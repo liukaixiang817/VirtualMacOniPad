@@ -14,6 +14,9 @@
 #ifndef VM27_EARLY_MODULE_SHA
 #error Supply the reviewed early module hash.
 #endif
+#ifndef VM27_EARLY_NATIVE_MAX_BYTES
+#define VM27_EARLY_NATIVE_MAX_BYTES (32*1024*1024)
+#endif
 #ifndef VM27_EARLY_NATIVE_BUILD
 #define VM27_EARLY_NATIVE_BUILD "25G83"
 #define VM27_EARLY_NATIVE_SHA "8afb2a8c2d6aa90b1e1e9e22a7c0ec3201ce46b02ccb37775bb0c9698b93575a"
@@ -111,7 +114,7 @@ int main(int argc,char **argv){@autoreleasepool{
     if(strcmp(build,VM27_EARLY_NATIVE_BUILD)){close(lock);return EPROTONOSUPPORT;}
     if(NSProcessInfo.processInfo.systemUptime<20){close(lock);return 0;}
     if(!hashMatches(Module,@VM27_EARLY_MODULE_SHA,4*1024*1024)||
-       !hashMatches(@"/usr/sbin/bluetoothd",@VM27_EARLY_NATIVE_SHA,32*1024*1024)){close(lock);return EPERM;}
+       !hashMatches(@"/usr/sbin/bluetoothd",@VM27_EARLY_NATIVE_SHA,VM27_EARLY_NATIVE_MAX_BYTES)){close(lock);return EPERM;}
     NSData *source=secureRead(Original,65536);
     id definition=source?[NSPropertyListSerialization propertyListWithData:source options:NSPropertyListMutableContainers format:NULL error:NULL]:nil;
     if(![definition isKindOfClass:NSMutableDictionary.class]||![definition[@"Label"]isEqual:@"com.apple.bluetoothd"]||
